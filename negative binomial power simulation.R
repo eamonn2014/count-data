@@ -56,7 +56,7 @@ res <- replicate(1000, nb.power())  #
 mean(res<0.05)
 
 # https://www.nejm.org/doi/pdf/10.1056/NEJMoa1403290?articleTools=true
-# published power statement that we reproduce
+# published power statement that we reproduce? The RCT in question is however 3 arm, but my simulation only looks at 2 arms
 
 res <- replicate(999, nb.power(n=180, disp=1/.8, mu0=2.4, mu1=.6, drop1=0.0001, drop2=0.0001, fup=32/52) )  #
 mean(res<0.05)
@@ -75,7 +75,58 @@ mean(res<0.05)
 res <- replicate(1000, nb.power(mu0=.9,n=120))   #.49
 mean(res<0.05)
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~3 arm simulation
 
+# good heavens
+# what do you mean good heavens?
+# good heavens
+
+
+nb.power <- function(n=220, disp=1.3, mu0=1, mu1=.65, mu2=.65, drop1=.1, drop2=.1, drop3=.1, fup=1) {
+  
+  
+  #n=220; disp=1.3; mu0=1; mu1=.65; mu2=.65; drop1=.1; drop2=.1; drop3=.1; fup=1
+  #n=180; disp=1/.8; mu0=2.4; mu1=.6; mu2=.6; drop1=0.0001; drop2=0.0001; drop3=0.0001; fup=32/52
+  
+  dose <- c(rep("placebo",n), rep("trt1",n) , rep("trt2",n) )  # 1/3 split of patients
+  
+  mu   <- c( rep(mu0,n),  rep(mu0*mu1,n)  , rep(mu0*mu2,n))    # rates in two arms
+  
+  drop <- c( rep(drop1,n), rep(drop2,n), rep(drop3,n))         # trt discontinuation rates
+  
+  f <- - rexp(3*n) / log(1-drop)
+  length <- ifelse(f > fup, fup, f)   # curtail at follow up time 
+  
+  
+  y <-  rnbinom(n*3,  prob=1/(1+ mu*length* disp),        size=1/disp)  +   # on treatment period events
+    rnbinom(n*3,  prob=1/(1+ mu0*(fup-length)*disp),  size=1/disp)      # accounting for any off treat. period events
+  
+  lfup <- log(fup)             # exposure log(fup) for everyone, that is fup year
+  logleng  <- rep(lfup, n*3)   #  
+  
+  x <- summary(MASS::glm.nb(y~dose+offset((logleng))))
+  
+  # collect p-values
+  p1 <-  x$coefficients["dosetrt1","Pr(>|z|)"]
+  p2 <-  x$coefficients["dosetrt2","Pr(>|z|)"]
+  
+  newList <- list("p1" = p1 , "p2" = p2)
+  return(newList)
+  
+}
+
+sims <- 299
+res <- replicate(sims, 
+                 nb.power(n=180, disp=1/.8, mu0=2.4, mu1=.6, mu2=.6, 
+                          drop1=0.0001, drop2=0.0001, drop3=0.0001, fup=32/52) )  
+x <- t(data.frame(res))
+x <- (x<0.05)
+x<- data.frame(x)
+x$tally <- (1*x$p1+1*x$p2)
+
+table(x$p1)/sims
+table(x$p2)/sims
+table(x$tally)/sims # neither/only 1/both
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
 
 # one data set simulation
