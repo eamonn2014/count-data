@@ -52,8 +52,21 @@ nb.power <- function(n=220, disp=1.3, mu0=1, mu1=.65, drop1=.1, drop2=.1, fup=1)
   
 }
 
-res <- replicate(1000, nb.power())  #.77
+res <- replicate(1000, nb.power())  #
 mean(res<0.05)
+
+# https://www.nejm.org/doi/pdf/10.1056/NEJMoa1403290?articleTools=true
+# published power statement that we reproduce
+
+res <- replicate(999, nb.power(n=180, disp=1/.8, mu0=2.4, mu1=.6, drop1=0.0001, drop2=0.0001, fup=32/52) )  #
+mean(res<0.05)
+
+# We estimated that with 180 patients in each group, the study would 
+# have a power of 90% to detect a 40% decrease in the exacerbation rate,
+# from 2.40 per year in the placebo group to 1.44 per year in each of the mepolizumab groups, 
+# at a two-sided significance level of 0.05. In performing this calculation, we assumed that the number of exacerbations 
+# would follow a negative binomial distribution with a dispersion parameter k=0.8.
+# the primary efficacy analysis was performed at 32 weeks as stated in the paper.
  
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ end make a function
@@ -67,24 +80,24 @@ mean(res<0.05)
 
 # one data set simulation
 
-# n   <- 2200
-# disp <- 1.3
-# mu0 <- 1
-# mu1 <- 0.65*mu0
-# dose <- c(rep("placebo",n),rep("trt",n))
-# mu   <- c(rep(mu0,n),rep(mu1,n))
-# drop <- c(rep(.1,n),rep(.1,n))
-# 
-# f <- - rexp(2*n) / log(1-drop)
-# length <- ifelse(f>1,1,f)
-# 
-# y <-  rnbinom(n*2,  p=1/(1+ mu*length* disp),      size=1/disp)  +
-#   rnbinom(n*2,  p=1/(1+ mu0*(1-length)*disp),  size=1/disp)
-# 
-# logleng  <- rep(0, n*2)
-# 
-# addmargins(table( y,  dose))
-# 
-# d <- cbind.data.frame(dose, mu, length, y, logleng)
-# 
-# summary(MASS::glm.nb(y~dose+offset((logleng)), data=d))
+n   <- 2200
+disp <- 1.3
+mu0 <- 1
+mu1 <- 0.65*mu0
+dose <- c(rep("placebo",n),rep("trt",n))
+mu   <- c(rep(mu0,n),rep(mu1,n))
+drop <- c(rep(.1,n),rep(.1,n))
+
+f <- - rexp(2*n) / log(1-drop)
+length <- ifelse(f>1,1,f)
+
+y <-  rnbinom(n*2,  p=1/(1+ mu*length* disp),      size=1/disp)  +
+  rnbinom(n*2,  p=1/(1+ mu0*(1-length)*disp),  size=1/disp)
+
+logleng  <- rep(0, n*2)
+
+addmargins(table( y,  dose))
+
+d <- cbind.data.frame(dose, mu, length, y, logleng)
+
+summary(MASS::glm.nb(y~dose+offset((logleng)), data=d))
