@@ -19,6 +19,8 @@
 library(MASS)
 nb.power <- function(n=220, disp=1.3, mu0=1, mu1=.65, drop1=.1, drop2=.1, fup=1) {
   
+ # n=220; disp=1.3; mu0=1; mu1=.65; drop1=.001; drop2=.001; fup=1
+  
   dose <- c(rep("placebo",n),rep("trt",n)) # 50:50 split of patients
   
   mu   <- c(rep(mu0,n), rep(mu0*mu1,n))    # rates in two arms
@@ -42,9 +44,23 @@ nb.power <- function(n=220, disp=1.3, mu0=1, mu1=.65, drop1=.1, drop2=.1, fup=1)
   lfup <- log(fup)             # exposure log(fup) for everyone, that is fup year
   logleng  <- rep(lfup, n*2)   #  
   
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~qc
+  # L <- list(dose,mu,drop,length,logleng)
+  # 
+  # require(tidyverse)
+  # par(mfrow=c(1,2))
+  # y[1:n]     %>% table %>% barplot() #quick and dirty
+  # y[n+1:n*2] %>% table %>% barplot() #quick and dirty
+  # par(mfrow=c(1,1))
+  # 
+  # mean(y[1:n])  # matches the rate
+  # mean(y[(n+1):(n*2)])
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
   # analyse with neg. binomial model
   x <- summary(MASS::glm.nb(y~dose+offset((logleng))))
-  
+  #exp(x$coeff)
   # collect p-values
   p <-  x$coefficients["dosetrt","Pr(>|z|)"]
   
@@ -52,7 +68,7 @@ nb.power <- function(n=220, disp=1.3, mu0=1, mu1=.65, drop1=.1, drop2=.1, fup=1)
   
 }
 
-res <- replicate(1000, nb.power())  #
+res <- replicate(1000, nb.power(drop1=.1, drop2=.1))  #
 mean(res<0.05)
 
 # https://www.nejm.org/doi/pdf/10.1056/NEJMoa1403290?articleTools=true
@@ -76,14 +92,12 @@ res <- replicate(1000, nb.power(mu0=.9,n=120))   #.49
 mean(res<0.05)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~3 arm simulation
+# Dad's Army:
+# Good heavens
+# What do you mean good heavens? Good heavens
 
-# good heavens
-# what do you mean good heavens?
-# good heavens
 
-
-nb.power <- function(n=220, disp=1.3, mu0=1, mu1=.65, mu2=.65, drop1=.1, drop2=.1, drop3=.1, fup=1) {
-  
+nb.power2 <- function(n=220, disp=1.3, mu0=1, mu1=.65, mu2=.65, drop1=.1, drop2=.1, drop3=.1, fup=1) {
   
   #n=220; disp=1.3; mu0=1; mu1=.65; mu2=.65; drop1=.1; drop2=.1; drop3=.1; fup=1
   #n=180; disp=1/.8; mu0=2.4; mu1=.6; mu2=.6; drop1=0.0001; drop2=0.0001; drop3=0.0001; fup=32/52
@@ -117,7 +131,7 @@ nb.power <- function(n=220, disp=1.3, mu0=1, mu1=.65, mu2=.65, drop1=.1, drop2=.
 
 sims <- 299
 res <- replicate(sims, 
-                 nb.power(n=180, disp=1/.8, mu0=2.4, mu1=.6, mu2=.6, 
+                 nb.power2(n=180, disp=1/.8, mu0=2.4, mu1=.6, mu2=.6, 
                           drop1=0.0001, drop2=0.0001, drop3=0.0001, fup=32/52) )  
 x <- t(data.frame(res))
 x <- (x<0.05)
@@ -131,7 +145,7 @@ table(x$tally)/sims # neither/only 1/both
 
 # one data set simulation
 
-n   <- 2200
+n   <- 220
 disp <- 1.3
 mu0 <- 1
 mu1 <- 0.65*mu0
@@ -143,7 +157,7 @@ f <- - rexp(2*n) / log(1-drop)
 length <- ifelse(f>1,1,f)
 
 y <-  rnbinom(n*2,  p=1/(1+ mu*length* disp),      size=1/disp)  +
-  rnbinom(n*2,  p=1/(1+ mu0*(1-length)*disp),  size=1/disp)
+      rnbinom(n*2,  p=1/(1+ mu0*(1-length)*disp),  size=1/disp)
 
 logleng  <- rep(0, n*2)
 
@@ -152,3 +166,37 @@ addmargins(table( y,  dose))
 d <- cbind.data.frame(dose, mu, length, y, logleng)
 
 summary(MASS::glm.nb(y~dose+offset((logleng)), data=d))
+
+
+
+# Hilbe's neg binomial book: Table 9.5 R: Synthetic Monte Carlo negative
+# no offset here!
+ 
+# library(MASS)
+# mysim <- function()
+# {
+#   nobs <- 220
+#   x1 <- rbinom(nobs,1,prob=.5)
+#   xb <- 1 + .65*x1 
+#   a <- 1/1.3
+#   ia <- 1/a
+#   exb <- exp(xb)
+#   xg <- rgamma(nobs, a, ia)
+#   xbg <-exb*xg
+#   nby <- rpois(nobs, xbg)
+#   nbsim <-glm.nb(nby ~ x1)
+#   
+#   x<-summary(nbsim)
+#   nbp <- x$coefficients["x1","Pr(>|z|)"]
+#   
+#   alpha <- nbsim$theta
+#   pr <- sum(residuals(nbsim, type='pearson')^2)
+#   prdisp <- pr/nbsim$df.residual
+#   beta <- nbsim$coef
+#   list(alpha,prdisp,nbp, beta)
+# }
+# B <- replicate(100, mysim())
+# mean(unlist(B[1,]))
+# mean(unlist(B[2,]))
+# mean(unlist(B[3,])<.05)
+# apply(matrix(unlist(B[4,]),2,100),1,mean)
