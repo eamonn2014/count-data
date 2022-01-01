@@ -86,13 +86,14 @@ sliderInput('y_range', 'Plot y-range', value = c(0,.1),
 
 ```
 
-###Info
-
-*Purpose*: In BIOS 7311, we love to explore coverage probability. This interactive plot tool will allow you to explore the true coverage rates of the 95% CI over $\theta$s ranging from 0 to 1 for the asymptotic Normal (Wald) interval, the Exact interval, and the Wilson interval.
-
-*Methods*: To implement this, we simulate binomial distributions under various conditions and test how often $\theta$ falls within each of the three intervals.
-
-*Notes*: These look like batman. That is crazy.
+Illustrating negative binomial distributions for various values of
+both the mean and $\alpha$. When $\alpha$ = 1, the negative binomial distribution takes the form of a
+geometric distribution, which is the discrete correlate of the continuous negative
+exponential distribution. 
+The negative binomial distribution with $\alpha$ = 0 is Poisson.
+As the mean increases, the probability of
+a zero decreases, and the more the shape approximates a Gaussian distribution.
+As the Poisson mean gets larger it approaches normality, the negative binomial distribution does not respond to larger mean values in that manner. 
 
  
 
@@ -125,72 +126,72 @@ require("sfsmisc")
 # alpha_b = .01
 # alpha_d = 1
 
-mu = input$mu
-alpha_a = input$alpha_a
-alpha_b =  input$alpha_b
-alpha_d =  input$alpha_d
-
-low =  input$x_range[1]
-high=  input$x_range[2]
-xmax = high
-
-ymax = input$y_range[2]
+  mu = input$mu
+  alpha_a = input$alpha_a
+  alpha_b =  input$alpha_b
+  alpha_d =  input$alpha_d
+  
+  low =  input$x_range[1]
+  high=  input$x_range[2]
+  xmax = high
+  
+  ymax = input$y_range[2]
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-x=c(-0.0001,seq(0,xmax,1))
-
-y =          dpois(x,mu)
- 
-if(alpha_a==0) {
-yb =          dpois(x,mu)
-}else{
-yb=     my_dnbinom(x,mu,alpha_a)
-}
-
-if(alpha_b==0){
-yc =          dpois(x,mu)
-}else{
-yc=     my_dnbinom(x,mu,alpha_b)
-}
-
-if(alpha_d==0){
-yd =          dpois(x,mu)
-}else{
-yd=     my_dnbinom(x,mu,alpha_d)
-}
-
-nor <-       dnorm(x, mu, sqrt(mu))
-
-
-x=append(0,x)  
-y=append(0,y)
-yb=append(0,yb)
-yc=append(0,yc)
-yd=append(0,yd)
-nor=append(0,nor)
-
-l = !is.na(y+yb+yc+yd+nor)
-
-plot(x[l],y[l],ylim=c(0,ymax),xlim=c(low,xmax),type="l",lwd=lwd.,xlab="x",
-     ylab="prob(x)",main="Probability distributions")
-
-lines(x[l],yb[l], col=2,lwd=lwd.,type="l")
-lines(x[l],yc[l], col=4,lwd=lwd.,type="l")
-lines(x[l],nor[l],col=5,lwd=lwd.,type="l")
-lines(x[l],yd[l], col=6,lwd=lwd.,type="l")
- 
-# https://stackoverflow.com/questions/6044800/adding-greek-character-to-axis-title
-apois = paste("Poisson \u03BC=",mu,sep="")
-anegbinom_a = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep="")
-anegbinom_b = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,sep="")
-anegbinom_c = paste("Normal \u03BC=",   mu," \u03C3=sqrt(",mu,")",sep="")
-anegbinom_d = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_d,sep="")
+  # if else turn neg binomial into poisson if alpha =0
+  x=c(-0.0001,seq(0,xmax,1))
+  
+  y =          dpois(x,mu)
+   
+  if(alpha_a==0) {
+  yb =          dpois(x,mu)
+  }else{
+  yb=     my_dnbinom(x,mu,alpha_a)
+  }
+  
+  if(alpha_b==0){
+  yc =          dpois(x,mu)
+  }else{
+  yc=     my_dnbinom(x,mu,alpha_b)
+  }
+  
+  if(alpha_d==0){
+  yd =          dpois(x,mu)
+  }else{
+  yd=     my_dnbinom(x,mu,alpha_d)
+  }
+  
+  nor <-       dnorm(x, mu, sqrt(mu))
 
 
-legend("topright",col=c(1,2,4,6,5),legend=c(apois,anegbinom_a,anegbinom_b, anegbinom_d, anegbinom_c),
-       lwd=lwd.,bty="n")
+  x=append(0,x)  
+  y=append(0,y)
+  yb=append(0,yb)
+  yc=append(0,yc)
+  yd=append(0,yd)
+  nor=append(0,nor)
+  
+  l = !is.na(y+yb+yc+yd+nor)
+  
+  plot(x[l],y[l],ylim=c(0,ymax),xlim=c(low,xmax),type="l",lwd=lwd.,xlab="x",
+       ylab="prob(x)",main="Probability distributions")
+  
+  lines(x[l],yb[l], col=2,lwd=lwd.,type="l")
+  lines(x[l],yc[l], col=4,lwd=lwd.,type="l")
+  lines(x[l],nor[l],col=5,lwd=lwd.,type="l")
+  lines(x[l],yd[l], col=6,lwd=lwd.,type="l")
+   
+  # https://stackoverflow.com/questions/6044800/adding-greek-character-to-axis-title
+  apois = paste("Poisson \u03BC=",mu,sep="")
+  anegbinom_a = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep="")
+  anegbinom_b = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,sep="")
+  anegbinom_c = paste("Normal \u03BC=",   mu," \u03C3=sqrt(",mu,")",sep="")
+  anegbinom_d = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_d,sep="")
+  
+  
+  legend("topright",col=c(1,2,4,6,5),legend=c(apois,anegbinom_a,anegbinom_b, anegbinom_d, anegbinom_c),
+         lwd=lwd.,bty="n")
  }
 )
 
@@ -217,49 +218,49 @@ Column {data-width=400}
 renderPlot({
   
 
-n=input$sims
-
-mu = input$mu
-alpha_a =  input$alpha_a
-alpha_b =  input$alpha_b
-alpha_d =  input$alpha_d
-
-low =  input$x_range[1]
-high=  input$x_range[2]
-xmax = high
-
-ymax = input$y_range[2]
-
-z  =      rpois(n,mu)
-zb = my_rnbinom(n,mu,alpha_a)
-zc = my_rnbinom(n,mu,alpha_b)
-zd =      rnorm(n,mu,sqrt(mu))
-ze = my_rnbinom(n,mu,alpha_d)
-
-a=hist(z, plot=F,breaks=seq(-1.5,n+.5,1))
-b=hist(zb,plot=F,breaks=seq(-1.5,n+.5,1))
-c=hist(zc,plot=F,breaks=seq(-1.5,n+.5,1))
-d=hist(zd,plot=F,breaks=200)
-e=hist(ze,plot=F,breaks=seq(-1.5,n+.5,1))
-
-atitle = paste("Distributions of",n,"random numbers")
-
-plot(a$mids,a$density,type="s",lwd=lwd.,col=1,ylim=c(0,ymax),main=atitle,xlim=c(low,xmax),
-     xlab="x",ylab="Fraction falling within each bin")
-
-lines(b$mids,b$density,type="s",lwd=lwd.,col=2)
-lines(c$mids,c$density,type="s",lwd=lwd.,col=4)
-lines(d$mids,d$density,type="s",lwd=lwd.,col=5)
-lines(e$mids,e$density,type="s",lwd=lwd.,col=6)
-
-apois = paste("Poisson \u03BC=",mu,sep="")
-anegbinom_a = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep="")
-anegbinom_b = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,sep="")
-anegbinom_c = paste("Normal \u03BC=",   mu," \u03C3=sqrt(",mu,")",sep="")
-anegbinom_d = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_d,sep="")
-
-legend("topright",col=c(1,2,4,6,5),legend=c(apois,anegbinom_a,anegbinom_b, anegbinom_d, anegbinom_c),
-       lwd=lwd.,bty="n")
+    n=input$sims
+    
+    mu = input$mu
+    alpha_a =  input$alpha_a
+    alpha_b =  input$alpha_b
+    alpha_d =  input$alpha_d
+    
+    low =  input$x_range[1]
+    high=  input$x_range[2]
+    xmax = high
+    
+    ymax = input$y_range[2]
+    
+    z  =      rpois(n,mu)
+    zb = my_rnbinom(n,mu,alpha_a)
+    zc = my_rnbinom(n,mu,alpha_b)
+    zd =      rnorm(n,mu,sqrt(mu))
+    ze = my_rnbinom(n,mu,alpha_d)
+    
+    a=hist(z, plot=F,breaks=seq(-1.5,n+.5,1))
+    b=hist(zb,plot=F,breaks=seq(-1.5,n+.5,1))
+    c=hist(zc,plot=F,breaks=seq(-1.5,n+.5,1))
+    d=hist(zd,plot=F,breaks=200)
+    e=hist(ze,plot=F,breaks=seq(-1.5,n+.5,1))
+    
+    atitle = paste("Distributions of",n,"random numbers")
+    
+    plot(a$mids,a$density,type="s",lwd=lwd.,col=1,ylim=c(0,ymax),main=atitle,xlim=c(low,xmax),
+         xlab="x",ylab="Fraction falling within each bin")
+    
+    lines(b$mids,b$density,type="s",lwd=lwd.,col=2)
+    lines(c$mids,c$density,type="s",lwd=lwd.,col=4)
+    lines(d$mids,d$density,type="s",lwd=lwd.,col=5)
+    lines(e$mids,e$density,type="s",lwd=lwd.,col=6)
+    
+    apois = paste("Poisson \u03BC=",mu,sep="")
+    anegbinom_a = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep="")
+    anegbinom_b = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,sep="")
+    anegbinom_c = paste("Normal \u03BC=",   mu," \u03C3=sqrt(",mu,")",sep="")
+    anegbinom_d = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_d,sep="")
+    
+    legend("topright",col=c(1,2,4,6,5),legend=c(apois,anegbinom_a,anegbinom_b, anegbinom_d, anegbinom_c),
+           lwd=lwd.,bty="n")
 
 
 })
@@ -275,4 +276,38 @@ legend("topright",col=c(1,2,4,6,5),legend=c(apois,anegbinom_a,anegbinom_b, anegb
 ```
 More
 ===
+
+
  
+ The binomial distribution describes the number of successes in n trials, the geometric distribution describes the number
+of failures before the first success, r, and the negative binomial distribution
+describes the number of failures before the rth success. p194
+
+The only restriction placed on α is that it take positive rational values,
+rarely above 4 p190
+
+the app uses alpha. 
+When alpha=0, k is large and poisson emerges
+When alpha>1, k is vanishingly small , k <1 higly overdispersed (alpha big)
+Underdispersed data were assigned the minimum value of alpha, corresponding to k -> infinity.
+
+
+a = 1/k
+
+k =1/a
+
+Accordingly, all calculations
+in this study were conducted using a, but all results and discussion
+are posed in terms of k
+
+Confusingly, the term ‘dispersion parameter’ can refer to either k or a; other terms for k include ‘shape
+parameter’ and ‘clustering coefficient’.
+
+In this study ML estimation was conducted for the parameter a,
+but results are reported in terms of k ˆ = 1/aˆ because k is more
+familiar to epidemiologists and ecologists. Estimates of aˆ were
+restricted to positive values, because the allowed range for k was
+(0,infity). 
+
+
+
