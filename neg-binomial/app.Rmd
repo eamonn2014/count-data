@@ -57,7 +57,7 @@ Column {.sidebar}
 ```{r}
 
 library(shiny)
- 
+library(utf8)
 
 sliderInput('mu', 'common mu', 18,
               min = 1, max = 25,step=.5,ticks=F)
@@ -169,12 +169,19 @@ lines(x[l],yb[l], col=2,lwd=lwd.,type="l")
 lines(x[l],yc[l], col=4,lwd=lwd.,type="l")
 lines(x[l],nor[l],col=5,lwd=lwd.,type="l")
 lines(x[l],yd[l], col=6,lwd=lwd.,type="l")
+# 
+# apois = paste("Poisson mu=",mu,sep="")
+# anegbinom_a = paste("Neg Binom mu=",mu," alpha=",alpha_a,sep="")
+# anegbinom_b = paste("Neg Binom mu=",mu," alpha=",alpha_b,sep="")
+# anegbinom_c = paste("Normal mu=",mu," sd=sqrt(",mu,")",sep="")
+# anegbinom_d = paste("Neg Binom mu=",mu," alpha=",alpha_d,sep="")
 
-apois = paste("Poisson mu=",mu,sep="")
-anegbinom_a = paste("Neg Binom mu=",mu," alpha=",alpha_a,sep="")
-anegbinom_b = paste("Neg Binom mu=",mu," alpha=",alpha_b,sep="")
-anegbinom_c = paste("Normal mu=",mu," sd=sqrt(",mu,")",sep="")
-anegbinom_d = paste("Neg Binom mu=",mu," alpha=",alpha_d,sep="")
+apois = paste("Poisson \u03BC=",mu,sep="")
+anegbinom_a = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep="")
+anegbinom_b = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,sep="")
+anegbinom_c = paste("Normal \u03BC=",   mu," \u03C3=sqrt(",mu,")",sep="")
+anegbinom_d = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_d,sep="")
+
 
 legend("topright",col=c(1,2,4,6,5),legend=c(apois,anegbinom_a,anegbinom_b, anegbinom_d, anegbinom_c),
        lwd=lwd.,bty="n")
@@ -230,12 +237,15 @@ lines(c$mids,c$density,type="s",lwd=lwd.,col=4)
 lines(d$mids,d$density,type="s",lwd=lwd.,col=5)
 lines(e$mids,e$density,type="s",lwd=lwd.,col=6)
 
-apois =       paste("Poisson mu=",mu,sep="")
+# 
 
-anegbinom_a = paste("Neg Binom mu=",mu," alpha=",alpha_a,sep="")
-anegbinom_b = paste("Neg Binom mu=",mu," alpha=",alpha_b,sep="")
-anegbinom_c = paste("Normal mu=",mu," sd=sqrt(",mu,")",sep="")
-anegbinom_d = paste("Neg Binom mu=",mu," alpha=",alpha_d,sep="")
+#apois = bquote(mu == .(mu))
+
+apois = paste("Poisson \u03BC=",mu,sep="")
+anegbinom_a = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep="")
+anegbinom_b = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,sep="")
+anegbinom_c = paste("Normal \u03BC=",   mu," \u03C3=sqrt(",mu,")",sep="")
+anegbinom_d = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_d,sep="")
 
 legend("topright",col=c(1,2,4,6,5),legend=c(apois,anegbinom_a,anegbinom_b, anegbinom_d, anegbinom_c),
        lwd=lwd.,bty="n")
@@ -247,12 +257,12 @@ legend("topright",col=c(1,2,4,6,5),legend=c(apois,anegbinom_a,anegbinom_b, anegb
 column
 -------------------------------------------------------------------------------
 
+```{r}
 
+ 
+ 
 
-
-
-
-
+```
 
 ###Info
 
