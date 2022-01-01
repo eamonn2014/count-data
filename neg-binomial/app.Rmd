@@ -9,6 +9,8 @@ output:
     source_code: embed
 runtime: shiny
 ---
+Dashboard
+===
 
 ```{r global, include=FALSE}
 
@@ -59,16 +61,16 @@ Column {.sidebar}
 library(shiny)
 library(utf8)
 
-sliderInput('mu', 'common mu', 18,
+sliderInput('mu', 'common  \u03BC', 18,
               min = 1, max = 25,step=.5,ticks=F)
 
-sliderInput('alpha_a', 'Alpha for red curve', value = c(.1),
+sliderInput('alpha_a', '\u03B1 for red curve', value = c(.1),
               min = 0, max = 5 ,step=0.01, ticks=F)
 
-sliderInput('alpha_b', 'Alpha for dark blue curve', value = c(0.01),
+sliderInput('alpha_b', '\u03B1 for dark blue curve', value = c(0.01),
               min = 0, max = 5 ,step=0.01, ticks=F)
 
-sliderInput('alpha_d', 'Alpha for purple curve', value = c(1),
+sliderInput('alpha_d', '\u03B1 for purple curve', value = c(1),
               min = 0, max = 5 ,step=0.01, ticks=F)
 
 sliderInput('sims', 'simulations', 50000,
@@ -84,8 +86,17 @@ sliderInput('y_range', 'Plot y-range', value = c(0,.1),
 
 ```
 
+###Info
 
-Column 
+*Purpose*: In BIOS 7311, we love to explore coverage probability. This interactive plot tool will allow you to explore the true coverage rates of the 95% CI over $\theta$s ranging from 0 to 1 for the asymptotic Normal (Wald) interval, the Exact interval, and the Wilson interval.
+
+*Methods*: To implement this, we simulate binomial distributions under various conditions and test how often $\theta$ falls within each of the three intervals.
+
+*Notes*: These look like batman. That is crazy.
+
+ 
+
+Column {data-width=400}
 -----------------------------------------------------------------------
 ### xxxxxx
 
@@ -169,13 +180,8 @@ lines(x[l],yb[l], col=2,lwd=lwd.,type="l")
 lines(x[l],yc[l], col=4,lwd=lwd.,type="l")
 lines(x[l],nor[l],col=5,lwd=lwd.,type="l")
 lines(x[l],yd[l], col=6,lwd=lwd.,type="l")
-# 
-# apois = paste("Poisson mu=",mu,sep="")
-# anegbinom_a = paste("Neg Binom mu=",mu," alpha=",alpha_a,sep="")
-# anegbinom_b = paste("Neg Binom mu=",mu," alpha=",alpha_b,sep="")
-# anegbinom_c = paste("Normal mu=",mu," sd=sqrt(",mu,")",sep="")
-# anegbinom_d = paste("Neg Binom mu=",mu," alpha=",alpha_d,sep="")
-
+ 
+# https://stackoverflow.com/questions/6044800/adding-greek-character-to-axis-title
 apois = paste("Poisson \u03BC=",mu,sep="")
 anegbinom_a = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep="")
 anegbinom_b = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,sep="")
@@ -194,11 +200,20 @@ legend("topright",col=c(1,2,4,6,5),legend=c(apois,anegbinom_a,anegbinom_b, anegb
 ```
 
 
-Column 
------------------------------------------------------------------------
-### xxxxxx
+### Chart 3
 
 ```{r}
+
+ 
+```
+
+Column {data-width=400}
+-------------------------------------
+
+### Chart 3
+
+```{r}
+
 renderPlot({
   
 
@@ -237,10 +252,6 @@ lines(c$mids,c$density,type="s",lwd=lwd.,col=4)
 lines(d$mids,d$density,type="s",lwd=lwd.,col=5)
 lines(e$mids,e$density,type="s",lwd=lwd.,col=6)
 
-# 
-
-#apois = bquote(mu == .(mu))
-
 apois = paste("Poisson \u03BC=",mu,sep="")
 anegbinom_a = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep="")
 anegbinom_b = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,sep="")
@@ -252,22 +263,16 @@ legend("topright",col=c(1,2,4,6,5),legend=c(apois,anegbinom_a,anegbinom_b, anegb
 
 
 })
- 
+
 ```
-column
--------------------------------------------------------------------------------
+
+### Chart 4
 
 ```{r}
 
- 
- 
+
 
 ```
-
-###Info
-
-*Purpose*: In BIOS 7311, we love to explore coverage probability. This interactive plot tool will allow you to explore the true coverage rates of the 95% CI over $\theta$s ranging from 0 to 1 for the asymptotic Normal (Wald) interval, the Exact interval, and the Wilson interval.
-
-*Methods*: To implement this, we simulate binomial distributions under various conditions and test how often $\theta$ falls within each of the three intervals.
-
-*Notes*: These look like batman. That is crazy.
+More
+===
+ 
