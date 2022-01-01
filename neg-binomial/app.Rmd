@@ -1,5 +1,5 @@
 ---
-title: "Poisson and Negative Binomial Distributions"
+title: "Illustrating negative binomial distributions"
 author: Eamonn
 output: 
   flexdashboard::flex_dashboard:
@@ -61,33 +61,32 @@ Column {.sidebar}
 library(shiny)
 library(utf8)
 
-sliderInput('mu', 'common  \u03BC', 18,
-              min = 1, max = 25,step=.5,ticks=F)
+sliderInput('mu', 'common  \u03BC', value=1.5,
+              min = 1, max = 25, step=.5, ticks=F)
 
-sliderInput('alpha_a', '\u03B1 for red curve', value = c(.1),
+sliderInput('alpha_a', '\u03B1 for red curve', value = c(0.8),
               min = 0, max = 5 ,step=0.01, ticks=F)
 
-sliderInput('alpha_b', '\u03B1 for dark blue curve', value = c(0.01),
+sliderInput('alpha_b', '\u03B1 for dark blue curve', value = c(0.8),
               min = 0, max = 5 ,step=0.01, ticks=F)
 
-sliderInput('alpha_d', '\u03B1 for purple curve', value = c(1),
+sliderInput('alpha_d', '\u03B1 for purple curve', value = c(0.8),
               min = 0, max = 5 ,step=0.01, ticks=F)
 
 sliderInput('sims', 'simulations', 50000,
               min = 50000, max = 500000,step=50000,ticks=F)
 
-sliderInput('x_range', 'Plot x-range', value = c(0,40),
+sliderInput('x_range', 'Plot x-range', value = c(0,10),
         min = 0, max = 80,step=5,ticks=F)
 
-sliderInput('y_range', 'Plot y-range', value = c(0,.1),
+sliderInput('y_range', 'Plot y-range', value = c(0,.45),
         min = 0, max = 1,step=.05,ticks=F)
 
  
 
 ```
 
-Illustrating negative binomial distributions for various values of
-both the mean and $\alpha$. When $\alpha$ = 1, the negative binomial distribution takes the form of a
+When $\alpha$ = 1, the negative binomial distribution takes the form of a
 geometric distribution, which is the discrete correlate of the continuous negative
 exponential distribution. 
 The negative binomial distribution with $\alpha$ = 0 is Poisson.
@@ -205,6 +204,33 @@ require("sfsmisc")
 
 ```{r}
 
+
+renderPlot({
+  
+    mu = input$mu
+  alpha_a = input$alpha_a
+  
+  
+  low =  input$x_range[1]
+  high=  input$x_range[2]
+  xmax = high
+  
+  ymax = input$y_range[2]
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ 
+  xx <- c(seq(0,xmax,1))
+
+  yb = dpois(xx,mu)
+  
+  par(mar=c(2.1,4.1,4.1,4.1))
+      
+  barplot(yb, xlim=c(0,high+2), ylab = "Percent", xlab="x", col='black', ylim=c(0,ymax),
+          main = paste("Poisson \u03BC=", mu, sep=""),
+          names.arg= as.character(xx))
+})
+
  
 ```
 
@@ -271,6 +297,52 @@ renderPlot({
 
 ```{r}
 
+ 
+    renderPlot({
+  
+    mu = input$mu
+  alpha_a = input$alpha_a
+  
+  
+  low =  input$x_range[1]
+  high=  input$x_range[2]
+  xmax = high
+  
+  ymax = input$y_range[2]
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ 
+  xx <- c(seq(0,xmax,1))
+
+  if(alpha_a==0) {
+  yb =          dpois(xx,mu)
+  }else{
+  yb=     my_dnbinom(xx,mu,alpha_a)
+  }
+  
+  par(mar=c(2.1,4.1,4.1,4.1))
+      
+  barplot(yb, xlim=c(0,high+2), ylab = "Percent", xlab="x", col='black',
+          ylim=c(0,ymax),
+          main =  paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep=""),
+          names.arg= as.character(xx))
+  
+})
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 
 ```
@@ -278,36 +350,46 @@ More
 ===
 
 
- 
- The binomial distribution describes the number of successes in n trials, the geometric distribution describes the number
-of failures before the first success, r, and the negative binomial distribution
-describes the number of failures before the rth success. p194
+The binomial distribution describes the number of r successes in n trials.
 
-The only restriction placed on α is that it take positive rational values,
-rarely above 4 p190
+The geometric distribution describes the number of failures before the first success, r.
 
-the app uses alpha. 
-When alpha=0, k is large and poisson emerges
-When alpha>1, k is vanishingly small , k <1 higly overdispersed (alpha big)
-Underdispersed data were assigned the minimum value of alpha, corresponding to k -> infinity.
+The negative binomial distribution describes the number of failures before the rth success. (Hilbe page 194)
 
-
-a = 1/k
-
-k =1/a
-
-Accordingly, all calculations
-in this study were conducted using a, but all results and discussion
-are posed in terms of k
-
-Confusingly, the term ‘dispersion parameter’ can refer to either k or a; other terms for k include ‘shape
+Confusingly, the term ‘dispersion parameter’ can refer to either k or $\alpha$ ; other terms for k include ‘shape
 parameter’ and ‘clustering coefficient’.
 
-In this study ML estimation was conducted for the parameter a,
-but results are reported in terms of k ˆ = 1/aˆ because k is more
-familiar to epidemiologists and ecologists. Estimates of aˆ were
-restricted to positive values, because the allowed range for k was
-(0,infity). 
+The only restriction placed on  $\alpha$ is that it take positive rational values,
+rarely above 4 (Hilbe page 190)
+
+This app uses  $\alpha$. 
+
+When  $\alpha$=0, k is large and poisson emerges.
+
+When  $\alpha$>1, k is vanishingly small , k < 1 highly over dispersed ( $\alpha$ big).
+
+Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity.
+
+
+$\alpha$ = 1/k
+
+k =1/ $\alpha$
+
+Accordingly, all calculations in this study were conducted using $\alpha$, but all results and discussion
+are posed in terms of k?
+
+In this study ML estimation was conducted for the parameter $\alpha$,
+but results are reported in terms of k = 1/ $\alpha$ because k is more
+familiar to epidemiologists and ecologists. Estimates of $\alpha$ were
+restricted to positive values, because the allowed range for k was (0,infinity). 
+
+
+file:///C:/Users/Lenovo/OneDrive/Documents/PAPERS/COUNT%20DATA/TRISTAN%20study%20Keene%202007.pdf
+thy dispersion is alpha in this paper example figure 1
+
+ The larger the gamma shape parameter, the more dispersed is the distribution
+ 
+ The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data
 
 
 
