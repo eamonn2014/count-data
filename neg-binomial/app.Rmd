@@ -1,0 +1,263 @@
+---
+title: "Poisson and Negative Binomial Distributions"
+author: Eamonn
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: scroll
+    social: menu
+    source_code: embed
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+
+lwd.=3
+
+ my_dnbinom=function(x,mu,alpha){
+  m = mu
+  k = 1/alpha
+  # lgamma is log(gamma)
+  a = lgamma(k+x)-lgamma(k)-lgamma(x+1)
+  b = x*log(m/(m+k))
+  c = -k*log(1+m/k)
+  prob = exp(a+b+c)
+  prob[x<0] = 0
+  prob[prob>1] = 1
+  prob[prob<0] = 0
+  return(prob)
+}
+
+# check
+# dnbinom(   1, size=2,   mu=3)
+# my_dnbinom(1, alpha=1/2,mu=3)
+
+##################################################################################
+# R has built-in random number generators for the binomial distribution,
+# but they are expressed in different form than the form in the Lloyd-Smith
+# PLoS paper. This function translates the mu and alpha parameters
+# into the format needed by R to generate the NB random numbers
+##################################################################################
+my_rnbinom=function(n,mu,alpha){
+  size = 1/alpha
+  prob = size/(mu+size)
+  return(rnbinom(n,size=size,prob=prob))
+}
+
+
+
+
+
+```
+
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+
+library(shiny)
+ 
+
+sliderInput('mu', 'common mu', 18,
+              min = 1, max = 25,step=.5,ticks=F)
+
+sliderInput('alpha_a', 'Alpha for red curve', value = c(.1),
+              min = 0, max = 5 ,step=0.01, ticks=F)
+
+sliderInput('alpha_b', 'Alpha for dark blue curve', value = c(0.01),
+              min = 0, max = 5 ,step=0.01, ticks=F)
+
+sliderInput('alpha_d', 'Alpha for purple curve', value = c(1),
+              min = 0, max = 5 ,step=0.01, ticks=F)
+
+sliderInput('sims', 'simulations', 50000,
+              min = 50000, max = 500000,step=50000,ticks=F)
+
+sliderInput('x_range', 'Plot x-range', value = c(0,40),
+        min = 0, max = 80,step=5,ticks=F)
+
+sliderInput('y_range', 'Plot y-range', value = c(0,.1),
+        min = 0, max = 1,step=.05,ticks=F)
+
+ 
+
+```
+
+
+Column 
+-----------------------------------------------------------------------
+### xxxxxx
+
+```{r}
+
+renderPlot({
+  
+ 
+require("sfsmisc")
+#set.seed(28754) # set random number seed for reproducibilty of results
+
+##################################################################################
+# Define the Negative Binomial probability density function, with parameters
+# mu and alpha
+# The mean of this NB distribution is mu, and variance is sigma^2=mu+alpha*mu^2
+##################################################################################
+
+##################################################################################
+# Now let's try out the NB density function, and overlay the Poisson
+# distribution with the same mean
+##################################################################################
+#mult.fig(2) # divide the plotting area up into 2 (one up and one down)
+
+# mu = sample(1:25,1)
+# alpha_a = 0.1
+# alpha_b = .01
+# alpha_d = 1
+
+mu = input$mu
+alpha_a = input$alpha_a
+alpha_b =  input$alpha_b
+alpha_d =  input$alpha_d
+
+low =  input$x_range[1]
+high=  input$x_range[2]
+xmax = high
+
+ymax = input$y_range[2]
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+x=c(-0.0001,seq(0,xmax,1))
+
+y =          dpois(x,mu)
+ 
+if(alpha_a==0) {
+yb =          dpois(x,mu)
+}else{
+yb=     my_dnbinom(x,mu,alpha_a)
+}
+
+if(alpha_b==0){
+yc =          dpois(x,mu)
+}else{
+yc=     my_dnbinom(x,mu,alpha_b)
+}
+
+if(alpha_d==0){
+yd =          dpois(x,mu)
+}else{
+yd=     my_dnbinom(x,mu,alpha_d)
+}
+
+nor <-       dnorm(x, mu, sqrt(mu))
+
+
+x=append(0,x)  
+y=append(0,y)
+yb=append(0,yb)
+yc=append(0,yc)
+yd=append(0,yd)
+nor=append(0,nor)
+
+l = !is.na(y+yb+yc+yd+nor)
+
+plot(x[l],y[l],ylim=c(0,ymax),xlim=c(low,xmax),type="l",lwd=lwd.,xlab="x",
+     ylab="prob(x)",main="Probability distributions")
+
+lines(x[l],yb[l], col=2,lwd=lwd.,type="l")
+lines(x[l],yc[l], col=4,lwd=lwd.,type="l")
+lines(x[l],nor[l],col=5,lwd=lwd.,type="l")
+lines(x[l],yd[l], col=6,lwd=lwd.,type="l")
+
+apois = paste("Poisson mu=",mu,sep="")
+anegbinom_a = paste("Neg Binom mu=",mu," alpha=",alpha_a,sep="")
+anegbinom_b = paste("Neg Binom mu=",mu," alpha=",alpha_b,sep="")
+anegbinom_c = paste("Normal mu=",mu," sd=sqrt(",mu,")",sep="")
+anegbinom_d = paste("Neg Binom mu=",mu," alpha=",alpha_d,sep="")
+
+legend("topright",col=c(1,2,4,6,5),legend=c(apois,anegbinom_a,anegbinom_b, anegbinom_d, anegbinom_c),
+       lwd=lwd.,bty="n")
+ }
+)
+
+
+
+
+```
+
+
+Column 
+-----------------------------------------------------------------------
+### xxxxxx
+
+```{r}
+renderPlot({
+  
+
+n=input$sims
+
+mu = input$mu
+alpha_a =  input$alpha_a
+alpha_b =  input$alpha_b
+alpha_d =  input$alpha_d
+
+low =  input$x_range[1]
+high=  input$x_range[2]
+xmax = high
+
+ymax = input$y_range[2]
+
+z  =      rpois(n,mu)
+zb = my_rnbinom(n,mu,alpha_a)
+zc = my_rnbinom(n,mu,alpha_b)
+zd =      rnorm(n,mu,sqrt(mu))
+ze = my_rnbinom(n,mu,alpha_d)
+
+a=hist(z, plot=F,breaks=seq(-1.5,n+.5,1))
+b=hist(zb,plot=F,breaks=seq(-1.5,n+.5,1))
+c=hist(zc,plot=F,breaks=seq(-1.5,n+.5,1))
+d=hist(zd,plot=F,breaks=200)
+e=hist(ze,plot=F,breaks=seq(-1.5,n+.5,1))
+
+atitle = paste("Distributions of",n,"random numbers")
+
+plot(a$mids,a$density,type="s",lwd=lwd.,col=1,ylim=c(0,ymax),main=atitle,xlim=c(low,xmax),
+     xlab="x",ylab="Fraction falling within each bin")
+
+lines(b$mids,b$density,type="s",lwd=lwd.,col=2)
+lines(c$mids,c$density,type="s",lwd=lwd.,col=4)
+lines(d$mids,d$density,type="s",lwd=lwd.,col=5)
+lines(e$mids,e$density,type="s",lwd=lwd.,col=6)
+
+apois =       paste("Poisson mu=",mu,sep="")
+
+anegbinom_a = paste("Neg Binom mu=",mu," alpha=",alpha_a,sep="")
+anegbinom_b = paste("Neg Binom mu=",mu," alpha=",alpha_b,sep="")
+anegbinom_c = paste("Normal mu=",mu," sd=sqrt(",mu,")",sep="")
+anegbinom_d = paste("Neg Binom mu=",mu," alpha=",alpha_d,sep="")
+
+legend("topright",col=c(1,2,4,6,5),legend=c(apois,anegbinom_a,anegbinom_b, anegbinom_d, anegbinom_c),
+       lwd=lwd.,bty="n")
+
+
+})
+ 
+```
+column
+-------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+###Info
+
+*Purpose*: In BIOS 7311, we love to explore coverage probability. This interactive plot tool will allow you to explore the true coverage rates of the 95% CI over $\theta$s ranging from 0 to 1 for the asymptotic Normal (Wald) interval, the Exact interval, and the Wilson interval.
+
+*Methods*: To implement this, we simulate binomial distributions under various conditions and test how often $\theta$ falls within each of the three intervals.
+
+*Notes*: These look like batman. That is crazy.
