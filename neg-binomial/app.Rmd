@@ -3,7 +3,7 @@ title: "Illustrating negative binomial distributions"
 author: 
 output: 
   flexdashboard::flex_dashboard:
-    orientation: columns
+    orientation: rows
     vertical_layout: scroll
     social: menu
     source_code: embed
@@ -13,6 +13,8 @@ Home
 ===
 
 ```{r global, include=FALSE}
+
+library(MASS) # for neg binomial analysis
 
 lwd.=3
 
@@ -41,12 +43,48 @@ lwd.=3
 # into the format needed by R to generate the NB random numbers
 ##################################################################################
 my_rnbinom=function(n,mu,alpha){
-  size = 1/alpha
-  prob = size/(mu+size)
+  size = 1/alpha          # so now we can just enter alpha this is converted to 1/ alpha
+  prob = size/(mu+size)   # so now we can enter mu the mean and that is converted to prob
   return(rnbinom(n,size=size,prob=prob))
 }
 
 
+
+
+nb.power <- function(n=220, k=1.3, mu0=1, eff=0.65, drop1=.1, drop2=.1, fup=1) {
+  
+  mu1 <- eff*mu0
+  
+  if (drop1==0) {drop1=0.0001}
+  if (drop2==0) {drop2=0.0001}
+  # n=220; alpha=1.3; mu0=1; mu1=.65; drop1=.01; drop2=.01; fup=1
+ 
+  dose <- c(rep("placebo",n),rep("trt",n)) # 50:50 split of patients
+  
+  mu   <- c(rep(mu0,n), rep(mu1,n))    # rates in two arms
+
+  drop <- c(rep(drop1,n), rep(drop2,n)) # }# tr discontinuation rates
+  
+  f    <- - rexp(2*n) / log(1-drop)
+  
+  length <- ifelse(f > fup, fup, f)        # curtail at follow up time 
+  
+  y  <-  rnbinom(n*2,  prob=1/(1+ mu*length* k),        size=1/k)  +   # on treatment events
+         rnbinom(n*2,  prob=1/(1+ mu0*(fup-length)*k),  size=1/k)      # accounting for any off treat. 
+  
+  # assume no is lost to the study but can discontinue treatment
+  lfup     <- log(fup)         # exposure log(fup) for everyone, that is fup year
+  logleng  <- rep(lfup, n*2)   #  
+  
+  # analyse with neg. binomial model
+  x <- summary(MASS::glm.nb(y~dose+offset((logleng))))
+ 
+  # collect p-values
+  p <-  x$coefficients["dosetrt","Pr(>|z|)"]
+  
+  return(p)
+  
+}
 
 
 
@@ -88,7 +126,7 @@ sliderInput('y_range', 'Plot y-range', value = c(0,.4),
 
 ```
 
-This app uses  $\alpha$. 
+This page of the app uses  $\alpha$. 
 
 $\alpha$ takes on positive rational values, rarely above 4 (Hilbe page 190)
 
@@ -206,43 +244,6 @@ require("sfsmisc")
 ```
 
 
-### Chart 3
-
-```{r}
-
-
-renderPlot({
-  
-    mu = input$mu
-  alpha_a = input$alpha_a
-  
-  
-  low =  input$x_range[1]
-  high=  input$x_range[2]
-  xmax = high
-  
-  ymax = input$y_range[2]
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
- 
-  xx <- c(seq(0,xmax,1))
-
-  yb = dpois(xx,mu)
-  
-  par(mar=c(2.1,4.1,4.1,4.1))
-      
-  barplot(yb, xlim=c(0,high+2), ylab = "Percent", xlab="x", col='black', ylim=c(0,ymax),
-          main = paste("Poisson \u03BC=", mu, ", based on common mean",sep=""),
-          names.arg= as.character(xx))
-})
-
- 
-```
-
-Column {data-width=400}
--------------------------------------
-
 ### Chart 2
 
 ```{r}
@@ -297,6 +298,44 @@ renderPlot({
 
 })
 
+
+ 
+```
+
+Column {data-width=400}
+-------------------------------------
+
+### Chart 3
+
+```{r}
+
+
+renderPlot({
+  
+    mu = input$mu
+  alpha_a = input$alpha_a
+  
+  
+  low =  input$x_range[1]
+  high=  input$x_range[2]
+  xmax = high
+  
+  ymax = input$y_range[2]
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ 
+  xx <- c(seq(0,xmax,1))
+
+  yb = dpois(xx,mu)
+  
+  par(mar=c(2.1,4.1,4.1,4.1))
+      
+  barplot(yb, xlim=c(0,high+2), ylab = "Percent", xlab="x", col='black', ylim=c(0,ymax),
+          main = paste("Poisson \u03BC=", mu, ", based on common \u03BC",sep=""),
+          names.arg= as.character(xx))
+})
+
 ```
 
 ### Chart 4
@@ -331,7 +370,7 @@ renderPlot({
       
   barplot(yb, xlim=c(0,high+2), ylab = "Percent", xlab="x", col='red',
           ylim=c(0,ymax),
-          main =  paste("Negative Binomial \u03BC=",mu," \u03B1=",alpha_a,", based on common mean and red curve alpha",sep=""),
+          main =  paste("Negative Binomial \u03BC=",mu," \u03B1=",alpha_a,", based on common mean and red curve \u03B1",sep=""),
           names.arg= as.character(xx))
   
 })
@@ -366,11 +405,7 @@ parameter’ and ‘clustering coefficient’.
 The only restriction placed on  $\alpha$ is that it take positive rational values,
 rarely above 4 (Hilbe page 190)
 
-This app uses  $\alpha$. 
-
-When  $\alpha$=0, k is large and poisson emerges.
-
-When  $\alpha$>1, k is vanishingly small , k < 1 highly over dispersed ( $\alpha$ big).
+ 
 
 Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity.
 
@@ -404,31 +439,166 @@ Column {.sidebar}
 
 
 ```{r}
+
+sliderInput('N', 'Patients per arm', value=220,
+              min = 10, max = 10000, step=5, ticks=F)
+
+sliderInput('mu0', 'Placebo mean rate \u03BC[1]', value=1,
+              min = 0.1, max = 25, step=.05, ticks=F)
+
+sliderInput('eff', 'Hypothesised treatment effect ', value=.75,
+              min = 0.1, max = 25, step=.05, ticks=F)
+
+sliderInput('k', '1/\u03B1 the heterogeneity (ancillary) parameter', value = c(1.3),
+              min = 0, max = 5 ,step=0.01, ticks=F)
+
+sliderInput('d1', 'Placebo discontinuation prob', value = c(0.1),
+              min = 0, max = .5 ,step=0.05, ticks=F)
+
+sliderInput('d2', 'treatment discontinuation prob', value = c(0.1),
+              min = 0, max = .5 ,step=0.05, ticks=F)
+
+sliderInput('fup', 'Follow up (yrs)', value = c(1),
+        min = 0, max = 10, step=1,ticks=F)
  
-sliderInput('mup', 'Common  \u03BC', value=1.5,
-              min = 1, max = 25, step=.5, ticks=F)
-
-sliderInput('alpha_ap', '\u03B1 for red curve', value = c(0.8),
-              min = 0, max = 5 ,step=0.01, ticks=F)
-
-sliderInput('alpha_bp', '\u03B1 for dark blue curve', value = c(0.8),
-              min = 0, max = 5 ,step=0.01, ticks=F)
-
-sliderInput('alpha_dp', '\u03B1 for purple curve', value = c(0.8),
-              min = 0, max = 5 ,step=0.01, ticks=F)
-
-sliderInput('simsp', 'Simulations (chart 2)', 50000,
-              min = 50000, max = 500000,step=50000,ticks=F)
-
-sliderInput('x_rangep', 'Plot x-range', value = c(0,10),
-        min = 0, max = 80,step=5,ticks=F)
-
-sliderInput('y_rangep', 'Plot y-range', value = c(0,.4),
-        min = 0, max = 1,step=.05,ticks=F)
-
+sliderInput('sims2', 'Power simulations', value= 500,
+              min = 500, max = 10000, step= 500, ticks=F)
  
+```
+
+Row {data- height=650}
+-----------------------------------------------------------------------
+### Power will appear here iminently...be patient...
+  
+```{r, eval=TRUE}
+
+reactive({
+  
+cat(paste0("A RCT with 1:1 randomisation is being planned to investigate the rate of asthma exacerbations with ",input$N," patients per arm.\n"))
+
+cat(paste0("The negative binomial model will be used as patient heterogeneity of exacerbations beyond that captured by patient level covariates is expected.\nWe will use the natural log of duration of follow up time as an offset variable, the duration of follow up, ",input$fup, " will be the planned duration of follow up for all patients (see slider)."))
+
+cat(paste0("\nk is the dispersion parameter value of " ,input$k," this is the same as 1/α So α is ",1/input$k,". The rate for placebo is ",input$mu0," events per patient year of follow up.\nThe treatment effect hypothesised is  ",input$eff, ". \nDrop out probabilities for treatment discontinuation and follow up period (in years) are " ,input$d1, " and " ,input$d2," respectively. \nWe assume a constant exponential hazard rate over time for treatment discontinuation with ",input$d1," and ",input$d2,", the percentages of patients\noff treatment by follow up time in years in active and placebo. \nNo further treatment effect versus placebo is assumed during off treatment, that is ",input$mu0," events per patient year is assumed for patients after treatment discontinuation in treated and placebo.\n"))
+
+cat(paste0("\nThe power estimate is..."))
+})
+  
+ 
+
+reactive({
+  
+res <- replicate( input$sims2, 
+      nb.power(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)) 
+mean(res<0.05)
+
+})
+
 
 ```
+ 
+Row {data-height=350}
+-------------------------------------
+   
+### A typical dataset that can be expected
+
+```{r}
+
+ renderPlot({
+  
+ n=input$N
+ k=input$k
+ mu0=input$mu0
+ eff=input$eff
+ drop1=input$d1
+ drop2=input$d2
+ fup=input$fup
+ 
+ mu1 <- eff*mu0
+ 
+  dose <- c(rep("placebo",n),rep("trt",n))
+  mu   <- c(rep(mu0,n),rep(mu1,n))
+  if (drop1==0) {drop1=0.0001}
+  if (drop2==0) {drop2=0.0001}
+  drop <- c(rep(.1,n),rep(.1,n))
+
+  f <- - rexp(2*n) / log(1-drop)
+  length <- ifelse(f>1,1,f)
+ 
+  y <-  rnbinom(n*2,  p=1/(1+ mu*length* k),      size=1/k)  +
+        rnbinom(n*2,  p=1/(1+ mu0*(1-length)*k),  size=1/k)
+
+  logleng  <- rep(0, n*2)
+
+  #addmargins(table( y,  dose))
+
+ # d <- cbind.data.frame(dose, mu, length, y, logleng)
+#  summary(MASS::glm.nb(y~dose+offset((logleng)), data=d))
+
+  trt <- y[dose %in% "trt"]
+  pla <- y[!dose %in% "trt"]
+# examine
+# par(mfrow=c(1,2))
+# trt %>% table %>% barplot() #quick and dirty
+# trt %>% table %>% prop.table
+# pla %>% table %>% barplot() #quick and dirty
+# pla %>% table %>% prop.table
+# par(mfrow=c(1,1))
+upp <- ceiling(max(prop.table(table(y))) * 100 ) 
+par(mfrow=c(1,2))
+data_perc <- t(prop.table(table(trt))) * 100    # Convert data to probability table
+barplot(data_perc, ylab = "Percent", main ="Treated", ylim=c(0,upp ))     
+data_perc <- t(prop.table(table(pla))) * 100    # Convert data to probability table
+barplot(data_perc, ylab = "Percent", main ="Placebo", ylim=c(0,upp ))     
+par(mfrow=c(1,1))
+
+})
+
+
+
+```   
+ 
+   
+### A typical result that can be expected, theta is synonymous with $\alpha$
+
+```{r}
+
+ renderPrint({
+  
+ n=input$N
+ k=input$k
+ mu0=input$mu0
+ eff=input$eff
+ drop1=input$d1
+ drop2=input$d2
+ fup=input$fup
+ 
+ mu1 <- eff*mu0
+ 
+  dose <- c(rep("placebo",n),rep("trt",n))
+  mu   <- c(rep(mu0,n),rep(mu1,n))
+  if (drop1==0) {drop1=0.0001}
+  if (drop2==0) {drop2=0.0001}
+  drop <- c(rep(.1,n),rep(.1,n))
+
+  f <- - rexp(2*n) / log(1-drop)
+  length <- ifelse(f>1,1,f)
+ 
+  y <-  rnbinom(n*2,  p=1/(1+ mu*length* k),      size=1/k)  +
+        rnbinom(n*2,  p=1/(1+ mu0*(1-length)*k),  size=1/k)
+
+  logleng  <- rep(0, n*2)
+
+  #addmargins(table( y,  dose))
+
+  d <- cbind.data.frame(dose, mu, length, y, logleng)
+  print (f <- summary(MASS::glm.nb(y~dose+offset((logleng)), data=d)))
+  
+cat(paste0("\nPlacebo rate ",round(exp(f$coef[1]),4)," and multiplicative treatement effect of ",round(exp(f$coef[2]),4),""))
+    
+})
+  
+``` 
+
 
 Paired counts
 ====
