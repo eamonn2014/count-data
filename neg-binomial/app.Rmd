@@ -132,7 +132,7 @@ po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 p
   
   # create a data frame
   my_data <- data.frame( 
-    group = rep(c("before", "after"), each = n),
+    group = rep(c("A.before", "B.after"), each = n),
     counts = c(pp1,  pp2),
     ID=rep(1:n,2)
   )
@@ -147,7 +147,7 @@ po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 p
   mix <-  p$`Pr(>Chisq)`[2]
   
   x <- summary(A)
-  rate.reduction <- 1-1/exp(x$coefficients[2,1])
+  rate.reduction <- exp(x$coefficients[2,1])
   
   intercept <- exp( x$coefficients[1,1])
   beta      <- exp( x$coefficients[2,1])
@@ -721,8 +721,8 @@ sliderInput('mu0.p', 'Placebo mean rate \u03BC', value=10,
 sliderInput('eff.p', 'Hypothesised treatment effect ', value=.75,
               min = 0.1, max = 25, step=.05, ticks=F)
 
-sliderInput('r', 'Correlation', value = c(.5),
-              min = 0, max = 1 ,step=0.05, ticks=F)
+sliderInput('r', 'Correlation', value = c(.50),
+              min = -1, max = 1 ,step=0.05, ticks=F)
  
 sliderInput('sims.p', 'Power simulations', value= 10,
               min = 10, max = 10000, step= 500, ticks=F)
@@ -746,19 +746,29 @@ reactive({
                    po.cor.power(n=input$N.p, r=input$r, mu0=input$mu0.p, eff.p=input$eff.p ) )  
 
   #print(res)
- x <- t((res))
+  x <- t((res))
   x <- as.data.frame(x)
   alpha=0.05
-  print(mean( unlist(x[,"V1"]))   )  
+ # cat("Mean treatment effect\n")
+#  print(mean( unlist(x[,"V1"]))   )  
+  cat("Median mixed Possion p-value\n")
   print(median( unlist(x[,"V2"]))  )                                      # median mix p-value
+    cat("\nPower mixed Possion model\n")
   print(table( unlist(x[,"V2"])< alpha)/input$sims.p)                     # power mix model
+  cat("\nWilcoxon signed rank test power\n")
   print(table( unlist(x[,"V3"])< alpha)/input$sims.p )                      # Wilcoxon signed rank test power
+   cat("\nT test power\n")
   print(table( unlist(x[,"V4"])< alpha)/input$sims.p )                  # ttest power
+   cat("\nT test on ranks power\n")
   print(table( unlist(x[,"V5"])< alpha)/input$sims.p )        # ttest on ranks power
+   cat("\nMean intercept\n")
   print(mean( unlist(x[,"V6"])) )  # intecept
+  cat("Mean treatment effect\n")
   print(mean( unlist(x[,"V7"]))  )    # beta
+  cat("Mean SD of differences\n")
   print(mean( unlist(x[,"V8"])) )  # sd of diff
-  # theory
+  
+  cat("Theoretical SD of differences\n")
   R <- seq(-.9,.9,.1)   # correlation
   X <- 10             # var of poisson (= mean)
   Y <- 7.5           # var of poisson (= mean)
