@@ -1,6 +1,6 @@
 ---
 title: "Illustrating negative binomial distributions"
-author: Eamonn
+author: 
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -9,7 +9,7 @@ output:
     source_code: embed
 runtime: shiny
 ---
-Dashboard
+Home
 ===
 
 ```{r global, include=FALSE}
@@ -56,12 +56,14 @@ my_rnbinom=function(n,mu,alpha){
 Column {.sidebar}
 -----------------------------------------------------------------------
 
+Count data analysis is explored...
+
 ```{r}
 
 library(shiny)
 library(utf8)
 
-sliderInput('mu', 'common  \u03BC', value=1.5,
+sliderInput('mu', 'Common  \u03BC', value=1.5,
               min = 1, max = 25, step=.5, ticks=F)
 
 sliderInput('alpha_a', '\u03B1 for red curve', value = c(0.8),
@@ -73,32 +75,36 @@ sliderInput('alpha_b', '\u03B1 for dark blue curve', value = c(0.8),
 sliderInput('alpha_d', '\u03B1 for purple curve', value = c(0.8),
               min = 0, max = 5 ,step=0.01, ticks=F)
 
-sliderInput('sims', 'simulations', 50000,
+sliderInput('sims', 'Simulations (chart 2)', 50000,
               min = 50000, max = 500000,step=50000,ticks=F)
 
 sliderInput('x_range', 'Plot x-range', value = c(0,10),
         min = 0, max = 80,step=5,ticks=F)
 
-sliderInput('y_range', 'Plot y-range', value = c(0,.45),
+sliderInput('y_range', 'Plot y-range', value = c(0,.4),
         min = 0, max = 1,step=.05,ticks=F)
 
  
 
 ```
 
-When $\alpha$ = 1, the negative binomial distribution takes the form of a
-geometric distribution, which is the discrete correlate of the continuous negative
-exponential distribution. 
-The negative binomial distribution with $\alpha$ = 0 is Poisson.
-As the mean increases, the probability of
-a zero decreases, and the more the shape approximates a Gaussian distribution.
-As the Poisson mean gets larger it approaches normality, the negative binomial distribution does not respond to larger mean values in that manner. 
+This app uses  $\alpha$. 
 
+$\alpha$ takes on positive rational values, rarely above 4 (Hilbe page 190)
+
+When  $\alpha$ approaches 0, k is infinite and Poisson emerges (move red $\alpha$ slider to 0).
+
+When  $\alpha$ > 1, k < 1 highly leads to over dispersed data ($\alpha$ big).
+
+$\alpha$ = 1/k
+
+k = 1/ $\alpha$
  
 
-Column {data-width=400}
+Column {data-width=400, height=300}
 -----------------------------------------------------------------------
-### xxxxxx
+### Chart 1
+
 
 ```{r}
 
@@ -227,7 +233,7 @@ renderPlot({
   par(mar=c(2.1,4.1,4.1,4.1))
       
   barplot(yb, xlim=c(0,high+2), ylab = "Percent", xlab="x", col='black', ylim=c(0,ymax),
-          main = paste("Poisson \u03BC=", mu, sep=""),
+          main = paste("Poisson \u03BC=", mu, ", based on common mean",sep=""),
           names.arg= as.character(xx))
 })
 
@@ -237,7 +243,7 @@ renderPlot({
 Column {data-width=400}
 -------------------------------------
 
-### Chart 3
+### Chart 2
 
 ```{r}
 
@@ -323,31 +329,29 @@ renderPlot({
   
   par(mar=c(2.1,4.1,4.1,4.1))
       
-  barplot(yb, xlim=c(0,high+2), ylab = "Percent", xlab="x", col='black',
+  barplot(yb, xlim=c(0,high+2), ylab = "Percent", xlab="x", col='red',
           ylim=c(0,ymax),
-          main =  paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep=""),
+          main =  paste("Negative Binomial \u03BC=",mu," \u03B1=",alpha_a,", based on common mean and red curve alpha",sep=""),
           names.arg= as.character(xx))
   
 })
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+   
 
 
 ```
-More
+
+Notes
 ===
+
+When $\alpha$ = 1, the negative binomial distribution takes the form of a
+geometric distribution, which is the discrete correlate of the continuous negative
+exponential distribution. 
+The negative binomial distribution with $\alpha$ = 0 is Poisson.
+As the mean increases, the probability of
+a zero decreases, and the more the shape approximates a Gaussian distribution.
+As the Poisson mean gets larger it approaches normality, the negative binomial distribution does not respond to larger mean values in that manner. 
 
 
 The binomial distribution describes the number of r successes in n trials.
@@ -371,9 +375,6 @@ When  $\alpha$>1, k is vanishingly small , k < 1 highly over dispersed ( $\alpha
 Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity.
 
 
-$\alpha$ = 1/k
-
-k =1/ $\alpha$
 
 Accordingly, all calculations in this study were conducted using $\alpha$, but all results and discussion
 are posed in terms of k?
@@ -392,4 +393,47 @@ thy dispersion is alpha in this paper example figure 1
  The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data
 
 
+
+Power
+====
+
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+
+
+```{r}
+ 
+sliderInput('mup', 'Common  \u03BC', value=1.5,
+              min = 1, max = 25, step=.5, ticks=F)
+
+sliderInput('alpha_ap', '\u03B1 for red curve', value = c(0.8),
+              min = 0, max = 5 ,step=0.01, ticks=F)
+
+sliderInput('alpha_bp', '\u03B1 for dark blue curve', value = c(0.8),
+              min = 0, max = 5 ,step=0.01, ticks=F)
+
+sliderInput('alpha_dp', '\u03B1 for purple curve', value = c(0.8),
+              min = 0, max = 5 ,step=0.01, ticks=F)
+
+sliderInput('simsp', 'Simulations (chart 2)', 50000,
+              min = 50000, max = 500000,step=50000,ticks=F)
+
+sliderInput('x_rangep', 'Plot x-range', value = c(0,10),
+        min = 0, max = 80,step=5,ticks=F)
+
+sliderInput('y_rangep', 'Plot y-range', value = c(0,.4),
+        min = 0, max = 1,step=.05,ticks=F)
+
+ 
+
+```
+
+Paired counts
+====
+ 
+
+References
+====
 
