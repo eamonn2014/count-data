@@ -730,66 +730,49 @@ sliderInput('sims.p', 'Power simulations', value= 10,
 
 ```
 
-Row {data- height=650}
+Row {data-height=650}
 -----------------------------------------------------------------------
+
 ### xxxxxxxxxxxxxxx
   
 
 ```{r, eval=TRUE}
+
+ 
 
 reactive({
   
   res <- replicate(input$sims.p, 
                    po.cor.power(n=input$N.p, r=input$r, mu0=input$mu0.p, eff.p=input$eff.p ) )  
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# read outs, this will not work as I change the function to usse the bendix simulation approach
-  alpha <- 0.05
-  x <- NULL
-  x <- t((res))
+  #print(res)
+ x <- t((res))
   x <- as.data.frame(x)
-  mean( unlist(x[,"V1"]))                      # mean rate reduction (%)
-  median( unlist(x[,"V2"]))                     # median Wilcoxon p-value
-  table( unlist(x[,"V2"])< alpha)/sims                     # power mix model
-  table( unlist(x[,"V3"])<alpha)/sims # Wilcoxon signed rank test power
-  table( unlist(x[,"V4"])<alpha)/sims                    # ttest power
-  table( unlist(x[,"V5"])<alpha)/sims           # ttest on ranks power
-  # 
-  mean( unlist(x[,"V6"]))   # intecept
-  mean( unlist(x[,"V7"]))      # beta
-  mean( unlist(x[,"V8"]))   # sd of diff
-  
+  alpha=0.05
+  print(mean( unlist(x[,"V1"]))   )  
+  print(median( unlist(x[,"V2"]))  )                                      # median mix p-value
+  print(table( unlist(x[,"V2"])< alpha)/input$sims.p)                     # power mix model
+  print(table( unlist(x[,"V3"])< alpha)/input$sims.p )                      # Wilcoxon signed rank test power
+  print(table( unlist(x[,"V4"])< alpha)/input$sims.p )                  # ttest power
+  print(table( unlist(x[,"V5"])< alpha)/input$sims.p )        # ttest on ranks power
+  print(mean( unlist(x[,"V6"])) )  # intecept
+  print(mean( unlist(x[,"V7"]))  )    # beta
+  print(mean( unlist(x[,"V8"])) )  # sd of diff
   # theory
   R <- seq(-.9,.9,.1)   # correlation
   X <- 10             # var of poisson (= mean)
   Y <- 7.5           # var of poisson (= mean)
-  cbind(R,   sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R)))
+  print(cbind(R,   sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R))))
+ 
+  
+  
+ # c(rate.reduction,mix , wil,t.t,  ttor,intercept, beta ,sdd)
 
 })
 
 ```
 
-Row {data-height=350}
--------------------------------------
-   
-### xxxxxxxxxxxxxxxx
 
-```{r}
-
-
- 
-
-```
-
-Row {data-height=350}
--------------------------------------
-   
-### xxxxxxxxxxxxxxxx
-
-```{r}
-
-
-```
 References
 ====
 
