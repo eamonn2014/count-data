@@ -481,6 +481,11 @@ renderPlot({
 Notes
 ===
 
+cor neg binomial not working
+explain corr poisson approach <- many packages
+understand neg binomial rct rnbinom inputs
+gamma - see basics plot
+
 When $\alpha$ = 1, the negative binomial distribution takes the form of a
 geometric distribution, which is the discrete correlate of the continuous negative
 exponential distribution. 
@@ -585,7 +590,7 @@ Row {data- height=650}
 
 reactive({
   
-cat(paste0("A RCT with 1:1 randomisation is being planned to investigate the rate of asthma exacerbations with ",input$N," patients per arm.\n"))
+cat(paste0("A RCT with 1:1 randomisation is being planned to investigate an intervention on the rate of asthma exacerbations with ",input$N," patients per arm.\n"))
 
 cat(paste0("The negative binomial model will be used as patient heterogeneity of exacerbations beyond that captured by patient level covariates is expected.\nWe will use the natural log of duration of follow up time as an offset variable, the duration of follow up, ",input$fup, " will be the planned duration of follow up for all patients (see slider)."))
 
@@ -710,7 +715,7 @@ cat(paste0("\nPlacebo rate ",round(exp(f$coef[1]),4)," and multiplicative treate
   
 ``` 
 
-Paired counts
+Poisson paired counts
 ====
 
 Column {.sidebar}
@@ -740,12 +745,27 @@ sliderInput('sims.p', 'Power simulations', value= 10,
 Row {data-height=650}
 -----------------------------------------------------------------------
 
-### xxxxxxxxxxxxxxx
+### Single arm pre post study design
   
 
 ```{r, eval=TRUE}
 
  
+reactive({
+  
+cat(paste0("This example of paired study whose outcome measure is count of events and does not use a concurrent control, so is not a great study design. Nevertheless, we have ",input$N.p," subjects assessed before and after an intervention. \nThe Poisson model will be used, the observation time is the same for the the pre and post perioids.\n"))
+
+cat(paste0("We will simulate the data based on a expected rate before the intervention of, ",input$mu0.p, " and an hypothesised effect of intervention ",input$eff.p,". \nWe also take into acount the correlation betwenn obervations for individuals, the starting value is" ,input$r,".\n")) 
+
+cat(paste0("\nWe report the average p-value from a mixed Poisson model and the power, Wilcoxon signed rank test power, T test power, T test on ranks power, intercept, treatment effect and sd of differences. \nWe also quote the theoretical SD of differences."))
+
+cat(paste0("\nTo generate correlated Poisson variables we..."))
+cat(paste0("\n1) Sample two correlated N(0, 1) distributions from a multivariate normal distribution."))
+cat(paste0("\n2) Transform them to correlated Uniform(0, 1) distributions with the normal CDF."))
+cat(paste0("\n3) Transform them to any correlated probability distribution desired with that probability distribution’s inverse CDF!"))
+ 
+})
+
 
 reactive({
   
@@ -759,29 +779,67 @@ reactive({
   alpha=0.05
  # cat("Mean treatment effect\n")
 #  print(mean( unlist(x[,"V1"]))   )  
-  cat("Median mixed Possion p-value\n")
-  print(median( unlist(x[,"V2"]))  )                                    # median mix p-value
-    cat("\nPower mixed Possion model\n")
-  print(table( unlist(x[,"V2"])< alpha)/input$sims.p)                   # power mix model
-  cat("\nWilcoxon signed rank test power\n")
-  print(table( unlist(x[,"V3"])< alpha)/input$sims.p )                  # Wilcoxon signed rank test power
-   cat("\nT test power\n")
-  print(table( unlist(x[,"V4"])< alpha)/input$sims.p )                  # ttest power
-   cat("\nT test on ranks power\n")
-  print(table( unlist(x[,"V5"])< alpha)/input$sims.p )                  # ttest on ranks power
-   cat("\nMean intercept\n")
-  print(mean( unlist(x[,"V6"])) )  # intercept
-  cat("Mean treatment effect\n")
-  print(mean( unlist(x[,"V7"]))  )  # beta
-  cat("Mean SD of differences\n")
-  print(mean( unlist(x[,"V8"])) )  # sd of diff
+  # cat("Median mixed Poisson p-value\n")
+  # print(median( unlist(x[,"V2"]))  )                                    # median mix p-value
+  #   cat("\nPower mixed Poisson model\n")
+  # print(table( unlist(x[,"V2"])< alpha)/input$sims.p)                   # power mix model
+  # cat("\nWilcoxon signed rank test power\n")
+  # print(table( unlist(x[,"V3"])< alpha)/input$sims.p )                  # Wilcoxon signed rank test power
+  #  cat("\nT test power\n")
+  # print(table( unlist(x[,"V4"])< alpha)/input$sims.p )                  # ttest power
+  #  cat("\nT test on ranks power\n")
+  # print(table( unlist(x[,"V5"])< alpha)/input$sims.p )                  # ttest on ranks power
+  #  cat("\nMean intercept\n")
+  # print(mean( unlist(x[,"V6"])) )  # intercept
+  # cat("Mean treatment effect\n")
+  # print(mean( unlist(x[,"V7"]))  )  # beta
+  # cat("Mean SD of differences\n")
+  # print(mean( unlist(x[,"V8"])) )  # sd of diff
   
-  cat("Theoretical SD of differences\n")
-  R <- seq(-.9,.9,.1)   # correlation
-  X <- 10               # var of poisson (= mean)
-  Y <- 7.5              # var of poisson (= mean)
-  print(cbind(R,   sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R))))
+ # cat("Theoretical SD of differences\n")
+  R <- input$r# seq(-.9,.9,.1)   # correlation
+  X <- input$mu0.p               # var of poisson (= mean)
+  Y <- input$mu0.p*input$eff.p              # var of poisson (= mean)
+  #print(cbind(R,   sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R))))
  
+  
+  
+  cat(paste0("Evaluations are based on a stated correlation, starting value "
+             ,input$r,"\nThe median p-value from a mixed effects Poisson model is "
+             ,median( unlist(x[,"V2"]))   , 
+             ". \nPower based on the mixed model is "
+             ,input$eff.p,
+             #"\nEvaluations are based on a stated correlation, starting value "
+             #,input$r,
+             
+    #   table( unlist(x[,"V2"])< alpha)/input$sims.p)[1][[1]],
+      
+      "\nPower based on the Wilcoxon signed rank test power is ",
+      (table( unlist(x[,"V3"])< alpha)/input$sims.p)[2][[1]],
+      "\nPower based on the t-test is ",
+      (table( unlist(x[,"V4"])< alpha)/input$sims.p)[2][[1]],
+      "\nPower based on the t-test of ranks is ",
+      (table( unlist(x[,"V5"])< alpha)/input$sims.p)[2][[1]],
+    " \nThe mean intercept is ",
+          mean( unlist(x[,"V6"])),
+       "\nThe mean treatement effect is ",
+          mean( unlist(x[,"V7"])),
+      "\nMean SD of differences is ", 
+     mean( unlist(x[,"V8"])),  
+    
+     "\nThe theoretical sd of differences based on Poisson variances and stated correlation is ",
+    sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R)),
+    "\n"))
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
  # c(rate.reduction,mix , wil,t.t,  ttor,intercept, beta ,sdd)
