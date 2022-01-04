@@ -884,7 +884,7 @@ GenerateMultivariatePoisson(p=2, samples=input$N.p, R=matrix(c(1, input$r,
 
 
 
- renderPlot({
+ renderPlot({   
    
  dat2 <- dat2()
 
@@ -943,7 +943,11 @@ grid.arrange(plot1, plot2, ncol=2)
 ```
 
  
+<<<<<<< HEAD
 ### Typical expected dataset - Bland Altman plot, square root transformation
+=======
+### Typical expected dataset - Bland Altman plot
+>>>>>>> c2cf3989cf113b233c8710d7ad0e965d326533fc
 
 ```{r}
 
