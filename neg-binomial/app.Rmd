@@ -744,7 +744,7 @@ sliderInput('sims.p', 'Power simulations', value= 10,
 Row {data-height=275}
 -----------------------------------------------------------------------
 
-### Single arm pre post study design
+### Single arm pre post study design simulation
   
 
 ```{r, eval=TRUE}
@@ -752,16 +752,16 @@ Row {data-height=275}
  
 reactive({
   
-cat(paste0("This is an example of paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. \nNevertheless, we have ",input$N.p," subjects assessed before and after an intervention. \nThe Poisson model will be used, the observation time is the same for the the pre and post periods.\n"))
+cat(paste0("This is an example of paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. \nNevertheless, we have ",input$N.p," subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods.\n"))
 
-cat(paste0("We will simulate the data based on a expected rate before the intervention of, ",input$mu0.p, " and an hypothesised effect of intervention ",input$eff.p,". \nWe also take into acount the correlation betwenn obervations for individuals, the starting value is " ,input$r,".\n")) 
+cat(paste0("We will simulate the data based on a expected rate before the intervention of, ",input$mu0.p, " and an hypothesised effect of intervention ",input$eff.p,", so a hypothesised mean rate of ",input$mu0.p*input$eff.p," for the intervention.\nWe also take into acount the correlation betwenn obervations for individuals, the starting value is " ,input$r,".\n")) 
 
-cat(paste0("\nWe report the average p-value from a mixed Poisson model and the power, Wilcoxon signed rank test power, T test power, T test on ranks power, intercept, treatment effect and sd of differences. \nWe also quote the theoretical SD of differences."))
+cat(paste0("\nWe report the average p-value from a mixed Poisson model and the power, Wilcoxon signed rank test power, T test power, T test on ranks power, intercept, treatment effect and SD of differences. \nWe also quote the theoretical SD of differences."))
 
 cat(paste0("\nTo generate correlated Poisson variables we..."))
 cat(paste0("\n1) Sample two correlated N(0, 1) distributions from a multivariate normal distribution."))
-cat(paste0("\n2) Transform them to correlated Uniform(0, 1) distributions with the normal CDF."))
-cat(paste0("\n3) Transform them to any correlated probability distribution desired with that probability distribution’s inverse CDF!"))
+cat(paste0("\n2) Transform them to correlated Uniform(0, 1) distributions using the normal CDF."))
+cat(paste0("\n3) Transform them to the desired correlated probability distribution desired using that probability distribution’s inverse CDF!"))
  
 })
 
@@ -813,15 +813,15 @@ reactive({
  
 
   
-  cat(paste0("Evaluations are based on the stated correlation, starting value "
+  cat(paste0("Evaluations are based correlation, starting value "
              ,input$r,"\nThe median p-value from a mixed effects Poisson model is "
              ,median( unlist(x[,"V2"]))   , 
-             ". \nPower based on the mixed model is "
-             ,input$eff.p,
+             ". \nPower based on the mixed model is ",
+             #,input$eff.p,
              #"\nEvaluations are based on a stated correlation, starting value "
              #,input$r,
              
-    #   table( unlist(x[,"V2"])< alpha)/input$sims.p)[1][[1]],
+      (table( unlist(x[,"V2"])< alpha)/input$sims.p)[2][[1]],
       
       "\nPower based on the Wilcoxon signed rank test power is ",
       (table( unlist(x[,"V3"])< alpha)/input$sims.p)[2][[1]],
@@ -848,10 +848,10 @@ reactive({
 
 ```
 
-Row {data-height=300}
+Column {data-width=300}
 -----------------------------------------------------------------------
 
-### Typical expected dataset
+### Typical expected dataset (jitter added to counts)
   
 
 ```{r, eval=TRUE}
@@ -900,7 +900,7 @@ d <- data.frame(y = c(before, after),
 
 #set.seed(321)    
 d$xj <- jitter(d$x, amount=.03)
-ggplot(data=d, aes(y=y) ) +
+AA <- ggplot(data=d, aes(y=y) ) +
   geom_boxplot(aes(x=x, group=x), width=0.2, outlier.shape = NA) +
   geom_line(aes(x=xj, group=id),  colour='pink', alpha=.5) +
   geom_point(aes(x=xj)) +
@@ -910,15 +910,36 @@ ggplot(data=d, aes(y=y) ) +
  #   ggtitle("Typical expected dataset") 
 #~~~~~~~~~~~~~~~~~~~~~
 
+ d <- data.frame(y = B ,
+                x = A)
+
+set.seed(1) 
+
+m <- max(A,B)
+
+BB <- ggplot(d, aes(x, y)) +
+  geom_jitter(width = 0.1, height = 0.1) +
+ scale_x_continuous(breaks=c(0:m), limits=c(0,m)) +
+ scale_y_continuous(breaks=c(0:m), limits=c(0,m)) +
+  xlab("Pre count") +ylab("Post count") +
+ #xlim (0, m) + ylim(0, m) +
+  theme_bw() + theme(legend.position = "none")#
+
+
+
+require(gridExtra)
+plot1 <- AA
+plot2 <- BB
+grid.arrange(plot1, plot2, ncol=2)
+
+
+
+
 })
 
 
 
-
-
-
-
-
+ 
 ```
 
 
