@@ -158,6 +158,8 @@ po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 p
   pp1 <- qpois(U[, 1], L1)          # correlated poisson
   pp2 <- qpois(U[, 2], L2)          # correlated poisson
   
+  cor. <- cor(pp1,pp2)
+  
   # create a data frame
   my_data <- data.frame( 
     group = rep(c("A.before", "B.after"), each = n),
@@ -205,7 +207,7 @@ po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 p
   
   
   
-  c(rate.reduction,mix , wil,t.t,  ttor,intercept, beta ,sdd, wile)
+  c(rate.reduction,mix , wil,t.t,  ttor,intercept, beta ,sdd, wile, cor.)
   
 }
 
@@ -746,7 +748,7 @@ reactive({
 
   
   cat(paste0("Evaluations based on ",input$sims.p," simulations take into consideration correlation, the default starting value is "
-       ,input$r,"\nThe median p-value from a mixed effects Poisson model is "
+       ,input$r,". The observed mean correlation is ",mean( unlist(x[,"V10"])), "\nThe median p-value from a mixed effects Poisson model is "
        ,median( unlist(x[,"V2"]))   , 
        ". \nPower based on the mixed model Wald test is ",
              
@@ -804,6 +806,7 @@ Row {.tabset .tabset-fade}
   # boxplot
   A <- dx[,1]
   B <- dx[,2]
+  m <- max(A,B)
   before <- A + runif(length(dx[,1]),-.2,.2)
   after <-  B + runif(length(dx[,2]),-.2,.2)
   n <- length(before)
@@ -816,9 +819,10 @@ Row {.tabset .tabset-fade}
   AA <- ggplot(data=d, aes(y=y) ) +
     geom_boxplot(aes(x=x, group=x), width=0.2, outlier.shape = NA) +
     geom_line(aes(x=xj, group=id),  colour='pink', alpha=.5) +
-    geom_point(aes(x=xj)) +
+    geom_point(aes(x=xj), size=2) +
     xlab("Phase") + ylab("Count") +  
     scale_x_continuous(breaks=c(1,2), labels=c("Before", "After"), limits=c(0.5, 2.5)) +
+     scale_y_continuous(breaks=c(0:m), limits=c(0,m)) +
     theme_bw() + theme(legend.position = "none") 
     
 #~~~~~~~~~~~~~~~~~~~~~
@@ -828,14 +832,14 @@ Row {.tabset .tabset-fade}
      d <- data.frame(y = B ,
                      x = A)
 
-      m <- max(A,B)
-    
+#    
       BB <- ggplot(d, aes(x, y)) +
-      geom_jitter(width = 0.1, height = 0.1) +
+      geom_jitter(width = 0.1, height = 0.1, size=2) +
       scale_x_continuous(breaks=c(0:m), limits=c(0,m)) +
       scale_y_continuous(breaks=c(0:m), limits=c(0,m)) +
       xlab("Before count") +ylab("After count") +
-      theme_bw() + theme(legend.position = "none")#
+      theme_bw() + theme(legend.position = "none") +
+        geom_abline(intercept=0, slope=1)
 
       plot1 <- AA
       plot2 <- BB
