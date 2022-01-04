@@ -14,10 +14,18 @@ Home
 
 ```{r global, include=FALSE}
 
-  library(MASS) # for neg binomial analysis
+  library(MASS)  # for neg binomial analysis and correlated data generation
   library(ggplot2)
   library(lme4)
+  library(shiny)
+  library(utf8)  # codes for Greek letters
+  library(MethComp)
+  library(gridExtra)
   lwd.=3
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# another dnbinom Function   
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  my_dnbinom=function(x,mu,alpha){
   m = mu
@@ -49,6 +57,10 @@ my_rnbinom=function(n,mu,alpha){
   return(rnbinom(n,size=size,prob=prob))
 }
 
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ # generate cor data function
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 GenerateMultivariatePoisson<-function(p, samples, R, lambda){
   normal_mu=rep(0, p)
   normal = mvrnorm(samples, normal_mu, R)
@@ -56,6 +68,9 @@ GenerateMultivariatePoisson<-function(p, samples, R, lambda){
   pois=t(qpois(t(unif), lambda))
   return(pois)
 }
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ # another function to generate cor data 
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   mvrnorm <- function(n = 1, mu = 0, Sigma) {
     nvars <- nrow(Sigma)
@@ -150,9 +165,7 @@ po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 p
     ID=rep(1:n,2)
   )
   
-  # analyse
-  # https://stats.stackexchange.com/questions/71194/fitting-a-poisson-distribution-with-lme4-and-nlme
-  # https://stats.stackexchange.com/questions/27869/fitting-a-poisson-glm-mixed-model-with-a-random-slope-and-intercept
+
    
   A <- glmer(counts ~ group + (1|ID), data=my_data, family="poisson")
  # B <- glmer(counts ~ 1     + (1|ID), data=my_data, family="poisson")  # dont use LRT to speed up sims
@@ -212,29 +225,27 @@ Count data analysis is explored...
 
 ```{r}
 
-library(shiny)
-library(utf8)
 
-sliderInput('mu', 'Common  \u03BC', value=1.5,
-              min = 1, max = 25, step=.5, ticks=F)
-
-sliderInput('alpha_a', '\u03B1 for red curve', value = c(0.8),
-              min = 0, max = 5 ,step=0.01, ticks=F)
-
-sliderInput('alpha_b', '\u03B1 for dark blue curve', value = c(0.8),
-              min = 0, max = 5 ,step=0.01, ticks=F)
-
-sliderInput('alpha_d', '\u03B1 for purple curve', value = c(0.8),
-              min = 0, max = 5 ,step=0.01, ticks=F)
-
-sliderInput('sims', 'Simulations (chart 2)', 50000,
-              min = 50000, max = 500000,step=50000,ticks=F)
-
-sliderInput('x_range', 'Plot x-range', value = c(0,10),
-        min = 0, max = 80,step=5,ticks=F)
-
-sliderInput('y_range', 'Plot y-range', value = c(0,.4),
-        min = 0, max = 1,step=.05,ticks=F)
+  sliderInput('mu', 'Common  \u03BC', value=1.5,
+                min = 1, max = 25, step=.5, ticks=F)
+  
+  sliderInput('alpha_a', '\u03B1 for red curve', value = c(0.8),
+                min = 0, max = 5 ,step=0.01, ticks=F)
+  
+  sliderInput('alpha_b', '\u03B1 for dark blue curve', value = c(0.8),
+                min = 0, max = 5 ,step=0.01, ticks=F)
+  
+  sliderInput('alpha_d', '\u03B1 for purple curve', value = c(0.8),
+                min = 0, max = 5 ,step=0.01, ticks=F)
+  
+  sliderInput('sims', 'Simulations (chart 2)', 50000,
+                min = 50000, max = 500000,step=50000,ticks=F)
+  
+  sliderInput('x_range', 'Plot x-range', value = c(0,10),
+          min = 0, max = 80,step=5,ticks=F)
+  
+  sliderInput('y_range', 'Plot y-range', value = c(0,.4),
+          min = 0, max = 1,step=.05,ticks=F)
 
  
 
@@ -331,7 +342,7 @@ renderPlot({
   lines(x[l],nor[l],col=5,lwd=lwd.,type="l")
   lines(x[l],yd[l], col=6,lwd=lwd.,type="l")
    
-  # https://stackoverflow.com/questions/6044800/adding-greek-character-to-axis-title
+ 
   apois = paste("Poisson \u03BC=",mu,sep="")
   anegbinom_a = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep="")
   anegbinom_b = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,sep="")
@@ -476,59 +487,7 @@ renderPlot({
 
 
 ```
-
-Notes
-===
-
-cor neg binomial not working
-explain corr poisson approach <- many packages
-understand neg binomial rct rnbinom inputs
-gamma - see basics plot
-
-When $\alpha$ = 1, the negative binomial distribution takes the form of a
-geometric distribution, which is the discrete correlate of the continuous negative
-exponential distribution. 
-The negative binomial distribution with $\alpha$ = 0 is Poisson.
-As the mean increases, the probability of
-a zero decreases, and the more the shape approximates a Gaussian distribution.
-As the Poisson mean gets larger it approaches normality, the negative binomial distribution does not respond to larger mean values in that manner. 
-
-
-The binomial distribution describes the number of r successes in n trials.
-
-The geometric distribution describes the number of failures before the first success, r.
-
-The negative binomial distribution describes the number of failures before the rth success. (Hilbe page 194)
-
-Confusingly, the term ‘dispersion parameter’ can refer to either k or $\alpha$ ; other terms for k include ‘shape
-parameter’ and ‘clustering coefficient’.
-
-The only restriction placed on  $\alpha$ is that it take positive rational values,
-rarely above 4 (Hilbe page 190)
-
  
-
-Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity.
-
-
-
-Accordingly, all calculations in this study were conducted using $\alpha$, but all results and discussion
-are posed in terms of k?
-
-In this study ML estimation was conducted for the parameter $\alpha$,
-but results are reported in terms of k = 1/ $\alpha$ because k is more
-familiar to epidemiologists and ecologists. Estimates of $\alpha$ were
-restricted to positive values, because the allowed range for k was (0,infinity). 
-
-
-file:///C:/Users/Lenovo/OneDrive/Documents/PAPERS/COUNT%20DATA/TRISTAN%20study%20Keene%202007.pdf
-thy dispersion is alpha in this paper example figure 1
-
- The larger the gamma shape parameter, the more dispersed is the distribution
- 
- The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data
-
-
 
 Negative binomial power
 ====
@@ -536,7 +495,7 @@ Negative binomial power
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-Use the inputs below to simulate a RCT with a count outcome measure that is analysed using a negative binomial model to evaluate the treatment effect  
+Use the inputs below to simulate an RCT with a count outcome measure. We estimate the treatment effect using a negative binomial model   
 
 ```{r}
  
@@ -589,9 +548,9 @@ cat(paste0("\nThe power estimate is..."))
  
 reactive({
   
-res <- replicate( input$sims2, 
-      nb.power(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)) 
-mean(res<0.05)
+  res <- replicate( input$sims2, 
+        nb.power(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)) 
+  mean(res<0.05)
 
 })
 
@@ -746,7 +705,7 @@ reactive({
   
 cat(paste0("This is an example of paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. \nNevertheless, we have ",input$N.p," subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods.\n"))
 
-cat(paste0("We will simulate the data based on a expected rate before the intervention of, ",input$mu0.p, " and an hypothesised effect of intervention ",input$eff.p,", so a hypothesised mean rate of ",input$mu0.p*input$eff.p," for the intervention.\nWe also take into account the correlation between obervations for the same individual, the starting value is " ,input$r,".\n")) 
+cat(paste0("We will simulate the data based on a expected rate before the intervention of ",input$mu0.p, " and an hypothesised effect of intervention ",input$eff.p,", so a hypothesised mean rate of ",input$mu0.p*input$eff.p," for the intervention.\nWe also take into account the correlation between obervations for the same individual, the starting value is " ,input$r,".\n")) 
 
 cat(paste0("\nWe report the average p-value from a mixed Poisson model and the power, Wilcoxon signed rank test power, T test power, T test on ranks power, intercept, treatment effect and SD of differences. \nWe also quote the theoretical SD of differences."))
 
@@ -826,16 +785,13 @@ Row {.tabset .tabset-fade}
 
 ```{r, eval=TRUE}
 
-#https://stackoverflow.com/questions/52225348/shiny-flexdashboard-reference-object-in-new-tabset#52225733
 
    dat2 <- reactive(
  
     GenerateMultivariatePoisson(p=2, samples=input$N.p, R=matrix(c(1, input$r, 
                                                                      input$r, 1), 2, 2), 
                                 lambda=c(input$mu0.p, input$mu0.p*input$eff.p))
-     
-     
-  )
+    )
 
 
 
@@ -844,9 +800,8 @@ Row {.tabset .tabset-fade}
   dat2 <- dat2()
 
   dx <- dat2
-   
-   
 
+  # boxplot
   A <- dx[,1]
   B <- dx[,2]
   before <- A + runif(length(dx[,1]),-.2,.2)
@@ -856,39 +811,35 @@ Row {.tabset .tabset-fade}
                   x = rep(c(1,2), each=n),
                   id = factor(rep(1:n,2)))
 
-#set.seed(321)    
-d$xj <- jitter(d$x, amount=.03)
-AA <- ggplot(data=d, aes(y=y) ) +
-  geom_boxplot(aes(x=x, group=x), width=0.2, outlier.shape = NA) +
-  geom_line(aes(x=xj, group=id),  colour='pink', alpha=.5) +
-  geom_point(aes(x=xj)) +
-  xlab("Phase") + ylab("Count") + #title("Typical expected dataset") +
-  scale_x_continuous(breaks=c(1,2), labels=c("Before", "After"), limits=c(0.5, 2.5)) +
-  theme_bw() + theme(legend.position = "none")# +
- #   ggtitle("Typical expected dataset") 
+  
+  d$xj <- jitter(d$x, amount=.03)
+  AA <- ggplot(data=d, aes(y=y) ) +
+    geom_boxplot(aes(x=x, group=x), width=0.2, outlier.shape = NA) +
+    geom_line(aes(x=xj, group=id),  colour='pink', alpha=.5) +
+    geom_point(aes(x=xj)) +
+    xlab("Phase") + ylab("Count") +  
+    scale_x_continuous(breaks=c(1,2), labels=c("Before", "After"), limits=c(0.5, 2.5)) +
+    theme_bw() + theme(legend.position = "none") 
+    
 #~~~~~~~~~~~~~~~~~~~~~
+  
+     # scatterplot
 
- d <- data.frame(y = B ,
-                x = A)
+     d <- data.frame(y = B ,
+                     x = A)
 
-set.seed(1) 
+      m <- max(A,B)
+    
+      BB <- ggplot(d, aes(x, y)) +
+      geom_jitter(width = 0.1, height = 0.1) +
+      scale_x_continuous(breaks=c(0:m), limits=c(0,m)) +
+      scale_y_continuous(breaks=c(0:m), limits=c(0,m)) +
+      xlab("Before count") +ylab("After count") +
+      theme_bw() + theme(legend.position = "none")#
 
-m <- max(A,B)
-
-BB <- ggplot(d, aes(x, y)) +
-  geom_jitter(width = 0.1, height = 0.1) +
- scale_x_continuous(breaks=c(0:m), limits=c(0,m)) +
- scale_y_continuous(breaks=c(0:m), limits=c(0,m)) +
-  xlab("Before count") +ylab("After count") +
- #xlim (0, m) + ylim(0, m) +
-  theme_bw() + theme(legend.position = "none")#
-
-
-
-require(gridExtra)
-plot1 <- AA
-plot2 <- BB
-grid.arrange(plot1, plot2, ncol=2)
+      plot1 <- AA
+      plot2 <- BB
+      grid.arrange(plot1, plot2, ncol=2)
 
 
 })
@@ -907,28 +858,22 @@ grid.arrange(plot1, plot2, ncol=2)
    
     d <- dat2()
 
-#BAplot
-require(MethComp)
+    my_data <- data.frame( 
+      group = rep(c("before", "after"), each = input$N.p),
+      counts = c(d[,1],  d[,2]),
+      ID=rep(1:input$N.p,2)
+    )
 
-my_data <- data.frame( 
-  group = rep(c("before", "after"), each = input$N.p),
-  counts = c(d[,1],  d[,2]),
-  ID=rep(1:input$N.p,2)
-)
-
-m <- Meth(my_data,meth="group",item="ID",repl=NULL,y="counts",print=TRUE)
-
-BA.plot( m, model=NULL, repl.conn=TRUE, col.lines="blue",
-         axlim=c(0,20), diflim=c(-20,20), xaxs="i", yaxs="i",
-         las=1, eqn=FALSE, dif.type="lin", pl.type="BA", sd.type="lin",
-         grid=1:9*10, digits=3,font.eqn=1 , Transform='sqrt') 
-
+    m <- Meth(my_data,meth="group",item="ID",repl=NULL,y="counts",print=TRUE)
+    
+    BA.plot( m, model=NULL, repl.conn=TRUE, col.lines="blue",
+             axlim=c(0,20), diflim=c(-20,20), xaxs="i", yaxs="i",
+             las=1, eqn=FALSE, dif.type="lin", pl.type="BA", sd.type="lin",
+             grid=1:9*10, digits=3,font.eqn=1 , Transform='sqrt') 
 
 })
 
-
  
-
 
 ```
 
@@ -988,6 +933,11 @@ thy dispersion is alpha in this paper example figure 1
 
 References
 ====
+ 
+``` 
+ 
+    https://stackoverflow.com/questions/52225348/shiny-flexdashboard-reference-object-in-new-tabset#52225733
+    https://stats.stackexchange.com/questions/71194/fitting-a-poisson-distribution-with-lme4-and-nlme
+    https://stats.stackexchange.com/questions/27869/fitting-a-poisson-glm-mixed-model-with-a-random-slope-and-intercept
+    https://stackoverflow.com/questions/6044800/adding-greek-character-to-axis-title
 
-```
-https://stackoverflow.com/questions/52225348/shiny-flexdashboard-reference-object-in-new-tabset#52225733
