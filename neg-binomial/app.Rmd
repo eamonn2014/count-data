@@ -848,7 +848,8 @@ reactive({
 
 ```
 
-Column {data-width=300}
+   
+Row {.tabset .tabset-fade}
 -----------------------------------------------------------------------
 
 ### Typical expected dataset (jitter added to counts)
@@ -921,7 +922,7 @@ BB <- ggplot(d, aes(x, y)) +
   geom_jitter(width = 0.1, height = 0.1) +
  scale_x_continuous(breaks=c(0:m), limits=c(0,m)) +
  scale_y_continuous(breaks=c(0:m), limits=c(0,m)) +
-  xlab("Pre count") +ylab("Post count") +
+  xlab("Before count") +ylab("After count") +
  #xlim (0, m) + ylim(0, m) +
   theme_bw() + theme(legend.position = "none")#
 
@@ -933,13 +934,42 @@ plot2 <- BB
 grid.arrange(plot1, plot2, ncol=2)
 
 
+})
+
+
+```
+
+ 
+### Typical expected dataset (jitter added to counts)
+
+```{r}
+
+
+ renderPlot({
+   
+   
+#BAplot
+require(MethComp)
+
+my_data <- data.frame( 
+  group = rep(c("before", "after"), each = input$N.p),
+  counts = c(d[,1],  d[,2]),
+  ID=rep(1:n,2)
+)
+
+m <- Meth(my_data,meth="group",item="ID",repl=NULL,y="counts",print=TRUE)
+
+BA.plot( m, model=NULL, repl.conn=TRUE, col.lines="blue",
+         axlim=c(0,20), diflim=c(-10,10), xaxs="i", yaxs="i",
+         las=1, eqn=FALSE, dif.type="lin", pl.type="BA", sd.type="lin",
+         grid=1:9*10, digits=3,font.eqn=1) 
 
 
 })
 
 
 
- 
+
 ```
 
 
