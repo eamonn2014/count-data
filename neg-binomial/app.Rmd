@@ -942,9 +942,11 @@ grid.arrange(plot1, plot2, ncol=2)
 
 ```
 
+
 ### Typical expected dataset - Bland Altman plot, square root transformation
  
-
+=======
+ 
 ```{r}
 
 
