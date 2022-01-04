@@ -937,7 +937,7 @@ grid.arrange(plot1, plot2, ncol=2)
 ```
 
  
-### Bland Altman plot
+### Typical expected dataset - Bland Altman plot
 
 ```{r}
 
@@ -958,7 +958,7 @@ my_data <- data.frame(
 m <- Meth(my_data,meth="group",item="ID",repl=NULL,y="counts",print=TRUE)
 
 BA.plot( m, model=NULL, repl.conn=TRUE, col.lines="blue",
-         axlim=c(0,20), diflim=c(-10,10), xaxs="i", yaxs="i",
+         axlim=c(0,20), diflim=c(-20,20), xaxs="i", yaxs="i",
          las=1, eqn=FALSE, dif.type="lin", pl.type="BA", sd.type="lin",
          grid=1:9*10, digits=3,font.eqn=1) 
 
@@ -975,4 +975,4 @@ References
 ====
 
 ```
-
+https://stackoverflow.com/questions/52225348/shiny-flexdashboard-reference-object-in-new-tabset#52225733
