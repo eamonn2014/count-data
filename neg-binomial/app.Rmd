@@ -531,9 +531,8 @@ thy dispersion is alpha in this paper example figure 1
 
 
 
-Power
+Negative binomial power
 ====
-
 
 Column {.sidebar}
 -----------------------------------------------------------------------
@@ -725,13 +724,13 @@ Column {.sidebar}
 
 
 sliderInput('N.p', 'Patients per arm', value=22,
-              min = 10, max = 10000, step=5, ticks=F)
+              min = 10, max = 200, step=5, ticks=F)
 
 sliderInput('mu0.p', 'Placebo mean rate \u03BC', value=10,
               min = 0.1, max = 25, step=.05, ticks=F)
 
-sliderInput('eff.p', 'Hypothesised treatment effect ', value=.75,
-              min = 0.1, max = 25, step=.05, ticks=F)
+sliderInput('eff.p', 'Hypothesised treatment effect ', value=.75,  # 1/2 ing to doubling
+              min = 0.5, max = 2, step=.05, ticks=F)
 
 sliderInput('r', 'Correlation', value = c(.50),
               min = -1, max = 1 ,step=0.05, ticks=F)
@@ -742,7 +741,7 @@ sliderInput('sims.p', 'Power simulations', value= 10,
 
 ```
 
-Row {data-height=650}
+Row {data-height=275}
 -----------------------------------------------------------------------
 
 ### Single arm pre post study design
@@ -753,9 +752,9 @@ Row {data-height=650}
  
 reactive({
   
-cat(paste0("This example of paired study whose outcome measure is count of events and does not use a concurrent control, so is not a great study design. Nevertheless, we have ",input$N.p," subjects assessed before and after an intervention. \nThe Poisson model will be used, the observation time is the same for the the pre and post perioids.\n"))
+cat(paste0("This is an example of paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. \nNevertheless, we have ",input$N.p," subjects assessed before and after an intervention. \nThe Poisson model will be used, the observation time is the same for the the pre and post periods.\n"))
 
-cat(paste0("We will simulate the data based on a expected rate before the intervention of, ",input$mu0.p, " and an hypothesised effect of intervention ",input$eff.p,". \nWe also take into acount the correlation betwenn obervations for individuals, the starting value is" ,input$r,".\n")) 
+cat(paste0("We will simulate the data based on a expected rate before the intervention of, ",input$mu0.p, " and an hypothesised effect of intervention ",input$eff.p,". \nWe also take into acount the correlation betwenn obervations for individuals, the starting value is " ,input$r,".\n")) 
 
 cat(paste0("\nWe report the average p-value from a mixed Poisson model and the power, Wilcoxon signed rank test power, T test power, T test on ranks power, intercept, treatment effect and sd of differences. \nWe also quote the theoretical SD of differences."))
 
@@ -766,6 +765,16 @@ cat(paste0("\n3) Transform them to any correlated probability distribution desir
  
 })
 
+
+``` 
+
+Row {data-height=250}
+-----------------------------------------------------------------------
+
+### Results
+
+
+```{r, eval=TRUE}
 
 reactive({
   
@@ -802,9 +811,9 @@ reactive({
   Y <- input$mu0.p*input$eff.p              # var of poisson (= mean)
   #print(cbind(R,   sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R))))
  
+
   
-  
-  cat(paste0("Evaluations are based on a stated correlation, starting value "
+  cat(paste0("Evaluations are based on the stated correlation, starting value "
              ,input$r,"\nThe median p-value from a mixed effects Poisson model is "
              ,median( unlist(x[,"V2"]))   , 
              ". \nPower based on the mixed model is "
@@ -827,24 +836,88 @@ reactive({
       "\nMean SD of differences is ", 
      mean( unlist(x[,"V8"])),  
     
-     "\nThe theoretical sd of differences based on Poisson variances and stated correlation is ",
+     "\nThe theoretical SD of differences based on Poisson variances and stated correlation is ",
     sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R)),
     "\n"))
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+   
   
  # c(rate.reduction,mix , wil,t.t,  ttor,intercept, beta ,sdd)
 
 })
+
+```
+
+Row {data-height=300}
+-----------------------------------------------------------------------
+
+### Typical expected dataset
+  
+
+```{r, eval=TRUE}
+
+ renderPlot({
+   
+   n =input$N.p
+ 
+r <- input$r 
+mu0 <-input$mu0.p
+mu1 <- input$eff.p
+ 
+
+L1 <- mu0
+L2 <- mu0*mu1     # change by the intervention
+
+# code from business paper
+
+GenerateMultivariatePoisson<-function(p, samples, R, lambda){
+  normal_mu=rep(0, p)
+  normal = mvrnorm(samples, normal_mu, R)
+  unif=pnorm(normal)
+  pois=t(qpois(t(unif), lambda))
+  return(pois)
+}
+
+# execute and generated correlated poisson
+d <-  GenerateMultivariatePoisson(p=2, samples=n, R=matrix(c(1, r, r, 1), 2, 2), lambda=c(L1,L2))
+
+ 
+   
+   
+   
+   
+   
+   
+library(ggplot2)
+A <- d[,1]
+B <- d[,2]
+before <- A + runif(length(d[,1]),-.2,.2)
+after <-  B + runif(length(d[,2]),-.2,.2)
+n <- length(before)
+d <- data.frame(y = c(before, after), 
+                x = rep(c(1,2), each=n),
+                id = factor(rep(1:n,2)))
+
+#set.seed(321)    
+d$xj <- jitter(d$x, amount=.03)
+ggplot(data=d, aes(y=y) ) +
+  geom_boxplot(aes(x=x, group=x), width=0.2, outlier.shape = NA) +
+  geom_line(aes(x=xj, group=id),  colour='pink', alpha=.5) +
+  geom_point(aes(x=xj)) +
+  xlab("Phase") + ylab("Count") + #title("Typical expected dataset") +
+  scale_x_continuous(breaks=c(1,2), labels=c("Before", "After"), limits=c(0.5, 2.5)) +
+  theme_bw() + theme(legend.position = "none")# +
+ #   ggtitle("Typical expected dataset") 
+#~~~~~~~~~~~~~~~~~~~~~
+
+})
+
+
+
+
+
+
+
 
 ```
 
