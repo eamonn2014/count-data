@@ -9,7 +9,7 @@ output:
     source_code: embed
 runtime: shiny
 ---
-Home
+Probability Mass Functions
 ===
 
 ```{r global, include=FALSE}
@@ -538,9 +538,9 @@ reactive({
   
 cat(paste0("A RCT with 1:1 randomisation is being planned to investigate an intervention on the rate of asthma exacerbations with ",input$N," patients per arm.\n"))
 
-cat(paste0("The negative binomial model will be used as patient heterogeneity of exacerbations beyond that captured by patient level covariates is expected.\nWe will use the natural log of duration of follow up time as an offset variable, the duration of follow up, ",input$fup, " will be the planned duration of follow up for all patients (see slider)."))
+cat(paste0("The negative binomial model will be used as patient heterogeneity of exacerbations beyond that captured by patient level covariates is expected.\nWe will use the natural log of duration of follow up time as an offset variable, the duration of follow up, ",input$fup, " will be the planned duration of follow up for all patients."))
 
-cat(paste0("\nk is the dispersion parameter value of " ,input$k," this is the same as 1/alpha So alpha is ",1/input$k,". The rate for placebo is ",input$mu0," events per patient year of follow up.\nThe treatment effect hypothesised is  ",input$eff, ". \nDrop out probabilities for treatment discontinuation and follow up period (in years) are " ,input$d1, " and " ,input$d2," respectively. \nWe assume a constant exponential hazard rate over time for treatment discontinuation with ",input$d1," and ",input$d2,", the percentages of patients\noff treatment by follow up time in years in active and placebo. \nNo further treatment effect versus placebo is assumed during off treatment, that is ",input$mu0," events per patient year is assumed for patients after treatment discontinuation in treated and placebo.\n"))
+cat(paste0("\nk is the dispersion parameter value of " ,input$k," this is the same as 1/alpha So alpha is ",1/input$k,". The rate for placebo is ",input$mu0," events per patient year of follow up.\nThe treatment effect hypothesised is ",input$eff, ". \nDrop out probabilities for treatment discontinuation and follow up period (in years) are " ,input$d1, " and " ,input$d2," respectively. \nWe assume a constant exponential hazard rate over time for treatment discontinuation with ",input$d1," and ",input$d2,", the percentages of patients\noff treatment by follow up time in years in active and placebo. \nNo further treatment effect versus placebo is assumed during off treatment, that is ",input$mu0," events per patient year is assumed for patients after treatment discontinuation in treated and placebo.\n"))
 
 cat(paste0("\nThe power estimate is..."))
 })
@@ -946,7 +946,7 @@ Row {.tabset .tabset-fade}
 
 Notes
 ===
-
+hilbe code with discontinuations  
 cor neg binomial not working
 explain corr poisson approach <- many packages
 understand neg binomial rct rnbinom inputs
