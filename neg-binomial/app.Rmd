@@ -14,9 +14,10 @@ Home
 
 ```{r global, include=FALSE}
 
-library(MASS) # for neg binomial analysis
-
-lwd.=3
+  library(MASS) # for neg binomial analysis
+  library(ggplot2)
+  library(lme4)
+  lwd.=3
 
  my_dnbinom=function(x,mu,alpha){
   m = mu
@@ -70,18 +71,23 @@ GenerateMultivariatePoisson<-function(p, samples, R, lambda){
     t(samples)
   }
   
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# function to simulate negative binomial RCT
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
 nb.power <- function(n=220, k=1.3, mu0=1, eff=0.65, drop1=.1, drop2=.1, fup=1) {
   
   mu1 <- eff*mu0
   
+  # n=220; alpha=1.3; mu0=1; mu1=.65; drop1=.01; drop2=.01; fup=1
+  # just so there is no error if dropo out is zero
   if (drop1==0) {drop1=0.0001}
   if (drop2==0) {drop2=0.0001}
-  # n=220; alpha=1.3; mu0=1; mu1=.65; drop1=.01; drop2=.01; fup=1
+  
  
   dose <- c(rep("placebo",n),rep("trt",n)) # 50:50 split of patients
   
-  mu   <- c(rep(mu0,n), rep(mu1,n))    # rates in two arms
+  mu   <- c(rep(mu0,n), rep(mu1,n))        # rates in two arms
 
   drop <- c(rep(drop1,n), rep(drop2,n)) # }# tr discontinuation rates
   
@@ -106,11 +112,10 @@ nb.power <- function(n=220, k=1.3, mu0=1, eff=0.65, drop1=.1, drop2=.1, fup=1) {
   
 }
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# function to generate correlated poisson and analyse and evaluate
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# correlated poisson function
- 
-library(lme4)
  
 po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 placebo rate, mu1 expected change in rate
    
@@ -151,8 +156,8 @@ po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 p
    
   A <- glmer(counts ~ group + (1|ID), data=my_data, family="poisson")
  # B <- glmer(counts ~ 1     + (1|ID), data=my_data, family="poisson")  # dont use LRT to speed up sims
-#  p <- anova(A,B)
-#  mix <-  p$`Pr(>Chisq)`[2]
+ # p <- anova(A,B)
+ # mix <-  p$`Pr(>Chisq)`[2]
   
   x <- summary(A)
   mix <- summary(A)$coeff[2,"Pr(>|z|)"]  # to speed up simulations dont use LRTtest but wald
@@ -192,6 +197,8 @@ po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 p
 }
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# start of app
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -255,36 +262,28 @@ Column {data-width=400, height=300}
 
 renderPlot({
   
- 
-require("sfsmisc")
-#set.seed(28754) # set random number seed for reproducibilty of results
-
 ##################################################################################
 # Define the Negative Binomial probability density function, with parameters
-# mu and alpha
-# The mean of this NB distribution is mu, and variance is sigma^2=mu+alpha*mu^2
+# mu and alpha. The mean of this NB distribution is mu, and variance is sigma^2=mu+alpha*mu^2
 ##################################################################################
 
 ##################################################################################
 # Now let's try out the NB density function, and overlay the Poisson
 # distribution with the same mean
 ##################################################################################
-#mult.fig(2) # divide the plotting area up into 2 (one up and one down)
-
-# mu = sample(1:25,1)
-# alpha_a = 0.1
-# alpha_b = .01
-# alpha_d = 1
+ 
+  # mu = sample(1:25,1)
+  # alpha_a = 0.1
+  # alpha_b = .01
+  # alpha_d = 1
 
   mu = input$mu
   alpha_a = input$alpha_a
   alpha_b =  input$alpha_b
   alpha_d =  input$alpha_d
-  
   low =  input$x_range[1]
   high=  input$x_range[2]
   xmax = high
-  
   ymax = input$y_range[2]
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -315,11 +314,11 @@ require("sfsmisc")
   nor <-       dnorm(x, mu, sqrt(mu))
 
 
-  x=append(0,x)  
-  y=append(0,y)
-  yb=append(0,yb)
-  yc=append(0,yc)
-  yd=append(0,yd)
+  x=  append(0,x)  
+  y=  append(0,y)
+  yb= append(0,yb)
+  yc= append(0,yc)
+  yd= append(0,yd)
   nor=append(0,nor)
   
   l = !is.na(y+yb+yc+yd+nor)
@@ -364,12 +363,9 @@ renderPlot({
     alpha_a =  input$alpha_a
     alpha_b =  input$alpha_b
     alpha_d =  input$alpha_d
-    
-    low =  input$x_range[1]
-    high=  input$x_range[2]
-    xmax = high
-    
-    ymax = input$y_range[2]
+    low =      input$x_range[1]
+    xmax=      input$x_range[2]
+    ymax =     input$y_range[2]
     
     z  =      rpois(n,mu)
     zb = my_rnbinom(n,mu,alpha_a)
@@ -393,11 +389,11 @@ renderPlot({
     lines(d$mids,d$density,type="s",lwd=lwd.,col=5)
     lines(e$mids,e$density,type="s",lwd=lwd.,col=6)
     
-    apois = paste("Poisson \u03BC=",mu,sep="")
-    anegbinom_a = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep="")
-    anegbinom_b = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,sep="")
-    anegbinom_c = paste("Normal \u03BC=",   mu," \u03C3=sqrt(",mu,")",sep="")
-    anegbinom_d = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_d,sep="")
+    apois =       paste("Poisson \u03BC="  ,mu,  sep="")
+    anegbinom_a = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,     sep="")
+    anegbinom_b = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,     sep="")
+    anegbinom_c = paste("Normal \u03BC=",   mu," \u03C3=sqrt(",mu,")", sep="")
+    anegbinom_d = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_d,     sep="")
     
     legend("topright",col=c(1,2,4,6,5),legend=c(apois,anegbinom_a,anegbinom_b, anegbinom_d, anegbinom_c),
            lwd=lwd.,bty="n")
@@ -419,16 +415,12 @@ Column {data-width=400}
 
 renderPlot({
   
-    mu = input$mu
+  mu = input$mu
   alpha_a = input$alpha_a
-  
-  
   low =  input$x_range[1]
-  high=  input$x_range[2]
-  xmax = high
-  
+  xmax=  input$x_range[2]
   ymax = input$y_range[2]
-
+  
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  
@@ -438,7 +430,7 @@ renderPlot({
   
   par(mar=c(2.1,4.1,4.1,4.1))
       
-  barplot(yb, xlim=c(0,high+2), ylab = "Percent", xlab="x", col='black', ylim=c(0,ymax),
+  barplot(yb, xlim=c(0,xmax+2), ylab = "Percent", xlab="x", col='black', ylim=c(0,ymax),
           main = paste("Poisson \u03BC=", mu, ", based on common \u03BC",sep=""),
           names.arg= as.character(xx))
 })
@@ -453,18 +445,15 @@ renderPlot({
     renderPlot({
   
     mu = input$mu
-  alpha_a = input$alpha_a
+    alpha_a = input$alpha_a
   
   
-  low =  input$x_range[1]
-  high=  input$x_range[2]
-  xmax = high
-  
-  ymax = input$y_range[2]
+    low =  input$x_range[1]
+    xmax=  input$x_range[2]
+    ymax = input$y_range[2]
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- 
   xx <- c(seq(0,xmax,1))
 
   if(alpha_a==0) {
@@ -475,7 +464,7 @@ renderPlot({
   
   par(mar=c(2.1,4.1,4.1,4.1))
       
-  barplot(yb, xlim=c(0,high+2), ylab = "Percent", xlab="x", col='red',
+  barplot(yb, xlim=c(0,xmax+2), ylab = "Percent", xlab="x", col='red',
           ylim=c(0,ymax),
           main =  paste("Negative Binomial \u03BC=",mu," \u03B1=",alpha_a,", based on common mean and red curve \u03B1",sep=""),
           names.arg= as.character(xx))
@@ -547,45 +536,34 @@ Negative binomial power
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-
+Use the inputs below to simulate a RCT with a count outcome measure that is analysed using a negative binomial model to evaluate the treatment effect  
 
 ```{r}
-
- 
-# jscode <- "shinyjs.refresh = function() { history.go(0); }"
-# 
-# actionButton(jscode, "Refresh")
-# 
-# observeEvent(input$reset, {
-# 
-# })
-
- 
  
 
-sliderInput('N', 'Patients per arm', value=220,
-              min = 10, max = 10000, step=5, ticks=F)
-
-sliderInput('mu0', 'Placebo mean rate \u03BC', value=1,
-              min = 0.1, max = 25, step=.05, ticks=F)
-
-sliderInput('eff', 'Hypothesised treatment effect ', value=.75,
-              min = 0.1, max = 25, step=.05, ticks=F)
-
-sliderInput('k', '1/\u03B1 the heterogeneity (ancillary) parameter', value = c(1.3),
-              min = 0, max = 5 ,step=0.01, ticks=F)
-
-sliderInput('d1', 'Placebo discontinuation prob', value = c(0.1),
-              min = 0, max = .5 ,step=0.05, ticks=F)
-
-sliderInput('d2', 'Treatment discontinuation prob', value = c(0.1),
-              min = 0, max = .5 ,step=0.05, ticks=F)
-
-sliderInput('fup', 'Follow up (yrs)', value = c(1),
-        min = 0, max = 10, step=1,ticks=F)
- 
-sliderInput('sims2', 'Power simulations', value= 500,
-              min = 500, max = 10000, step= 500, ticks=F)
+    sliderInput('N', 'Patients per arm', value=220,
+                  min = 10, max = 10000, step=5, ticks=F)
+    
+    sliderInput('mu0', 'Placebo mean rate \u03BC', value=1,
+                  min = 0.1, max = 25, step=.05, ticks=F)
+    
+    sliderInput('eff', 'Hypothesised treatment effect ', value=.75,
+                  min = 0.1, max = 25, step=.05, ticks=F)
+    
+    sliderInput('k', '1/\u03B1 the heterogeneity (ancillary) parameter', value = c(1.3),
+                  min = 0, max = 5 ,step=0.01, ticks=F)
+    
+    sliderInput('d1', 'Placebo discontinuation prob', value = c(0.1),
+                  min = 0, max = .5 ,step=0.05, ticks=F)
+    
+    sliderInput('d2', 'Treatment discontinuation prob', value = c(0.1),
+                  min = 0, max = .5 ,step=0.05, ticks=F)
+    
+    sliderInput('fup', 'Follow up (yrs)', value = c(1),
+            min = 0, max = 10, step=1,ticks=F)
+     
+    sliderInput('sims2', 'Power simulations', value= 500,
+                  min = 500, max = 10000, step= 500, ticks=F)
  
  
 
@@ -609,7 +587,6 @@ cat(paste0("\nThe power estimate is..."))
 })
   
  
-
 reactive({
   
 res <- replicate( input$sims2, 
@@ -630,16 +607,16 @@ Row {data-height=350}
 
  renderPlot({
   
- n=input$N
- k=input$k
- mu0=input$mu0
- eff=input$eff
- drop1=input$d1
- drop2=input$d2
- fup=input$fup
- 
- mu1 <- eff*mu0
- 
+   n=     input$N
+   k=     input$k
+   mu0=   input$mu0
+   eff=   input$eff
+   drop1= input$d1
+   drop2= input$d2
+   fup=   input$fup
+   
+   mu1 <- eff*mu0
+   
   dose <- c(rep("placebo",n),rep("trt",n))
   mu   <- c(rep(mu0,n),rep(mu1,n))
   if (drop1==0) {drop1=0.0001}
@@ -657,10 +634,11 @@ Row {data-height=350}
   #addmargins(table( y,  dose))
 
  # d <- cbind.data.frame(dose, mu, length, y, logleng)
-#  summary(MASS::glm.nb(y~dose+offset((logleng)), data=d))
+ # summary(MASS::glm.nb(y~dose+offset((logleng)), data=d))
 
   trt <- y[dose %in% "trt"]
   pla <- y[!dose %in% "trt"]
+  
 # examine
 # par(mfrow=c(1,2))
 # trt %>% table %>% barplot() #quick and dirty
@@ -668,13 +646,14 @@ Row {data-height=350}
 # pla %>% table %>% barplot() #quick and dirty
 # pla %>% table %>% prop.table
 # par(mfrow=c(1,1))
-upp <- ceiling(max(prop.table(table(y))) * 100 ) 
-par(mfrow=c(1,2))
-data_perc <- t(prop.table(table(trt))) * 100    # Convert data to probability table
-barplot(data_perc, ylab = "Percent", main ="Treated", ylim=c(0,upp ))     
-data_perc <- t(prop.table(table(pla))) * 100    # Convert data to probability table
-barplot(data_perc, ylab = "Percent", main ="Placebo", ylim=c(0,upp ))     
-par(mfrow=c(1,1))
+  
+  upp <- ceiling(max(prop.table(table(y))) * 100 ) 
+  par(mfrow=c(1,2))
+  data_perc <- t(prop.table(table(trt))) * 100    # Convert data to probability table
+  barplot(data_perc, ylab = "Percent", main ="Treated", ylim=c(0,upp ))     
+  data_perc <- t(prop.table(table(pla))) * 100    # Convert data to probability table
+  barplot(data_perc, ylab = "Percent", main ="Placebo", ylim=c(0,upp ))     
+  par(mfrow=c(1,1))
 
 })
 
@@ -730,23 +709,26 @@ Poisson paired counts
 Column {.sidebar}
 -----------------------------------------------------------------------
 
+
+Use the inputs below to generate correlated count data !
+
 ```{r}
 
 
-sliderInput('N.p', 'Patients per arm', value=22,
-              min = 10, max = 200, step=5, ticks=F)
-
-sliderInput('mu0.p', 'Placebo mean rate \u03BC', value=10,
-              min = 0.1, max = 25, step=.05, ticks=F)
-
-sliderInput('eff.p', 'Hypothesised treatment effect ', value=.75,  # 1/2 ing to doubling
-              min = 0.5, max = 2, step=.05, ticks=F)
-
-sliderInput('r', 'Correlation', value = c(.20),
-              min = -1, max = 1 ,step=0.05, ticks=F)
- 
-sliderInput('sims.p', 'Power simulations', value= 10,
-              min = 100, max = 1000, step= 100, ticks=F)
+  sliderInput('N.p', 'Patients per arm', value=22,
+                min = 10, max = 200, step=5, ticks=F)
+  
+  sliderInput('mu0.p', 'Placebo mean rate \u03BC', value=10,
+                min = 0.1, max = 25, step=.05, ticks=F)
+  
+  sliderInput('eff.p', 'Hypothesised treatment effect ', value=.75,  # 1/2 ing to doubling
+                min = 0.5, max = 2, step=.05, ticks=F)
+  
+  sliderInput('r', 'Correlation', value = c(.20),
+                min = -1, max = 1 ,step=0.05, ticks=F)
+   
+  sliderInput('sims.p', 'Power simulations', value= 10,
+                min = 100, max = 1000, step= 100, ticks=F)
  
 
 ```
@@ -791,45 +773,23 @@ reactive({
   res <- replicate(input$sims.p, 
                    po.cor.power(n=input$N.p, r=input$r, mu0=input$mu0.p,  eff.p=input$eff.p ) )  
 
-  #print(res)
   x <- NULL
   x <- t((res))
   x <- as.data.frame(x)
   alpha=0.05
- # cat("Mean treatment effect\n")
-#  print(mean( unlist(x[,"V1"]))   )  
-  # cat("Median mixed Poisson p-value\n")
-  # print(median( unlist(x[,"V2"]))  )                                    # median mix p-value
-  #   cat("\nPower mixed Poisson model\n")
-  # print(table( unlist(x[,"V2"])< alpha)/input$sims.p)                   # power mix model
-  # cat("\nWilcoxon signed rank test power\n")
-  # print(table( unlist(x[,"V3"])< alpha)/input$sims.p )                  # Wilcoxon signed rank test power
-  #  cat("\nT test power\n")
-  # print(table( unlist(x[,"V4"])< alpha)/input$sims.p )                  # ttest power
-  #  cat("\nT test on ranks power\n")
-  # print(table( unlist(x[,"V5"])< alpha)/input$sims.p )                  # ttest on ranks power
-  #  cat("\nMean intercept\n")
-  # print(mean( unlist(x[,"V6"])) )  # intercept
-  # cat("Mean treatment effect\n")
-  # print(mean( unlist(x[,"V7"]))  )  # beta
-  # cat("Mean SD of differences\n")
-  # print(mean( unlist(x[,"V8"])) )  # sd of diff
+ 
   
- # cat("Theoretical SD of differences\n")
+  # cat("Theoretical SD of differences\n")
   R <- input$r# seq(-.9,.9,.1)   # correlation
   X <- input$mu0.p               # var of poisson (= mean)
-  Y <- input$mu0.p*input$eff.p              # var of poisson (= mean)
-  #print(cbind(R,   sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R))))
- 
+  Y <- input$mu0.p*input$eff.p   # var of poisson (= mean)
+
 
   
   cat(paste0("Evaluations based on ",input$sims.p," simulations take into consideration correlation, the default starting value is "
-             ,input$r,"\nThe median p-value from a mixed effects Poisson model is "
-             ,median( unlist(x[,"V2"]))   , 
-             ". \nPower based on the mixed model Wald test is ",
-             #,input$eff.p,
-             #"\nEvaluations are based on a stated correlation, starting value "
-             #,input$r,
+       ,input$r,"\nThe median p-value from a mixed effects Poisson model is "
+       ,median( unlist(x[,"V2"]))   , 
+       ". \nPower based on the mixed model Wald test is ",
              
       (table( unlist(x[,"V2"])< alpha)/input$sims.p)[2][[1]],
       
@@ -841,20 +801,17 @@ reactive({
       (table( unlist(x[,"V4"])< alpha)/input$sims.p)[2][[1]],
       "\nPower based on the t-test of ranks is ",
       (table( unlist(x[,"V5"])< alpha)/input$sims.p)[2][[1]],
-    " \nThe mean intercept is ",
-          mean( unlist(x[,"V6"])),
-       "\nThe mean treatement effect is ",
-          mean( unlist(x[,"V7"]))," with 95%CI ",quantile(unlist(x[,"V7"]), .025)," to ",quantile(unlist(x[,"V7"]), .975),
+      " \nThe mean intercept is ",
+      mean( unlist(x[,"V6"])),
+      "\nThe mean treatement effect is ",
+      mean( unlist(x[,"V7"]))," with 95%CI ",quantile(unlist(x[,"V7"]), .025)," to ",quantile(unlist(x[,"V7"]), .975),
       "\nMean SD of differences is ", 
-     mean( unlist(x[,"V8"])),  
+      mean( unlist(x[,"V8"])),  
     
-     "\nThe theoretical SD of differences based on Poisson variances and stated correlation is ",
-    sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R)),
-    "\n"))
-  
+      "\nThe theoretical SD of differences based on Poisson variances and stated correlation is ",
+      sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R)),
+      "\n"))
    
-  
- # c(rate.reduction,mix , wil,t.t,  ttor,intercept, beta ,sdd)
 
 })
 
@@ -872,12 +829,10 @@ Row {.tabset .tabset-fade}
 #https://stackoverflow.com/questions/52225348/shiny-flexdashboard-reference-object-in-new-tabset#52225733
 
    dat2 <- reactive(
-    
-      
-
-   # 
-GenerateMultivariatePoisson(p=2, samples=input$N.p, R=matrix(c(1, input$r, 
-                                                                     input$r, 1), 2, 2), lambda=c(input$mu0.p, input$mu0.p*input$eff.p))
+ 
+    GenerateMultivariatePoisson(p=2, samples=input$N.p, R=matrix(c(1, input$r, 
+                                                                     input$r, 1), 2, 2), 
+                                lambda=c(input$mu0.p, input$mu0.p*input$eff.p))
      
      
   )
@@ -886,21 +841,20 @@ GenerateMultivariatePoisson(p=2, samples=input$N.p, R=matrix(c(1, input$r,
 
  renderPlot({   
    
- dat2 <- dat2()
+  dat2 <- dat2()
 
+  dx <- dat2
    
-   dx <- dat2
    
-   
-library(ggplot2)
-A <- dx[,1]
-B <- dx[,2]
-before <- A + runif(length(dx[,1]),-.2,.2)
-after <-  B + runif(length(dx[,2]),-.2,.2)
-n <- length(before)
-d <- data.frame(y = c(before, after), 
-                x = rep(c(1,2), each=n),
-                id = factor(rep(1:n,2)))
+
+  A <- dx[,1]
+  B <- dx[,2]
+  before <- A + runif(length(dx[,1]),-.2,.2)
+  after <-  B + runif(length(dx[,2]),-.2,.2)
+  n <- length(before)
+  d <- data.frame(y = c(before, after), 
+                  x = rep(c(1,2), each=n),
+                  id = factor(rep(1:n,2)))
 
 #set.seed(321)    
 d$xj <- jitter(d$x, amount=.03)
@@ -945,7 +899,6 @@ grid.arrange(plot1, plot2, ncol=2)
 
 ### Typical expected dataset - Bland Altman plot, square root transformation
  
-=======
  
 ```{r}
 
@@ -974,9 +927,63 @@ BA.plot( m, model=NULL, repl.conn=TRUE, col.lines="blue",
 })
 
 
+ 
 
 
 ```
+
+Notes
+===
+
+cor neg binomial not working
+explain corr poisson approach <- many packages
+understand neg binomial rct rnbinom inputs
+gamma - see basics plot
+
+When $\alpha$ = 1, the negative binomial distribution takes the form of a
+geometric distribution, which is the discrete correlate of the continuous negative
+exponential distribution. 
+The negative binomial distribution with $\alpha$ = 0 is Poisson.
+As the mean increases, the probability of
+a zero decreases, and the more the shape approximates a Gaussian distribution.
+As the Poisson mean gets larger it approaches normality, the negative binomial distribution does not respond to larger mean values in that manner. 
+
+
+The binomial distribution describes the number of r successes in n trials.
+
+The geometric distribution describes the number of failures before the first success, r.
+
+The negative binomial distribution describes the number of failures before the rth success. (Hilbe page 194)
+
+Confusingly, the term ‘dispersion parameter’ can refer to either k or $\alpha$ ; other terms for k include ‘shape
+parameter’ and ‘clustering coefficient’.
+
+The only restriction placed on  $\alpha$ is that it take positive rational values,
+rarely above 4 (Hilbe page 190)
+
+ 
+
+Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity.
+
+
+
+Accordingly, all calculations in this study were conducted using $\alpha$, but all results and discussion
+are posed in terms of k?
+
+In this study ML estimation was conducted for the parameter $\alpha$,
+but results are reported in terms of k = 1/ $\alpha$ because k is more
+familiar to epidemiologists and ecologists. Estimates of $\alpha$ were
+restricted to positive values, because the allowed range for k was (0,infinity). 
+
+
+file:///C:/Users/Lenovo/OneDrive/Documents/PAPERS/COUNT%20DATA/TRISTAN%20study%20Keene%202007.pdf
+thy dispersion is alpha in this paper example figure 1
+
+ The larger the gamma shape parameter, the more dispersed is the distribution
+ 
+ The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data
+
+
 
 
 References
