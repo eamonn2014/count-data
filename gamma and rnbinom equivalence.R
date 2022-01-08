@@ -7,6 +7,11 @@
   require(tidyverse)
   require(MASS)
   
+  roundUpNice <- function(x, nice=c(1,2,4,5,6,8,10)) {
+    if(length(x) != 1) stop("'x' must be of length 1")
+    10^floor(log10(x)) * nice[[which(x <= 10^floor(log10(x)) * nice)[[1]]]]
+  }
+  
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   # pop parameters
@@ -50,18 +55,20 @@
   pla <- y_0
   
   # plot counts
-  par(mfrow=c(1,2))
-  trt %>% table %>% barplot() #quick and dirty
+  par(mfrow=c(2,2))
+  u <- roundUpNice(max(trt %>% table, pla %>% table))
+  trt %>% table %>% barplot(ylim=c(0,u)) #q
+  pla %>% table %>% barplot(ylim=c(0,u)) #q
   trt %>% table %>% prop.table
-  pla %>% table %>% barplot() #quick and dirty
   pla %>% table %>% prop.table
-  par(mfrow=c(1,1))
+  # par(mfrow=c(1,1))
   
   # plot proportion
-  par(mfrow=c(1,2))
-  data_perc <- t(prop.table(table(trt))) * 100     # Convert data to probability table
+  # par(mfrow=c(1,2))
+  data_perc <- t(prop.table(table(trt)))  * 100     # Convert data to probability table
   data_perc1 <- t(prop.table(table(pla))) * 100    # Convert data to probability table
-  u <- ceiling(max(data_perc,data_perc1))          # common y axis
+  #u <- ceiling(max(data_perc,data_perc1))          # common y axis
+  u <- roundUpNice(max(data_perc,data_perc1))
   barplot(data_perc,  ylab = "Percent", main ="rnbinom", ylim=c(0,u))
   barplot(data_perc1, ylab = "Percent", main ="gamma", ylim=c(0,u))
   par(mfrow=c(1,1))
