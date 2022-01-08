@@ -1,41 +1,51 @@
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# gamma and rnbiom 
+# gamma and rnbinom equivalence 
+
   rm(list=ls())
   require(tidyverse)
   require(MASS)
   
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
   # pop parameters
-  n  <- 10000
-  k  <- 1.3  # this is k,  alpha=1/k
-  1/k # alpha reported as theta in neg binomial
+  n  <- 100
+  k  <- 1.3   # this is k, alpha=1/k
+  1/k         # alpha reported as theta in neg binomial
   mu <- 2
   
   fup  <- 2
   drop <- 0.4
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
   # discontinuations and follow up
   f        <- - rexp(n) / log(1-drop)
   length   <- ifelse(f > fup, fup, f)   
   logleng  <- log(length)  # offset
+  
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
   
+  # rnbinom approach
   mu   <-   c(rep(mu,n) )
   y <-  rnbinom(n,  p=1/(1+ mu*length* k),      size=1/k)  
   summary(glm.nb(y~1+offset(logleng)))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
+  
   ## Simulate the gamma-shaped subject effect
   s <- rgamma(n, shape = 1/k, scale = k)
   lambda1 <- mu * s  ## Simulate rate
   y_0 <- rpois(n = n, lambda = (length*lambda1))  # Simulate counts, added length here
   summary(glm.nb(y_0~1 +offset(logleng)))
 
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
+  # plot
+  
   trt <- y
   pla <- y_0
   
@@ -55,8 +65,8 @@
   barplot(data_perc, ylab = "Percent", main ="pla")
   par(mfrow=c(1,1))
    
-#   
-#   
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
   
   
   
