@@ -34,7 +34,7 @@
   
   # rnbinom approach
   mu   <-   c(rep(mu,n) )
-  y <-  rnbinom(n,  p=1/(1+ mu*length* k),      size=1/k)  
+  y <-  rnbinom(n,  p=1/(1+ mu*length* k),  size=1/k)  
   summary(glm.nb(y~1+offset(logleng)))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -66,11 +66,10 @@
   # plot proportion
   # par(mfrow=c(1,2))
   data_perc <- t(prop.table(table(trt)))  * 100     # Convert data to probability table
-  data_perc1 <- t(prop.table(table(pla))) * 100    # Convert data to probability table
-  #u <- ceiling(max(data_perc,data_perc1))          # common y axis
+  data_perc1 <- t(prop.table(table(pla))) * 100     # Convert data to probability table
   u <- roundUpNice(max(data_perc,data_perc1))
   barplot(data_perc,  ylab = "Percent", main ="rnbinom", ylim=c(0,u))
-  barplot(data_perc1, ylab = "Percent", main ="gamma", ylim=c(0,u))
+  barplot(data_perc1, ylab = "Percent", main ="gamma",   ylim=c(0,u))
   par(mfrow=c(1,1))
    
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,14 +79,7 @@
   
   
   
-  
-  
-  
-  
-  
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
+   
   
   
   
