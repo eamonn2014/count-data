@@ -10,7 +10,7 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   # pop parameters
-  n  <- 100
+  n  <- 1000
   k  <- 1.3   # this is k, alpha=1/k
   1/k         # alpha reported as theta in neg binomial
   mu <- 2
@@ -59,20 +59,27 @@
   
   # plot proportion
   par(mfrow=c(1,2))
-  data_perc <- t(prop.table(table(trt))) * 100    # Convert data to probability table
-  barplot(data_perc, ylab = "Percent", main ="trt")
-  data_perc <- t(prop.table(table(pla))) * 100    # Convert data to probability table
-  barplot(data_perc, ylab = "Percent", main ="pla")
+  data_perc <- t(prop.table(table(trt))) * 100     # Convert data to probability table
+  data_perc1 <- t(prop.table(table(pla))) * 100    # Convert data to probability table
+  u <- ceiling(max(data_perc,data_perc1))          # common y axis
+  barplot(data_perc,  ylab = "Percent", main ="rnbinom", ylim=c(0,u))
+  barplot(data_perc1, ylab = "Percent", main ="gamma", ylim=c(0,u))
   par(mfrow=c(1,1))
    
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   
   
   
   
   
+  
+  
+  
+  
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   
   
