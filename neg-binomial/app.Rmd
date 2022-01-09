@@ -929,10 +929,10 @@ Show the equivalent parameterisation of Poisson gamma and negative binomial !
   
 ```
 
-Column {data-width=300}
+Column {data-width=400, height=300}
 -----------------------------------------------------------------------
 
-### Poisson gamma simulation
+### Poisson gamma data simulation
 
 ```{r, eval=TRUE}
 
@@ -943,14 +943,15 @@ k <- input$k.pg
 n <- input$N.pg 
 mu0 <- input$mu0.pg
 mu1 <- mu0*input$eff.pg
-
+d1 <- input$d1.pg
+d2 <- input$d2.pg
 s <-  rgamma(n, shape = 1/k, scale = k)
 s1 <- rgamma(n, shape = 1/k, scale = k)
  
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dose <- c(rep("placebo",n),rep("trt",n))
 mu   <- c(rep(mu0,n),rep(mu1,n))
-drop <- c(rep(.1,n),rep(.1,n))
+drop <- c(rep(d1,n),rep(d2,n))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # discontinuations and follow up
 f        <- - rexp(2*n) / log(1-drop)
@@ -972,10 +973,8 @@ summary(f1<-glm.nb(y_0~dose+offset(logleng) ))
 
 ``` 
 
-Column {data-width=250}
------------------------------------------------------------------------
 
-### Negative binomal simulation
+### Negative binomial data simulation
 
 
 ```{r, eval=TRUE}
@@ -987,11 +986,13 @@ k <- input$k.pg
 n <- input$N.pg 
 mu0 <- input$mu0.pg
 mu1 <- mu0*input$eff.pg
+d1 <- input$d1.pg
+d2 <- input$d2.pg
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dose <- c(rep("placebo",n),rep("trt",n))
 mu   <- c(rep(mu0,n),rep(mu1,n))
-drop <- c(rep(.1,n),rep(.1,n))
+drop <- c(rep(d1,n),rep(d2,n))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # discontinuations and follow up
 f        <- - rexp(2*n) / log(1-drop)
@@ -1010,30 +1011,9 @@ summary(f<-glm.nb(y~dose+offset(logleng) ))
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ```
    
-Row {.tabset .tabset-fade}
+Column {.tabset .tabset-fade}
 -----------------------------------------------------------------------
 
 ### Plot1
@@ -1047,6 +1027,26 @@ Row {.tabset .tabset-fade}
  
  
 ```{r}
+
+
+
+```
+ 
+
+### Plot3
+  
+
+```{r, eval=TRUE}
+
+```
+
+### Plot4
+ 
+ 
+```{r}
+
+
+
 
 
 
