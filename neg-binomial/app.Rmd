@@ -1064,9 +1064,9 @@ library(vcd)
  f <- dat4()
 
  #par(mfrow=c(1,2))
-# Ord_plot(f1$y)
- distplot(f1$y, type="poisson")
- distplot(f1$y, type="nbinom")
+Ord_plot(f1$y)
+# distplot(f1$y, type="poisson")
+ #distplot(f1$y, type="nbinom")
  #par(mfrow=c(1,1))
 
  })
@@ -1081,6 +1081,21 @@ library(vcd)
 
 ```{r, eval=TRUE}
 
+ renderPlot({
+ f1 <- dat3()
+ f <- dat4()
+
+ #par(mfrow=c(1,2))
+# Ord_plot(f1$y)
+ distplot(f1$y, type="poisson")
+ #distplot(f1$y, type="nbinom")
+ #par(mfrow=c(1,1))
+
+ })
+
+
+
+
 ```
 
 ### Plot4
@@ -1088,7 +1103,17 @@ library(vcd)
  
 ```{r}
 
+ renderPlot({
+ f1 <- dat3()
+ f <- dat4()
 
+ #par(mfrow=c(1,2))
+# Ord_plot(f1$y)
+ #distplot(f1$y, type="poisson")
+ distplot(f1$y, type="nbinom")
+ #par(mfrow=c(1,1))
+
+ })
 
 
 
