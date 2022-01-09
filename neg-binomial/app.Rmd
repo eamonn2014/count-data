@@ -1038,12 +1038,12 @@ Column {.tabset .tabset-fade}
 
  renderPlot({
    
-  f1 <- dat3()
-  f <- dat4()
+ f1 <- dat3()
+ f <- dat4()
    
  par(mfrow=c(1,2))
- countreg::rootogram(f1, style = "hanging",     main = "Hanging")
- countreg::rootogram(f,  style = "hanging",     main = "Hanging")
+ countreg::rootogram(f1, style = "hanging",     main = "Hanging plot gamma poisson")
+ countreg::rootogram(f,  style = "hanging",     main = "Hanging plot rnbinomial")
  par(mfrow=c(1,1))
  
  })
@@ -1054,6 +1054,23 @@ Column {.tabset .tabset-fade}
  
  
 ```{r}
+
+
+library(vcd)
+
+ renderPlot({
+   
+ f1 <- dat3()
+ f <- dat4()
+
+ #par(mfrow=c(1,2))
+# Ord_plot(f1$y)
+ distplot(f1$y, type="poisson")
+ distplot(f1$y, type="nbinom")
+ #par(mfrow=c(1,1))
+
+ })
+
 
 
 ```
