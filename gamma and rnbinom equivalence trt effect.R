@@ -13,7 +13,7 @@ roundUpNice <- function(x, nice=c(1,2,4,5,6,8,10)) {
 }
 
 # pop parameters
-n  <- 10000
+n  <- 1000
 k  <- 1.3   # this is k, alpha=1/k
 1/k         # alpha reported as theta in neg binomial
 mu0 <- 1
@@ -40,8 +40,31 @@ y <-  rnbinom(n*2,  p=1/(1+ mu*    length* k),  size=1/k)  +
 
 logleng  <- rep(0, n*2)
  
-summary(MASS::glm.nb(y~dose+offset(logleng) ))
- 
+summary(f<-glm.nb(y~dose+offset(logleng) ))
+
+
+#~assumption checking
+# https://stats.stackexchange.com/questions/70558/diagnostic-plots-for-count-regression
+performance::check_model(f)
+library(vcd)
+
+
+Ord_plot(y)
+distplot(y, type="poisson")
+distplot(y, type="nbinom")
+
+library(AER)
+deviance(f)/f$df.residual
+dispersiontest(f)
+
+library(car)
+influencePlot(f)
+
+res <- residuals(f, type="deviance")
+plot(log(predict(f)), res)
+abline(h=0, lty=2)
+qqnorm(res)
+qqline(res)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Simulate the gamma-shaped subject effect, same for each arm
@@ -56,7 +79,7 @@ y_0 <- rpois(n = n*2, lambda = (length*lambda1))  +
  
        logleng  <- rep(0, n*2)  # all patients have same length follow up
 
-summary(glm.nb(y_0~dose+offset(logleng) ))
+summary(f1<-glm.nb(y_0~dose+offset(logleng) ))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -105,7 +128,39 @@ barplot(data_perc,  ylab = "Percent", main ="rnbinom", ylim=c(0,u))
 barplot(data_perc1, ylab = "Percent", main ="gamma",   ylim=c(0,u))   
 par(mfrow=c(1,1))
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~simulation
+#https://www.jamesuanhoro.com/post/2018/05/07/simulating-data-from-regression-models/
+
+# column is a single simulation
+nn <-100
+sim.default <- simulate(f, nn)
+dim(sim.default)
+
+z <- sample(1:nn,1)
+ys <- sim.default[,z]
+summary(glm.nb(ys~dose+offset(logleng) ))
+
+
+ 
+
+#https://data.library.virginia.edu/simulating-data-for-count-models/
+require(countreg)
+rootogram(f)
+
+rootogram(f, style = "standing",   main = "Standing")
+rootogram(f, style = "hanging",     main = "Hanging")
+rootogram(f, style = "suspended",   main = "Suspended")
+ 
+rootogram(f, style = "hanging",     main = "Hanging", scale="raw")
+ 
+## inspect output (without plotting)
+r <- rootogram(f, plot = FALSE)
+r
 
 
 
@@ -113,6 +168,103 @@ par(mfrow=c(1,1))
 
 
 
+
+
+coefs <- mvrnorm(n = 10000, mu = coefficients(f), Sigma = vcov(f))
+
+# coef
+coefficients(f)
+colMeans(coefs) #
+#SEs
+sqrt(diag(vcov(f)))
+apply(coefs, 2, sd) # 
+
+
+
+# # One row per case, one column per simulated set of coefficients
+# sim.dat <- matrix(nrow = n, ncol = nrow(coefs))
+# fit.p.mat <- model.matrix(f) # Obtain model matrix
+# # Cross product of model matrix by coefficients, exponentiate result,
+# # then use to simulate Poisson-distributed outcome
+# for (i in 1:nrow(coefs)) {
+#   sim.dat[, i] <- rpois(n, exp(fit.p.mat %*% coefs[i, ]))
+# }
+# rm(i, fit.p.mat) # Clean house
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~trying predict and simulate
+
+fp <- predict(f , newdata=data.frame(dose=dose))
+
+
+# not sure if this is right
+
+
+  # set.seed(4)
+  n <- 100
+  
+  dose <- c(rep("placebo",n),rep("trt",n))
+  
+  k <- f$theta
+  intercept <- as.vector(f$coefficients)[1]
+  beta      <- as.vector(f$coefficients)[2]
+  
+  #p.out <- predict(f, type = "response")
+  
+  s <-  rgamma(n, shape = 1/k, scale = k)
+  s1 <- rgamma(n, shape = 1/k, scale = k)
+  
+  lambda1 <- exp(intercept)   * s  ## Simulate rate
+  lambda2 <- exp(intercept + beta) * s1  ## Simulate rate
+  
+  fx        <- - rexp(2*n) / log(1-drop)
+  length   <- ifelse(fx>1 ,1, fx)
+  
+  
+  y_0 <- rpois(n = n, lambda = (length*    lambda1))  +
+         rpois(n = n, lambda = ((1-length)*lambda2))  
+  
+  y_1 <- rpois(n = n, lambda = (length*    lambda2))  +
+         rpois(n = n, lambda = ((1-length)*lambda2))  
+  
+  dat2 <- data.frame(counts =c(y_0, y_1), dose=dose)
+   
+  ggplot(dat2, aes(x = counts)) +
+    geom_bar() +
+   facet_wrap(~dose)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  
+
+  
+###
+# library(MASS)
+# mysim <- function()
+# {
+#   nobs <- 500
+#   x1 <-runif(nobs)
+#   x2 <-runif(nobs)
+#   xb <- 2 + .75*x1 - 1.25*x2
+#   a <- .5
+#   ia <- 1/.5
+#   exb <- exp(xb)
+#   #xg <- rgamma(nobs, a, ia) # intercept is wrong with this code
+#   xg  <- rgamma(nobs, shape = a, scale = ia)
+#   xbg <-exb*xg
+#   nby <- rpois(nobs, xbg)
+#   nbsim <-glm.nb(nby ~ x1 + x2)
+#   alpha <- nbsim$theta
+#   pr <- sum(residuals(nbsim, type="pearson")^2)
+#   prdisp <- pr/nbsim$df.residual
+#   beta <- nbsim$coef
+#   list(alpha,prdisp,beta)
+# }
+# B <- replicate(10, mysim())
+# mean(unlist(B[1,])) #theta , this is alpha
+# mean(unlist(B[2,])) #Pearson-dispersion statistic
+# apply(matrix(unlist(B[3,]),3,100),1,mean) # intercept x1 x2
+# 
 
 
 
