@@ -54,26 +54,41 @@ summary(f<-glm.nb(y~dose+offset(logleng) ))
   # data. The reference line and confidence envelope reflect the mean and (2.5%, 97.5%) quantiles of
   # {fig:phd-halfnorm} the simulation distribution under the negative-binomial model for the same data
   
+  # First, calculate the sorted absolute values of the residuals |r|(i) and their 
+  # expected normal values, |z|(i) . The basic plot will be plot(expected, observed).
+  
+  
   observed <- sort(abs(rstudent(f)))
   n <- length(observed)
   expected <- qnorm((1:n + n - 1/8)/(2*n + 1/2))
   
+  #
+  # Then, use simulate() to generate S = 100 simulated response vectors 
+  # around the fitted values in the model. Here this uses the negative-binomial
+  # random number generator (rnegbin()) with the same dispersion value 
+  # estimated in the model. The result, called sims here, 
+  # is a data frame of n rows and S = 100 columns, named sim_1, sim_2, ....
+  
   S <- 100
   sims <- simulate(f, nsim=S)
-  
-  #rstudent(glm.nb(y ~ dose + offset(logleng),
-  #   start=coef(f)))
-  
+ 
+  # The next step is computationally intensive, because we have to fit the 
+  # NB model S = 100 times and a little bit tricky, because we need to use
+  # the same model formula as the original, but with the simulated y. We 
+  # first define a function resids to do this for a given y, and then use
+  # apply to calculate them all. To save computing time,
+  # the coefficients from the original model are used as starting values.
   
   resids <- function(y)
     rstudent(glm.nb(y ~ dose + offset(logleng),
                     start=coef(f)))
   
+  # fit models to each simulated y and collect student residuals
   z <- apply(sims,2,resids)
-  z<- abs(z)
-  z <- apply(z, 2, sort)
+  z <- abs(z)            # absolute resids
+  z <- apply(z, 2, sort) # sort each column
   
-  # 
+  # now calculate the mean and quantiles 
   envelope <- 0.95
   mean <- apply(z, 1, mean)
   lower <- apply(z, 1, quantile, prob=(1 - envelope)/2)
