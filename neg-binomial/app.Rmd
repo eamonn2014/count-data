@@ -1,5 +1,5 @@
 ---
-title: "Analysing count data"
+title: "ANALYSING COUNT DATA"
 author: 
 output: 
   flexdashboard::flex_dashboard:
@@ -9,7 +9,7 @@ output:
     source_code: embed
 runtime: shiny
 ---
-Wiki
+Probability mass functions
 ===
 
 ```{r global, include=FALSE}
@@ -21,6 +21,9 @@ Wiki
   library(utf8)  # codes for Greek letters
   library(MethComp)
   library(gridExtra)
+  library(tidyverse)
+  library(car)
+  library(vcd)
   lwd.=3
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -216,64 +219,8 @@ po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 p
 # start of app
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 ```
 
------------------------------------------------------------------------
-
-**Probability mass functions**
- 
-Here we explore the Poisson and the gamma Poisson distribution (aka negative binomial). A common mean can be adjusted and alpha the heterogeneity  dispersion parameter can be adjusted for each individual curve. When alpha is 0 we get the Poisson distribution (actually we use a vanishingly small value for alpha and not zero). Also see the normal distribution plotted for comparison. We use the density functions (top left) and the random number generators (top right). Below are bar graphs based on the density functions. 
-
-
-**Gamma Poisson power**
-
-Here we investigate an analysis of count data and look at power for a 2 arm 1:1 randomised RCT, the outcome measure being a count. The simulations are analysed using the the gamma Poisson model. The user can input the number of patients per arm, the expected mean rate on placebo and the hypothesised treatment effect.  For this model a heterogeneity parameter inputted as 1/alpha is required (based on historical data perhaps). we also allow patients to discontinue treatment, when they do they are assumed to continue to the end of study but their mean rate (if randomised to the new treatment) reverts to the placebo rate. We also have inputs for the follow up time and the number of simulations. An estimate of power is returned, as well as the results of a typical trial that can be expected.
- 
-**Poisson paired counts**
-
-This is an example of paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. Nevertheless, we can adjust the total number of subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods. We will simulate the data based on a expected rate before the intervention and an hypothesised effect of the intervention. We also take into account the correlation between observations for the same individual, the starting value is 0.2. 
-
-**Gamma Poisson**
-
-Here we demonstrate that the negative binomial and gamma Poisson are one and the same. Using the same adjustable population parameters one data set is simulated and analysed using the R rnbinom function and another data set simulated and analysed using the gamma and Poisson distributions. The gamma Poisson is a mixture of different Poisson distributions in which the response counts are assumed to follow a mixed Poisson distribution with a shared gamma distributed random subject effect. The tabs at the bottom present some diagnostic plots. 
-
-
-*The first tab* plots hanging rootograms. The counts are square rooted to approximately adjust for scale differences across the count levels. Otherwise, deviations would only be visible for levels with large observed/expected frequencies.
-
-Next we plots the number of occurrences against a certain frequency ratio (see Friendly (2000) for details) and should give a straight line if the data comes from a poisson, binomial, negative binomial or log-series distribution. The intercept and slope of this straight line conveys information about the underlying distribution. A OLS line (black) and a weighted OLS line (red) are shown. From the coefficients of the latter the distribution is estimated.   If none of the distributions fits well, no parameters are estimated.  A slope of 0 and + intercept suggest Poisson, a - slope and + interept suggest Binomial. ++ suggests Neg binomial and +- log series. 
-
-*The following tab 'Poissoness?'*  If the Poisson distribution fits the data, the plot should show a straight line
-
-*Followed by 'Negative Binomialness?'* If the Negative binomial distribution fits the data, the plot should show a straight line
-
-Default diagnostic plots for the negative-binomial model fit are shown next
-
-
-*The last plot tab 'A distribution that fits well is looked for...'* uses a more robust and useful version of these QQ plots: half normal plots, with simulated confidence envelopes. The essential ideas are:
-• Model departures and outliers are often easier to see for discrete data when the absolute values of residuals are plotted, because large positive and negative values are sorted together. This gives the half-normal plot, in which the absolute values of residuals, arranged in increasing
-order, |r|(i), are plotted against |z|(i) = Φ−1{(n + i −
-1/8)/(2n + 1/2)}. All outliers will then appear in the upper right of such a plot, as points separated from the trend of the remaining cells.
-• The normal-theory reference line, |r|(i) = |z|(i) and the normal-theory confidence envelope can be replaced by simulating residuals from the assumed distribution, that need not be normal. The reference line is taken as the mean of S simulations and the envelope with 1 − α coverage is
-taken as the (α/2, 1 − α/2) quantiles of their values.
-• Specifically, for a GLM, S sets of random observations yj , j = 1, 2, . . . S are generated from the fitted model, each with mean µ hat, the fitted values under from the model and with the same distribution. In R, this is readily accomplished using the generic simulate() function; the random variation around µ hat uses rnorm(), rpois(), rnegbin(), etc., as appropriate for the family of the model.
-• The same model is then fit to each simulated yj , giving a new set of residuals for each simulation. Sorting their absolute values then gives the simulation distribution used as reference for the observed residuals.
-
-First, calculate the sorted absolute values of the residuals |r|(i) and their expected normal values, |z|(i) . The basic plot will be plot(expected, observed).
-
-Then, use simulate() to generate S = 100 simulated response vectors around the fitted values in the model. Here this uses the negative-binomial random number generator (rnegbin()) with the same dispersion value estimated in the model. The result, called sims here, is a data frame of n rows and S = 100 columns, named sim_1, sim_2, ....
-
-The next step is computationally intensive, because we have to fit the NB model S = 100 times and a little bit tricky, because we need to use the same model formula as the original, but with the simulated y. We first define a function resids to do this for a given y, and then use apply to calculate them all. To save computing time, the coefficients from the original model are used as starting values.
-
-We can then use apply() to compute the summary measures defining the center and limits for the simulated confidence interval.
-
-Finally, plot the observed against expected absolute residuals as points, and add the lines for the confidence envelope
-
- 
-
-Probability Mass Functions
-====
- 
 
 Column {.sidebar}
 -----------------------------------------------------------------------
@@ -546,13 +493,13 @@ renderPlot({
 ```
  
 
-Negative binomial power
+Gamma Poisson power
 ====
 
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-Use the inputs below to simulate an RCT with a count outcome measure. We estimate the treatment effect using a negative binomial model   
+Use the inputs below to simulate an RCT with a count outcome measure. We estimate the treatment effect using a gamma Poisson model   
 
 ```{r}
  
@@ -595,7 +542,7 @@ reactive({
   
 cat(paste0("A RCT with 1:1 randomisation is being planned to investigate an intervention on the rate of asthma exacerbations with ",input$N," patients per arm.\n"))
 
-cat(paste0("The negative binomial model will be used as we expect patient heterogeneity of exacerbations beyond that captured by patient level covariates.\nWe will use the natural log of duration of follow up time as an offset variable, the duration of follow up ",input$fup, " will be the planned duration of follow up for all patients."))
+cat(paste0("The gamma Poisson model will be used as we expect patient heterogeneity of exacerbations beyond that captured by patient level covariates.\nWe will use the natural log of duration of follow up time as an offset variable, the duration of follow up ",input$fup, " will be the planned duration of follow up for all patients."))
 
 cat(paste0("\nk is the dispersion parameter, its value is " ,input$k,", this is the same as 1/alpha So alpha is ",1/input$k,". The rate for placebo is ",input$mu0," events per patient year of follow up.\nThe treatment effect hypothesised is ",input$eff, ". \nDrop out probabilities for treatment discontinuation and follow up period (in years) are " ,input$d1, " and " ,input$d2," respectively. \nWe assume a constant exponential hazard rate over time for treatment discontinuation with ",input$d1," and ",input$d2,", the percentages of patients\noff treatment by follow up time in years in active and placebo. \nNo further treatment effect versus placebo is assumed during off treatment, that is ",input$mu0," events per patient year is assumed for patients after treatment discontinuation in treated and placebo.\n"))
 
@@ -678,7 +625,7 @@ Row {data-height=350}
 ```   
  
    
-### A typical result that can be expected, theta is synonymous with $\alpha$
+### A typical result that can be expected, here theta is synonymous with $\alpha$
 
 ```{r}
 
@@ -941,7 +888,7 @@ Gamma Poisson
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-Show the equivalent parameterisation of gamma Poisson and negative binomial !
+Show the equivalent parameterisation of gamma Poisson and negative binomial (rnbinom) !
 
 ```{r}
 
@@ -1038,7 +985,7 @@ renderPrint({
 ``` 
 
 
-### Negative binomial data simulation
+### Negative binomial (rnbinom) data simulation
 
 
 ```{r, eval=TRUE}
@@ -1118,13 +1065,9 @@ library(vcd)
  renderPlot({
    
  f1 <- dat3()
- f <- dat4()$f
-
- #par(mfrow=c(1,2))
+ 
 Ord_plot(f1$y)
-# distplot(f1$y, type="poisson")
- #distplot(f1$y, type="nbinom")
- #par(mfrow=c(1,1))
+ 
 
  })
 
@@ -1140,13 +1083,10 @@ Ord_plot(f1$y)
 
  renderPlot({
  f1 <- dat3()
-  f <- dat4()$f
-
- #par(mfrow=c(1,2))
-# Ord_plot(f1$y)
+  
+ 
  distplot(f1$y, type="poisson")
- #distplot(f1$y, type="nbinom")
- #par(mfrow=c(1,1))
+ 
 
  })
 
@@ -1161,15 +1101,11 @@ Ord_plot(f1$y)
 ```{r}
 
  renderPlot({
+   
  f1 <- dat3()
-  f <- dat4()$f
-
- #par(mfrow=c(1,2))
-# Ord_plot(f1$y)
- #distplot(f1$y, type="poisson")
+  
  distplot(f1$y, type="nbinom")
- #par(mfrow=c(1,1))
-
+ 
  })
 
 
@@ -1185,11 +1121,10 @@ Ord_plot(f1$y)
  renderPlot({
  f1 <- dat3()
  
- # # friendly example 11.17
- #  residualPlot(f, type="rstudent")
  op <- par(mfrow=c(2,2), mar=c(4,4,2,1)+.1, cex.lab=1.2)
-plot(f1)
-par(op)
+
+ plot(f1)
+ par(op)
  
 
  })
@@ -1201,53 +1136,7 @@ par(op)
 
 ```{r, eval=TRUE}
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# gamma and rnbinom equivalence 
-
-#rm(list=ls())
-require(tidyverse)
-require(MASS)
-library(car)
-
-library(vcd)
-
-
-# roundUpNice <- function(x, nice=c(1,2,4,5,6,8,10)) {
-#   if(length(x) != 1) stop("'x' must be of length 1")
-#   10^floor(log10(x)) * nice[[which(x <= 10^floor(log10(x)) * nice)[[1]]]]
-# }
-
-# pop parameters
-# n  <- 1000
-# k  <- 1.3   # this is k, alpha=1/k
-# 1/k         # alpha reported as theta in neg binomial
-# mu0 <- 1
-# mu1 <- mu0*0.75
-# 
-# fup   <- 1
-# drop1 <- 0.1
-# drop2 <- 0.1
-# 
-# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# dose <- c(rep("placebo",n),rep("trt",n))
-# mu   <- c(rep(mu0,n),rep(mu1,n))
-# drop <- c(rep(.1,n),rep(.1,n))
-# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# # discontinuations and follow up
-# f        <- - rexp(2*n) / log(1-drop)
-# length   <- ifelse(f>1,1,f)
-# 
-# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-# 
-# # rnbinom approach
-# y <-  rnbinom(n*2,  p=1/(1+ mu*    length* k),  size=1/k)  +
-#       rnbinom(n*2,  p=1/(1+ mu0*(1-length)*k),  size=1/k)
-# 
-# logleng  <- rep(0, n*2)
-#  
-# summary(f<-glm.nb(y~dose+offset(logleng) ))
-# 
+ 
 
  renderPlot({
    
@@ -1313,6 +1202,59 @@ par(mfrow=c(1,1))
 
 ```
 
+Wiki
+=== 
+ 
+
+**Probability mass functions**
+ 
+An exploration of the Poisson and the gamma Poisson distribution (aka negative binomial). A common mean can be adjusted and alpha the heterogeneity  dispersion parameter can be adjusted for each individual curve. When alpha is 0 we get the Poisson distribution (actually we use a vanishingly small value for alpha and not zero). Also see the normal distribution plotted for comparison. We use the density functions (top left) and the random number generators (top right). Below are bar graphs based on the density functions. 
+
+
+**Gamma Poisson power**
+
+An investigation of an analysis of count data and look at power for a 2 arm 1:1 randomised RCT, the outcome measure being a count. The simulations are analysed using the the gamma Poisson model. The user can input the number of patients per arm, the expected mean rate on placebo and the hypothesised treatment effect.  For this model a heterogeneity parameter inputted as 1/alpha is required (based on historical data perhaps). we also allow patients to discontinue treatment, when they do they are assumed to continue to the end of study but their mean rate (if randomised to the new treatment) reverts to the placebo rate. We also have inputs for the follow up time and the number of simulations. An estimate of power is returned, as well as the results of a typical trial that can be expected.
+ 
+**Poisson paired counts**
+
+An example of a paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. Nevertheless, we can adjust the total number of subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods. We will simulate the data based on a expected rate before the intervention and an hypothesised effect of the intervention. We also take into account the correlation between observations for the same individual, the starting value is 0.2. 
+
+**Gamma Poisson**
+
+A demonstration showing negative binomial and gamma Poisson are one and the same. Using the same adjustable population parameters one data set is simulated and analysed using the R rnbinom function and another data set simulated and analysed using the gamma and Poisson distributions. The gamma Poisson is a mixture of different Poisson distributions in which the response counts are assumed to follow a mixed Poisson distribution with a shared gamma distributed random subject effect. The tabs at the bottom present some diagnostic plots. 
+
+The first plot tab shows hanging **Rootograms**. The counts are square rooted to approximately adjust for scale differences across the count levels. Otherwise, deviations would only be visible for levels with large observed/expected frequencies.
+
+**'A distribution that fits well is looked for...'** on this tab we plot the number of occurrences against a certain frequency ratio (see Friendly (2000) for details) and should give a straight line if the data comes from a poisson, binomial, negative binomial or log-series distribution. The intercept and slope of this straight line conveys information about the underlying distribution. A OLS line (black) and a weighted OLS line (red) are shown. From the coefficients of the latter the distribution is estimated.   If none of the distributions fits well, no parameters are estimated.  A slope of 0 and + intercept suggest Poisson, a - slope and + interept suggest Binomial. ++ suggests Neg binomial and +- log series. 
+
+**The plot tab 'Poissoness?'** If the Poisson distribution fits the data, the plot should show a straight line
+
+**The plot tab by 'Negative Binomialness?'** If the Negative binomial distribution fits the data, the plot should show a straight line
+
+**Default diagnostic plots** for the gamma Poisson model fit are shown next
+
+**Half normal plots** uses a more robust and useful version of quantile quantile plots: half normal plots, with simulated confidence intervals. The essential ideas are:
+
+Model departures and outliers are often easier to see for discrete data when the absolute values of residuals are plotted, because large positive and negative values are sorted together. This gives the half-normal plot, in which the absolute values of residuals, arranged in increasing
+order, |r|(i), are plotted against |z|(i) = Φ−1{(n + i −1/8)/(2n + 1/2)}. All outliers will then appear in the upper right of such a plot, as points separated from the trend.
+
+The normal-theory reference line, |r|(i) = |z|(i) and the normal-theory confidence interval can be replaced by simulating residuals from the assumed distribution, that need not be normal. The reference line is taken as the mean of S simulations and the interval with 1 − α coverage is
+taken as the (α/2, 1 − α/2) quantiles of their values.
+
+Specifically, for a GLM, S sets of random observations yj , j = 1, 2, . . . S are generated from the fitted model, each with mean µ hat, the fitted values under from the model and with the same distribution. In R, this is readily accomplished using the generic simulate() function; the random variation around µ hat uses rnorm(), rpois(), rnegbin(), etc., as appropriate for the family of the model.
+
+The same model is then fit to each simulated yj , giving a new set of residuals for each simulation. Sorting their absolute values then gives the simulation distribution used as reference for the observed residuals.
+
+First, calculate the sorted absolute values of the residuals |r|(i) and their expected normal values, |z|(i) . The basic plot will be a  plot of expected v observed.
+
+Then, use simulate() to generate S = 100 simulated response vectors around the fitted values in the model. Here this uses the negative-binomial random number generator (rnegbin()) with the same dispersion value estimated in the model. The result, called sims here, is a data frame of n rows and S = 100 columns, named sim_1, sim_2, ....
+
+The next step is computationally intensive, because we have to fit the NB model S = 100 times and a little bit tricky, because we need to use the same model formula as the original, but with the simulated y. We first define a function resids to do this for a given y, and then use apply to calculate them all. To save computing time, the coefficients from the original model are used as starting values.
+
+We can then use apply() to compute the summary measures defining the center and limits for the simulated confidence interval.
+
+Finally, plot the observed against expected absolute residuals as points, and add the lines for the confidence interval.
+ 
 Notes
 ===
 gelmans book rnegbiniom function
