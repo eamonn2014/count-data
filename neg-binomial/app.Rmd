@@ -734,6 +734,9 @@ dat3 <- reactive({
   d2 <-  input$d2.pg
   fup <-  input$fup.pg
   
+  if (d1==0) {d1=0.0001}
+  if (d2==0) {d2=0.0001}
+  
   s <-  rgamma(n, shape = 1/k, scale = k)
   s1 <- rgamma(n, shape = 1/k, scale = k)
  
@@ -743,7 +746,10 @@ dat3 <- reactive({
   drop <- c(rep(d1,n),rep(d2,n))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # discontinuations and follow up
-  f        <- - rexp(2*n) / log(1-drop)
+  
+  
+  f        <- - exp(2*n) / log(1-drop/fup)
+  
   length   <- ifelse(f>fup,fup,f)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
@@ -752,7 +758,7 @@ dat3 <- reactive({
   lambda2 <- mu0 * s1  ## Simulate rate
   
   y_0 <- rpois(n = n*2, lambda = (length*lambda1))  +
-         rpois(n = n*2, lambda = ((1-length)*lambda2))  
+         rpois(n = n*2, lambda = ((fup-length)*lambda2))  
    
          logleng  <- rep(0, n*2)  # all patients have same length follow up
   
@@ -785,17 +791,20 @@ dat4 <- reactive({
   d1 <-   input$d1.pg
   d2 <-   input$d2.pg
   fup <-  input$fup.pg
+  
+  if (d1==0) {d1=0.0001}
+  if (d2==0) {d2=0.0001}
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   dose <- c(rep("placebo",n),rep("trt",n))
   mu   <- c(rep(mu0,n),rep(mu1,n))
   drop <- c(rep(d1,n),rep(d2,n))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # discontinuations and follow up
-  f        <- - rexp(2*n) / log(1-drop)
+  f        <- - rexp(2*n) / log(1-drop/fup)
   length   <- ifelse(f>fup,fup,f)
 
   y <-  rnbinom(n*2,  p=1/(1+ mu*    length* k),  size=1/k)  +
-        rnbinom(n*2,  p=1/(1+ mu0*(1-length)*k),  size=1/k)
+        rnbinom(n*2,  p=1/(1+ mu0*(fup-length)*k),  size=1/k)
   
   logleng  <- rep(0, n*2)
    
