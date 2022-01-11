@@ -736,7 +736,8 @@ dat3 <- reactive({
   
   if (d1==0) {d1=0.0001}
   if (d2==0) {d2=0.0001}
-  
+  if (k==0) {k=0.0001}
+   
   s <-  rgamma(n, shape = 1/k, scale = k)
   s1 <- rgamma(n, shape = 1/k, scale = k)
  
@@ -748,9 +749,9 @@ dat3 <- reactive({
   # discontinuations and follow up
   
   
-  f        <- - exp(2*n) / log(1-drop/fup)
+  f        <- - exp(2*n) / log(1-drop/fup) # scale according to follow up!
   
-  length   <- ifelse(f>fup,fup,f)
+  length   <- ifelse(f>fup,fup,f)          # make sure fup here
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
@@ -759,7 +760,7 @@ dat3 <- reactive({
   
   y_0 <- rpois(n = n*2, lambda = (length*lambda1))  +
          rpois(n = n*2, lambda = ((fup-length)*lambda2))  
-   
+         # ensure follow up here!
          logleng  <- rep(log(fup), n*2)  # all patients have same length follow up
   
   f1<-glm.nb(y_0~dose+offset(logleng) )
@@ -794,19 +795,20 @@ dat4 <- reactive({
   
   if (d1==0) {d1=0.0001}
   if (d2==0) {d2=0.0001}
+   if (k==0) {k=0.0001}
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   dose <- c(rep("placebo",n),rep("trt",n))
   mu   <- c(rep(mu0,n),rep(mu1,n))
   drop <- c(rep(d1,n),rep(d2,n))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # discontinuations and follow up
-  f        <- - rexp(2*n) / log(1-drop/fup)
-  length   <- ifelse(f>fup,fup,f)
+  f        <- - rexp(2*n) / log(1-drop/fup) # scale according to follow up!
+  length   <- ifelse(f>fup,fup,f)           # make sure fup here!
 
   y <-  rnbinom(n*2,  p=1/(1+ mu*    length* k),  size=1/k)  +
         rnbinom(n*2,  p=1/(1+ mu0*(fup-length)*k),  size=1/k)
   
-  logleng  <- rep(log(fup), n*2)
+  logleng  <- rep(log(fup), n*2)            # make sure follow up here !
    
   f<-glm.nb(y~dose+offset(logleng) )
 
@@ -1208,7 +1210,7 @@ Row {.tabset .tabset-fade}
 Wiki
 === 
  
-**Notes:** The binomial distribution describes the number of r successes in n trials. The geometric distribution describes the number of failures before the first success, r. The negative binomial distribution describes the number of failures before the rth success. Confusingly, the term ‘dispersion parameter’ can refer to either k or $\alpha$ ; other terms for k include ‘shape parameter’ 'heterogeneity (ancillary) parameter' and ‘clustering coefficient’. The only restriction placed on $\alpha$ is that it take positive rational values, rarely above 4 (according to Hilbe page 190). Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. The larger the gamma shape parameter, the more dispersed is the distribution. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. When $\alpha$ = 1, the negative binomial distribution takes the form of a
+**Notes:** The binomial distribution describes the number of r successes in n trials. The geometric distribution describes the number of failures before the first success, r. The negative binomial distribution describes the number of failures before the rth success. Confusingly, the term ‘dispersion parameter’ can refer to either k or $\alpha$ ; other terms  include ‘shape parameter’ 'heterogeneity (ancillary) parameter' and ‘clustering coefficient’. The only restriction placed on $\alpha$ is that it take positive rational values, rarely above 4 (according to Hilbe page 190). Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. The larger the gamma shape parameter, the more dispersed is the distribution. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. When $\alpha$ = 1, the negative binomial distribution takes the form of a
 geometric distribution, which is the discrete correlate of the continuous negative
 exponential distribution. The negative binomial distribution with $\alpha$ = 0 is Poisson.
 As the mean increases, the probability of a zero decreases, and the more the shape approximates a Gaussian distribution. As the Poisson mean gets larger it approaches normality, this is not the case for the negative binomial distribution. 
