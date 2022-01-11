@@ -228,7 +228,7 @@ Here we explore the Poisson and the gamma Poisson distribution (aka negative bin
 
 Tab  2
 
-Here we investigate an analysis of count data and look at power for a 2 arm 1:1 randomised RCT, the outcome measure being a count. The simulations are analysed using the the Poisson gamma model. The user can input the number of patients per arm, the expected mean rate on placebo and the hypothesised treatment effect. For this model a heterogeneity parameter inputted as 1/alpha is required (based on historical data perhaps). we also allow patients to discontinue treatment, when they do they are assumed to continue to the end of study but their mean rate (if randomised to the new treatment) reverts to the placebo rate. We also have inputs for the follow up time and the number of simulations. An estimate of power is returned, as well as the results of a typical trial that can be expected.
+Here we investigate an analysis of count data and look at power for a 2 arm 1:1 randomised RCT, the outcome measure being a count. The simulations are analysed using the the gamma Poisson model. The user can input the number of patients per arm, the expected mean rate on placebo and the hypothesised treatment effect.  For this model a heterogeneity parameter inputted as 1/alpha is required (based on historical data perhaps). we also allow patients to discontinue treatment, when they do they are assumed to continue to the end of study but their mean rate (if randomised to the new treatment) reverts to the placebo rate. We also have inputs for the follow up time and the number of simulations. An estimate of power is returned, as well as the results of a typical trial that can be expected.
  
 Tab  3
 
@@ -243,13 +243,14 @@ The first tab plots hanging rootograms. The counts are square rooted to approxim
 
 Next we plots the number of occurrences against a certain frequency ratio (see Friendly (2000) for details) and should give a straight line if the data comes from a poisson, binomial, negative binomial or log-series distribution. The intercept and slope of this straight line conveys information about the underlying distribution. A OLS line (black) and a weighted OLS line (red) are shown. From the coefficients of the latter the distribution is estimated.   If none of the distributions fits well, no parameters are estimated.  A slope of 0 and + intercept suggest Poisson, a - slope and + interept suggest Binomial. ++ suggests Neg binomial and +- log series. 
 
-Plot 3  If the Poisson distribution fits the data, the plot should show a straight line
+The following tab 'Poissoness?'  If the Poisson distribution fits the data, the plot should show a straight line
 
-Plot 4  If the Negative binomial distribution fits the data, the plot should show a straight line
+Followed by 'Negative Binomialness?' If the Negative binomial distribution fits the data, the plot should show a straight line
 
-Plot 5 shows default diagnostic plots for the negative-binomial model fit
+Default diagnostic plots for the negative-binomial model fit are shown next
 
-The final  tab uses a more robust and useful version of these QQ plots: half normal plots, with simulated confidence envelopes. The essential ideas are:
+
+The last plot tab 'A distribution that fits well is looked for...' uses a more robust and useful version of these QQ plots: half normal plots, with simulated confidence envelopes. The essential ideas are:
 • Model departures and outliers are often easier to see for discrete data when the absolute values of residuals are plotted, because large positive and negative values are sorted together. This gives the half-normal plot, in which the absolute values of residuals, arranged in increasing
 order, |r|(i), are plotted against |z|(i) = Φ−1{(n + i −
 1/8)/(2n + 1/2)}. All outliers will then appear in the upper right of such a plot, as points separated from the trend of the remaining cells.
@@ -934,13 +935,13 @@ Row {.tabset .tabset-fade}
  
 ``` 
 
-Poisson gamma!
+Gamma Poisson
 ====
 
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-Show the equivalent parameterisation of Poisson gamma and negative binomial !
+Show the equivalent parameterisation of gamma Poisson and negative binomial !
 
 ```{r}
 
@@ -986,7 +987,7 @@ Show the equivalent parameterisation of Poisson gamma and negative binomial !
 Column {data-width=400, height=300}
 -----------------------------------------------------------------------
 
-### Poisson gamma data simulation
+### Gamma Poisson data simulation
 
 ```{r, eval=TRUE}
 
