@@ -1,48 +1,51 @@
 
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # Atkinson (1981, 1987) suggested a more robust and useful version of these QQ plots: half
 # normal plots, with simulated confidence envelopes. Friendly page 481
 
 
-rm(list=ls())
-require(tidyverse)
-require(MASS)
-library(car)
-library(vcd)
- 
+    rm(list=ls())
+    require(tidyverse)
+    require(MASS)
+    library(car)
+    library(vcd)
+     
+    
+    # pop parameters
+    n  <- 1000
+    k  <- 1.3   # this is k, alpha=1/k
+    1/k         # alpha reported as theta in neg binomial
+    mu0 <- 1
+    mu1 <- mu0*0.75
+    
+    fup   <- 1
+    drop1 <- 0.1
+    drop2 <- 0.1
+     
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    dose <- c(rep("placebo",n),rep("trt",n))
+    mu   <- c(rep(mu0,n),rep(mu1,n))
+    drop <- c(rep(.1,n),rep(.1,n))
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # discontinuations and follow up
+    f        <- - rexp(2*n) / log(1-drop)
+    length   <- ifelse(f>1,1,f)
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    # rnbinom approach
+    y <-  rnbinom(n*2,  p=1/(1+ mu*    length* k),  size=1/k)  +
+          rnbinom(n*2,  p=1/(1+ mu0*(1-length)*k),  size=1/k)
+    
+    logleng  <- rep(0, n*2)
+    
+    summary(f<-glm.nb(y~dose+offset(logleng) ))
 
-# pop parameters
-n  <- 1000
-k  <- 1.3   # this is k, alpha=1/k
-1/k         # alpha reported as theta in neg binomial
-mu0 <- 1
-mu1 <- mu0*0.75
-
-fup   <- 1
-drop1 <- 0.1
-drop2 <- 0.1
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dose <- c(rep("placebo",n),rep("trt",n))
-mu   <- c(rep(mu0,n),rep(mu1,n))
-drop <- c(rep(.1,n),rep(.1,n))
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# discontinuations and follow up
-f        <- - rexp(2*n) / log(1-drop)
-length   <- ifelse(f>1,1,f)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# rnbinom approach
-y <-  rnbinom(n*2,  p=1/(1+ mu*    length* k),  size=1/k)  +
-      rnbinom(n*2,  p=1/(1+ mu0*(1-length)*k),  size=1/k)
-
-logleng  <- rep(0, n*2)
-
-summary(f<-glm.nb(y~dose+offset(logleng) ))
 
 
-
-  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   
   par(mfrow=c(1,2))
@@ -102,3 +105,36 @@ summary(f<-glm.nb(y~dose+offset(logleng) ))
   lines(expected, lower, lty=2, lwd=2, col="red")
   lines(expected, upper, lty=2, lwd=2, col="red")
   # identify(expected, observed, labels=names(observed), n=3)
+   
+  
+  ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  res <- rstudent(f)
+  plot(density(res), lwd=2, col="blue",
+         main="Density of studentized residuals")
+   rug(res)
+  
+    #why the bimodality?
+   plot(jitter(log(y+1), factor=1.5), res,
+            xlab="log (y+1)", ylab="Studentized residual")
+  
+   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
