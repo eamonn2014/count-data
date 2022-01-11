@@ -747,8 +747,6 @@ reactive({
   X <- input$mu0.p               # var of poisson (= mean)
   Y <- input$mu0.p*input$eff.p   # var of poisson (= mean)
 
-
-  
   cat(paste0("Evaluations based on ",input$sims.p," simulations take into consideration correlation, the default starting value is "
        ,input$r,". The observed mean correlation is ",mean( unlist(x[,"V10"])), "\nThe median p-value from a mixed effects Poisson model is "
        ,median( unlist(x[,"V2"]))   , 
@@ -893,14 +891,14 @@ Show the equivalent parameterisation of gamma Poisson and negative binomial (rnb
 ```{r}
 
 
-  sliderInput('N.pg', 'Patients per arm', value=1000,
-                min = 100, max = 100000, step=5, ticks=F)
-  
-  sliderInput('mu0.pg', 'Placebo mean rate \u03BC', value=1,
-                min = 0.1, max = 25, step=.05, ticks=F)
-  
-  sliderInput('eff.pg', 'Hypothesised treatment effect ', value=.75,  # 1/2 ing to doubling
-                min = 0.5, max = 2, step=.05, ticks=F)
+    sliderInput('N.pg', 'Patients per arm', value=1000,
+                  min = 100, max = 100000, step=5, ticks=F)
+    
+    sliderInput('mu0.pg', 'Placebo mean rate \u03BC', value=1,
+                  min = 0.1, max = 25, step=.05, ticks=F)
+    
+    sliderInput('eff.pg', 'Hypothesised treatment effect ', value=.75,  # 1/2 ing to doubling
+                  min = 0.5, max = 2, step=.05, ticks=F)
   
     sliderInput('k.pg', '1/\u03B1 the heterogeneity (ancillary) parameter', value = c(1.3),
                   min = 0, max = 5 ,step=0.01, ticks=F)
@@ -913,10 +911,8 @@ Show the equivalent parameterisation of gamma Poisson and negative binomial (rnb
   
     sliderInput('fup.pg', 'Follow up (yrs)', value = c(1),
             min = 0, max = 10, step=1,ticks=F)
-    #  
-    # sliderInput('sims.pg', 'Power simulations', value= 10,
-    #             min = 100, max = 1000, step= 100, ticks=F)
-    # 
+     
+    
 # n  <- 1000
 # k  <- 1.3   # this is k, alpha=1/k
 # 1/k         # alpha reported as theta in neg binomial
@@ -942,36 +938,36 @@ Column {data-width=400, height=300}
 dat3 <- reactive({
  
 
-k <-   input$k.pg
-n <-   input$N.pg 
-mu0 <- input$mu0.pg
-mu1 <- mu0*input$eff.pg
-d1 <-  input$d1.pg
-d2 <-  input$d2.pg
-
-s <-  rgamma(n, shape = 1/k, scale = k)
-s1 <- rgamma(n, shape = 1/k, scale = k)
+  k <-   input$k.pg
+  n <-   input$N.pg 
+  mu0 <- input$mu0.pg
+  mu1 <- mu0*input$eff.pg
+  d1 <-  input$d1.pg
+  d2 <-  input$d2.pg
+  
+  s <-  rgamma(n, shape = 1/k, scale = k)
+  s1 <- rgamma(n, shape = 1/k, scale = k)
  
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dose <- c(rep("placebo",n),rep("trt",n))
-mu   <- c(rep(mu0,n),rep(mu1,n))
-drop <- c(rep(d1,n),rep(d2,n))
+  dose <- c(rep("placebo",n),rep("trt",n))
+  mu   <- c(rep(mu0,n),rep(mu1,n))
+  drop <- c(rep(d1,n),rep(d2,n))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# discontinuations and follow up
-f        <- - rexp(2*n) / log(1-drop)
-length   <- ifelse(f>1,1,f)
+  # discontinuations and follow up
+  f        <- - rexp(2*n) / log(1-drop)
+  length   <- ifelse(f>1,1,f)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
-lambda1 <- mu   * s  ## Simulate rate
-lambda2 <- mu0 * s1  ## Simulate rate
-
-y_0 <- rpois(n = n*2, lambda = (length*lambda1))  +
-       rpois(n = n*2, lambda = ((1-length)*lambda2))  
- 
-       logleng  <- rep(0, n*2)  # all patients have same length follow up
-
-f1<-glm.nb(y_0~dose+offset(logleng) )
+  lambda1 <- mu   * s  ## Simulate rate
+  lambda2 <- mu0 * s1  ## Simulate rate
+  
+  y_0 <- rpois(n = n*2, lambda = (length*lambda1))  +
+         rpois(n = n*2, lambda = ((1-length)*lambda2))  
+   
+         logleng  <- rep(0, n*2)  # all patients have same length follow up
+  
+  f1<-glm.nb(y_0~dose+offset(logleng) )
 
 })
 
@@ -993,28 +989,28 @@ renderPrint({
 
 dat4 <- reactive({
 
-k <-    input$k.pg
-n <-    input$N.pg 
-mu0 <-  input$mu0.pg
-mu1 <-  mu0*input$eff.pg
-d1 <-   input$d1.pg
-d2 <-   input$d2.pg
+  k <-    input$k.pg
+  n <-    input$N.pg 
+  mu0 <-  input$mu0.pg
+  mu1 <-  mu0*input$eff.pg
+  d1 <-   input$d1.pg
+  d2 <-   input$d2.pg
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dose <- c(rep("placebo",n),rep("trt",n))
-mu   <- c(rep(mu0,n),rep(mu1,n))
-drop <- c(rep(d1,n),rep(d2,n))
+  dose <- c(rep("placebo",n),rep("trt",n))
+  mu   <- c(rep(mu0,n),rep(mu1,n))
+  drop <- c(rep(d1,n),rep(d2,n))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # discontinuations and follow up
-f        <- - rexp(2*n) / log(1-drop)
-length   <- ifelse(f>1,1,f)
+  f        <- - rexp(2*n) / log(1-drop)
+  length   <- ifelse(f>1,1,f)
 
-y <-  rnbinom(n*2,  p=1/(1+ mu*    length* k),  size=1/k)  +
-      rnbinom(n*2,  p=1/(1+ mu0*(1-length)*k),  size=1/k)
-
-logleng  <- rep(0, n*2)
- 
-f<-glm.nb(y~dose+offset(logleng) )
+  y <-  rnbinom(n*2,  p=1/(1+ mu*    length* k),  size=1/k)  +
+        rnbinom(n*2,  p=1/(1+ mu0*(1-length)*k),  size=1/k)
+  
+  logleng  <- rep(0, n*2)
+   
+  f<-glm.nb(y~dose+offset(logleng) )
 
  return(list(  f=f, y=y, logleng=logleng, dose=dose))
 
@@ -1024,7 +1020,9 @@ f<-glm.nb(y~dose+offset(logleng) )
 renderPrint({
  
      dat4 <- dat4()$f
+     
      summary(dat4)
+     
     })
 
 
@@ -1043,11 +1041,11 @@ Column {.tabset .tabset-fade}
  renderPlot({
    
  f1 <- dat3()
- f <- dat4()$f #  d <- md()$foo
+ f <- dat4()$f  
    
  par(mfrow=c(1,2))
- countreg::rootogram(f1, style = "hanging",     main = "Hanging plot gamma poisson")
- countreg::rootogram(f,  style = "hanging",     main = "Hanging plot rnbinomial")
+ countreg::rootogram(f1, style = "hanging",     main = "Hanging plot based on gamma poisson simulation")
+ countreg::rootogram(f,  style = "hanging",     main = "Hanging plot based on rnbinom simulation ")
  par(mfrow=c(1,1))
  
  })
@@ -1059,14 +1057,12 @@ Column {.tabset .tabset-fade}
  
 ```{r}
 
-
-library(vcd)
-
+ 
  renderPlot({
    
  f1 <- dat3()
  
-Ord_plot(f1$y)
+ Ord_plot(f1$y)
  
 
  })
@@ -1082,15 +1078,13 @@ Ord_plot(f1$y)
 ```{r, eval=TRUE}
 
  renderPlot({
+   
  f1 <- dat3()
-  
- 
+
  distplot(f1$y, type="poisson")
  
 
  })
-
-
 
 
 ```
@@ -1119,11 +1113,13 @@ Ord_plot(f1$y)
 ```{r}
 
  renderPlot({
+   
  f1 <- dat3()
  
  op <- par(mfrow=c(2,2), mar=c(4,4,2,1)+.1, cex.lab=1.2)
 
  plot(f1)
+ 
  par(op)
  
 
@@ -1132,7 +1128,7 @@ Ord_plot(f1$y)
 
 ```
 
-### Half normal plots
+### Quantile quantile and half normal plots
 
 ```{r, eval=TRUE}
 
@@ -1140,7 +1136,6 @@ Ord_plot(f1$y)
 
  renderPlot({
    
-# f1 <- dat3()
    f <- dat4()$f
    dose <- dat4()$dose
    y <- dat4()$dose
@@ -1156,42 +1151,39 @@ qqPlot(rstudent(f), xlab="Normal quantiles", ylab="Studentized residuals")
 # {fig:phd-halfnorm} the simulation distribution under the negative-binomial model for the same data
 
 observed <- sort(abs(rstudent(f)))
+
 n <- length(observed)
+
 expected <- qnorm((1:n + n - 1/8)/(2*n + 1/2))
 
 S <- 100
 sims <- simulate(f, nsim=S)
  
-#rstudent(glm.nb(y ~ dose + offset(logleng),
-#   start=coef(f)))
-
-
  resids <- function(y)
-rstudent(glm.nb(y ~ dose + offset(logleng),
+           rstudent(glm.nb(y ~ dose + offset(logleng),
  start=coef(f)))
 
 z <- apply(sims,2,resids)
-z<- abs(z)
+z <- abs(z)
 z <- apply(z, 2, sort)
  
-# 
- envelope <- 0.95
+
+ lim <- 0.95
  mean <- apply(z, 1, mean)
- lower <- apply(z, 1, quantile, prob=(1 - envelope)/2)
- upper <- apply(z, 1, quantile, prob=(1 + envelope)/2)
+ lower <- apply(z, 1, quantile, prob=(1 - lim)/2)
+ upper <- apply(z, 1, quantile, prob=(1 + lim)/2)
 
 
 plot(expected, observed,
  xlab='Expected value of half-normal order statistic',
-ylab='Absolute value of studentized residual')
+ ylab='Absolute value of studentized residual')
  lines(expected, mean, lty=1, lwd=2, col="blue")
  lines(expected, lower, lty=2, lwd=2, col="red")
  lines(expected, upper, lty=2, lwd=2, col="red")
-# identify(expected, observed, labels=names(observed), n=3)
-
+ 
 par(mfrow=c(1,1))
 # res <- rstudent(f)
-# plot(density(res), lwd=2, col="blue",
+# plot(density(res), lwd=2, col="blue", 
 # main="Density of studentized residuals")
 # rug(res)
 # 
@@ -1205,11 +1197,14 @@ par(mfrow=c(1,1))
 Wiki
 === 
  
+Notes: The binomial distribution describes the number of r successes in n trials. The geometric distribution describes the number of failures before the first success, r. The negative binomial distribution describes the number of failures before the rth success. Confusingly, the term ‘dispersion parameter’ can refer to either k or $\alpha$ ; other terms for k include ‘shape parameter’ 'heterogeneity (ancillary) parameter' and ‘clustering coefficient’. The only restriction placed on $\alpha$ is that it take positive rational values, rarely above 4 (according to Hilbe page 190). Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. The larger the gamma shape parameter, the more dispersed is the distribution. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. When $\alpha$ = 1, the negative binomial distribution takes the form of a
+geometric distribution, which is the discrete correlate of the continuous negative
+exponential distribution. The negative binomial distribution with $\alpha$ = 0 is Poisson.
+As the mean increases, the probability of a zero decreases, and the more the shape approximates a Gaussian distribution. As the Poisson mean gets larger it approaches normality, this is not the case for the negative binomial distribution. 
 
 **Probability mass functions**
  
 An exploration of the Poisson and the gamma Poisson distribution (aka negative binomial). A common mean can be adjusted and alpha the heterogeneity  dispersion parameter can be adjusted for each individual curve. When alpha is 0 we get the Poisson distribution (actually we use a vanishingly small value for alpha and not zero). Also see the normal distribution plotted for comparison. We use the density functions (top left) and the random number generators (top right). Below are bar graphs based on the density functions. 
-
 
 **Gamma Poisson power**
 
@@ -1233,7 +1228,7 @@ The first plot tab shows hanging **Rootograms**. The counts are square rooted to
 
 **Default diagnostic plots** for the gamma Poisson model fit are shown next
 
-**Half normal plots** uses a more robust and useful version of quantile quantile plots: half normal plots, with simulated confidence intervals. The essential ideas are:
+**Quantile quantile and half normal plots** quantile quantile (qq) plots and a more robust and useful version of qq lots: half normal plots, with simulated confidence intervals. The essential ideas are:
 
 Model departures and outliers are often easier to see for discrete data when the absolute values of residuals are plotted, because large positive and negative values are sorted together. This gives the half-normal plot, in which the absolute values of residuals, arranged in increasing
 order, |r|(i), are plotted against |z|(i) = Φ−1{(n + i −1/8)/(2n + 1/2)}. All outliers will then appear in the upper right of such a plot, as points separated from the trend.
@@ -1268,48 +1263,16 @@ explain corr poisson approach <- many packages
 understand neg binomial rct rnbinom inputs
 gamma - see basics plot
 
-When $\alpha$ = 1, the negative binomial distribution takes the form of a
-geometric distribution, which is the discrete correlate of the continuous negative
-exponential distribution. 
-The negative binomial distribution with $\alpha$ = 0 is Poisson.
-As the mean increases, the probability of
-a zero decreases, and the more the shape approximates a Gaussian distribution.
-As the Poisson mean gets larger it approaches normality, the negative binomial distribution does not respond to larger mean values in that manner. 
 
-
-The binomial distribution describes the number of r successes in n trials.
-
-The geometric distribution describes the number of failures before the first success, r.
-
-The negative binomial distribution describes the number of failures before the rth success. (Hilbe page 194)
-
-Confusingly, the term ‘dispersion parameter’ can refer to either k or $\alpha$ ; other terms for k include ‘shape
-parameter’ and ‘clustering coefficient’.
-
-The only restriction placed on  $\alpha$ is that it take positive rational values,
-rarely above 4 (Hilbe page 190)
 
  
-
-Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity.
-
-
-
-Accordingly, all calculations in this study were conducted using $\alpha$, but all results and discussion
-are posed in terms of k?
-
-In this study ML estimation was conducted for the parameter $\alpha$,
-but results are reported in terms of k = 1/ $\alpha$ because k is more
-familiar to epidemiologists and ecologists. Estimates of $\alpha$ were
-restricted to positive values, because the allowed range for k was (0,infinity). 
 
 
 file:///C:/Users/Lenovo/OneDrive/Documents/PAPERS/COUNT%20DATA/TRISTAN%20study%20Keene%202007.pdf
 thy dispersion is alpha in this paper example figure 1
-
- The larger the gamma shape parameter, the more dispersed is the distribution
  
- The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data
+ 
+
 
 
 
