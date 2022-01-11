@@ -1042,7 +1042,7 @@ cat(paste0("\n3) Transform them to the desired correlated probability distributi
 Row {data-height=250}
 -----------------------------------------------------------------------
 
-### Results
+### Results (Estimates and power)
 
 
 ```{r, eval=TRUE}
@@ -1272,6 +1272,7 @@ References
     https://stackoverflow.com/questions/6044800/adding-greek-character-to-axis-title
     Discrete Data Analysis with R Visualization and Modeling Techniques for Categorical and Count Data. Michael Friendly, 2015
     add references for gen corr data
-    add conroy stata paper on wrst
+    https://journals.sagepub.com/doi/pdf/10.1177/1536867X1201200202 What hypotheses do “nonparametric” two-group tests actually test?
+
 
  
