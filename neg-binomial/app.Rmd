@@ -1213,7 +1213,7 @@ An exploration of the Poisson and the gamma Poisson distribution (aka negative b
 
 **Gamma Poisson power**
 
-An investigation of an analysis of count data and look at power for a 2 arm 1:1 randomised RCT, the outcome measure being a count. The simulations are analysed using the the gamma Poisson model. The user can input the number of patients per arm, the expected mean rate on placebo and the hypothesised treatment effect.  For this model a heterogeneity parameter inputted as 1/alpha is required (based on historical data perhaps). we also allow patients to discontinue treatment, when they do they are assumed to continue to the end of study but their mean rate (if randomised to the new treatment) reverts to the placebo rate. We also have inputs for the follow up time and the number of simulations. An estimate of power is returned, as well as the results of a typical trial that can be expected.
+An investigation of an analysis of count data and look at power for a 2 arm 1:1 randomised RCT, the outcome measure being a count. The simulations are analysed using the the gamma Poisson model. The user can input the number of patients per arm, the expected mean rate on placebo and the hypothesised treatment effect.  For this model a heterogeneity parameter inputted as 1/alpha is required (based on historical data perhaps). We also allow patients to discontinue treatment, when they do they are assumed to continue to the end of study but their mean rate (if randomised to the new treatment) reverts to the placebo rate. We also have inputs for the follow up time and the number of simulations. An estimate of power is returned, as well as the results of a typical trial that can be expected.
  
 **Poisson paired counts**
 
@@ -1317,11 +1317,12 @@ thy dispersion is alpha in this paper example figure 1
 References
 ====
  
-``` 
  
     https://stackoverflow.com/questions/52225348/shiny-flexdashboard-reference-object-in-new-tabset#52225733
     https://stats.stackexchange.com/questions/71194/fitting-a-poisson-distribution-with-lme4-and-nlme
     https://stats.stackexchange.com/questions/27869/fitting-a-poisson-glm-mixed-model-with-a-random-slope-and-intercept
     https://stackoverflow.com/questions/6044800/adding-greek-character-to-axis-title
     Discrete Data Analysis with R Visualization and Modeling Techniques for Categorical and Count Data. Michael Friendly, 2015
+    add references for gen corr data
+    add conroy stata paper on wrst
 
