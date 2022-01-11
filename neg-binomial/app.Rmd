@@ -664,218 +664,6 @@ cat(paste0("\nPlacebo rate ",round(exp(f$coef[1]),4)," and multiplicative treate
     
 })
   
-``` 
-
-Poisson paired counts
-====
-
-Column {.sidebar}
------------------------------------------------------------------------
-
-
-Use the inputs below to generate correlated count data !
-
-```{r}
-
-
-  sliderInput('N.p', 'Patients per arm', value=22,
-                min = 10, max = 200, step=5, ticks=F)
-  
-  sliderInput('mu0.p', 'Placebo mean rate \u03BC', value=10,
-                min = 0.1, max = 25, step=.05, ticks=F)
-  
-  sliderInput('eff.p', 'Hypothesised treatment effect ', value=.75,  # 1/2 ing to doubling
-                min = 0.5, max = 2, step=.05, ticks=F)
-  
-  sliderInput('r', 'Correlation', value = c(.20),
-                min = -1, max = 1 ,step=0.05, ticks=F)
-   
-  sliderInput('sims.p', 'Power simulations', value= 10,
-                min = 100, max = 1000, step= 100, ticks=F)
- 
-
-```
-
-Row {data-height=275}
------------------------------------------------------------------------
-
-### Single arm pre post study design simulation
-  
-
-```{r, eval=TRUE}
-
- 
-reactive({
-  
-cat(paste0("This is an example of paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. \nNevertheless, we have ",input$N.p," subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods.\n"))
-
-cat(paste0("We will simulate the data based on a expected rate before the intervention of ",input$mu0.p, " and an hypothesised effect of intervention ",input$eff.p,", so a hypothesised mean rate of ",input$mu0.p*input$eff.p," for the intervention.\nWe also take into account the correlation between obervations for the same individual, the starting value is " ,input$r,".\n")) 
-
-cat(paste0("\nWe report the average p-value from a mixed Poisson model and the power, Wilcoxon signed rank test power, T test power, T test on ranks power, intercept, treatment effect and SD of differences. \nWe also quote the theoretical SD of differences."))
-
-cat(paste0("\nTo generate correlated Poisson variables we..."))
-cat(paste0("\n1) Sample two correlated N(0, 1) distributions from a multivariate normal distribution."))
-cat(paste0("\n2) Transform them to correlated Uniform(0, 1) distributions using the normal CDF."))
-cat(paste0("\n3) Transform them to the desired correlated probability distribution desired using that probability distribution’s inverse CDF!"))
- 
-})
-
-
-``` 
-
-Row {data-height=250}
------------------------------------------------------------------------
-
-### Results
-
-
-```{r, eval=TRUE}
-
-reactive({
-  
-  res <- replicate(input$sims.p, 
-                   po.cor.power(n=input$N.p, r=input$r, mu0=input$mu0.p,  eff.p=input$eff.p ) )  
-
-  x <- NULL
-  x <- t((res))
-  x <- as.data.frame(x)
-  alpha=0.05
- 
-  
-  # cat("Theoretical SD of differences\n")
-  R <- input$r# seq(-.9,.9,.1)   # correlation
-  X <- input$mu0.p               # var of poisson (= mean)
-  Y <- input$mu0.p*input$eff.p   # var of poisson (= mean)
-
-  cat(paste0("Evaluations based on ",input$sims.p," simulations take into consideration correlation, the default starting value is "
-       ,input$r,". The observed mean correlation is ",mean( unlist(x[,"V10"])), "\nThe median p-value from a mixed effects Poisson model is "
-       ,median( unlist(x[,"V2"]))   , 
-       ". \nPower based on the mixed model Wald test is ",
-             
-      (table( unlist(x[,"V2"])< alpha)/input$sims.p)[2][[1]],
-      
-      "\nPower based on the Wilcoxon signed rank test power is ",
-      (table( unlist(x[,"V3"])< alpha)/input$sims.p)[2][[1]],
-      "\nMean Hodeges Lehman estimator is ",
-        mean( unlist(x[,"V9"]))," with 95%CI ",quantile(unlist(x[,"V9"]), .025)," to ",quantile(unlist(x[,"V9"]), .975),
-      "\nPower based on the t-test is ",
-      (table( unlist(x[,"V4"])< alpha)/input$sims.p)[2][[1]],
-      "\nPower based on the t-test of ranks is ",
-      (table( unlist(x[,"V5"])< alpha)/input$sims.p)[2][[1]],
-      " \nThe mean intercept is ",
-      mean( unlist(x[,"V6"])),
-      "\nThe mean treatement effect is ",
-      mean( unlist(x[,"V7"]))," with 95%CI ",quantile(unlist(x[,"V7"]), .025)," to ",quantile(unlist(x[,"V7"]), .975),
-      "\nMean SD of differences is ", 
-      mean( unlist(x[,"V8"])),  
-    
-      "\nThe theoretical SD of differences based on Poisson variances and stated correlation is ",
-      sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R)),
-      "\n"))
-   
-
-})
-
-```
-
-   
-Row {.tabset .tabset-fade}
------------------------------------------------------------------------
-
-### Typical expected dataset (jitter added to counts)
-  
-
-```{r, eval=TRUE}
-
-
-   dat2 <- reactive(
- 
-    GenerateMultivariatePoisson(p=2, samples=input$N.p, R=matrix(c(1, input$r, 
-                                                                     input$r, 1), 2, 2), 
-                                lambda=c(input$mu0.p, input$mu0.p*input$eff.p))
-    )
-
-
-
- renderPlot({   
-   
-  dat2 <- dat2()
-
-  dx <- dat2
-
-  # boxplot
-  A <- dx[,1]
-  B <- dx[,2]
-  m <- max(A,B)
-  before <- A + runif(length(dx[,1]),-.2,.2)
-  after <-  B + runif(length(dx[,2]),-.2,.2)
-  n <- length(before)
-  d <- data.frame(y = c(before, after), 
-                  x = rep(c(1,2), each=n),
-                  id = factor(rep(1:n,2)))
-
-  
-  d$xj <- jitter(d$x, amount=.03)
-  AA <- ggplot(data=d, aes(y=y) ) +
-    geom_boxplot(aes(x=x, group=x), width=0.2, outlier.shape = NA) +
-    geom_line(aes(x=xj, group=id),  colour='pink', alpha=.5) +
-    geom_point(aes(x=xj), size=2) +
-    xlab("Phase") + ylab("Count") +  
-    scale_x_continuous(breaks=c(1,2), labels=c("Before", "After"), limits=c(0.5, 2.5)) +
-     scale_y_continuous(breaks=c(0:m), limits=c(0,m)) +
-    theme_bw() + theme(legend.position = "none") 
-    
-#~~~~~~~~~~~~~~~~~~~~~
-  
-     # scatterplot
-
-     d <- data.frame(y = B ,
-                     x = A)
-
-#    
-      BB <- ggplot(d, aes(x, y)) +
-      geom_jitter(width = 0.1, height = 0.1, size=2) +
-      scale_x_continuous(breaks=c(0:m), limits=c(0,m)) +
-      scale_y_continuous(breaks=c(0:m), limits=c(0,m)) +
-      xlab("Before count") +ylab("After count") +
-      theme_bw() + theme(legend.position = "none") +
-        geom_abline(intercept=0, slope=1)
-
-      plot1 <- AA
-      plot2 <- BB
-      grid.arrange(plot1, plot2, ncol=2)
-
-
-})
-
-
-```
-
-
-### Typical expected dataset - Bland Altman plot, square root transformation
- 
- 
-```{r}
-
-
- renderPlot({
-   
-    d <- dat2()
-
-    my_data <- data.frame( 
-      group = rep(c("before", "after"), each = input$N.p),
-      counts = c(d[,1],  d[,2]),
-      ID=rep(1:input$N.p,2)
-    )
-
-    m <- Meth(my_data,meth="group",item="ID",repl=NULL,y="counts",print=TRUE)
-    
-    BA.plot( m, model=NULL, repl.conn=TRUE, col.lines="blue",
-             axlim=c(0,20), diflim=c(-20,20), xaxs="i", yaxs="i",
-             las=1, eqn=FALSE, dif.type="lin", pl.type="BA", sd.type="lin",
-             grid=1:9*10, digits=3,font.eqn=1 , Transform='sqrt') 
-
-})
 
  
 ``` 
@@ -1194,10 +982,223 @@ par(mfrow=c(1,1))
 
 ```
 
+Poisson paired counts
+====
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+
+Use the inputs below to generate correlated count data !
+
+```{r}
+
+
+  sliderInput('N.p', 'Patients per arm', value=22,
+                min = 10, max = 200, step=5, ticks=F)
+  
+  sliderInput('mu0.p', 'Placebo mean rate \u03BC', value=10,
+                min = 0.1, max = 25, step=.05, ticks=F)
+  
+  sliderInput('eff.p', 'Hypothesised treatment effect ', value=.75,  # 1/2 ing to doubling
+                min = 0.5, max = 2, step=.05, ticks=F)
+  
+  sliderInput('r', 'Correlation', value = c(.20),
+                min = -1, max = 1 ,step=0.05, ticks=F)
+   
+  sliderInput('sims.p', 'Power simulations', value= 10,
+                min = 100, max = 1000, step= 100, ticks=F)
+ 
+
+```
+
+Row {data-height=275}
+-----------------------------------------------------------------------
+
+### Single arm pre post study design simulation
+  
+
+```{r, eval=TRUE}
+
+ 
+reactive({
+  
+cat(paste0("This is an example of paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. \nNevertheless, we have ",input$N.p," subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods.\n"))
+
+cat(paste0("We will simulate the data based on a expected rate before the intervention of ",input$mu0.p, " and an hypothesised effect of intervention ",input$eff.p,", so a hypothesised mean rate of ",input$mu0.p*input$eff.p," for the intervention.\nWe also take into account the correlation between obervations for the same individual, the starting value is " ,input$r,".\n")) 
+
+cat(paste0("\nWe report the average p-value from a mixed Poisson model and the power, Wilcoxon signed rank test power, T test power, T test on ranks power, intercept, treatment effect and SD of differences. \nWe also quote the theoretical SD of differences."))
+
+cat(paste0("\nTo generate correlated Poisson variables we..."))
+cat(paste0("\n1) Sample two correlated N(0, 1) distributions from a multivariate normal distribution."))
+cat(paste0("\n2) Transform them to correlated Uniform(0, 1) distributions using the normal CDF."))
+cat(paste0("\n3) Transform them to the desired correlated probability distribution desired using that probability distribution’s inverse CDF!"))
+ 
+})
+
+
+``` 
+
+Row {data-height=250}
+-----------------------------------------------------------------------
+
+### Results
+
+
+```{r, eval=TRUE}
+
+reactive({
+  
+  res <- replicate(input$sims.p, 
+                   po.cor.power(n=input$N.p, r=input$r, mu0=input$mu0.p,  eff.p=input$eff.p ) )  
+
+  x <- NULL
+  x <- t((res))
+  x <- as.data.frame(x)
+  alpha=0.05
+ 
+  
+  # cat("Theoretical SD of differences\n")
+  R <- input$r# seq(-.9,.9,.1)   # correlation
+  X <- input$mu0.p               # var of poisson (= mean)
+  Y <- input$mu0.p*input$eff.p   # var of poisson (= mean)
+
+  cat(paste0("Evaluations based on ",input$sims.p," simulations take into consideration correlation, the default starting value is "
+       ,input$r,". The observed mean correlation is ",mean( unlist(x[,"V10"])), "\nThe median p-value from a mixed effects Poisson model is "
+       ,median( unlist(x[,"V2"]))   , 
+       ". \nPower based on the mixed model Wald test is ",
+             
+      (table( unlist(x[,"V2"])< alpha)/input$sims.p)[2][[1]],
+      
+      "\nPower based on the Wilcoxon signed rank test power is ",
+      (table( unlist(x[,"V3"])< alpha)/input$sims.p)[2][[1]],
+      "\nMean Hodeges Lehman estimator is ",
+        mean( unlist(x[,"V9"]))," with 95%CI ",quantile(unlist(x[,"V9"]), .025)," to ",quantile(unlist(x[,"V9"]), .975),
+      "\nPower based on the t-test is ",
+      (table( unlist(x[,"V4"])< alpha)/input$sims.p)[2][[1]],
+      "\nPower based on the t-test of ranks is ",
+      (table( unlist(x[,"V5"])< alpha)/input$sims.p)[2][[1]],
+      " \nThe mean intercept is ",
+      mean( unlist(x[,"V6"])),
+      "\nThe mean treatement effect is ",
+      mean( unlist(x[,"V7"]))," with 95%CI ",quantile(unlist(x[,"V7"]), .025)," to ",quantile(unlist(x[,"V7"]), .975),
+      "\nMean SD of differences is ", 
+      mean( unlist(x[,"V8"])),  
+    
+      "\nThe theoretical SD of differences based on Poisson variances and stated correlation is ",
+      sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R)),
+      "\n"))
+   
+
+})
+
+```
+
+   
+Row {.tabset .tabset-fade}
+-----------------------------------------------------------------------
+
+### Typical expected dataset (jitter added to counts)
+  
+
+```{r, eval=TRUE}
+
+
+   dat2 <- reactive(
+ 
+    GenerateMultivariatePoisson(p=2, samples=input$N.p, R=matrix(c(1, input$r, 
+                                                                     input$r, 1), 2, 2), 
+                                lambda=c(input$mu0.p, input$mu0.p*input$eff.p))
+    )
+
+
+
+ renderPlot({   
+   
+  dat2 <- dat2()
+
+  dx <- dat2
+
+  # boxplot
+  A <- dx[,1]
+  B <- dx[,2]
+  m <- max(A,B)
+  before <- A + runif(length(dx[,1]),-.2,.2)
+  after <-  B + runif(length(dx[,2]),-.2,.2)
+  n <- length(before)
+  d <- data.frame(y = c(before, after), 
+                  x = rep(c(1,2), each=n),
+                  id = factor(rep(1:n,2)))
+
+  
+  d$xj <- jitter(d$x, amount=.03)
+  AA <- ggplot(data=d, aes(y=y) ) +
+    geom_boxplot(aes(x=x, group=x), width=0.2, outlier.shape = NA) +
+    geom_line(aes(x=xj, group=id),  colour='pink', alpha=.5) +
+    geom_point(aes(x=xj), size=2) +
+    xlab("Phase") + ylab("Count") +  
+    scale_x_continuous(breaks=c(1,2), labels=c("Before", "After"), limits=c(0.5, 2.5)) +
+     scale_y_continuous(breaks=c(0:m), limits=c(0,m)) +
+    theme_bw() + theme(legend.position = "none") 
+    
+#~~~~~~~~~~~~~~~~~~~~~
+  
+     # scatterplot
+
+     d <- data.frame(y = B ,
+                     x = A)
+
+#    
+      BB <- ggplot(d, aes(x, y)) +
+      geom_jitter(width = 0.1, height = 0.1, size=2) +
+      scale_x_continuous(breaks=c(0:m), limits=c(0,m)) +
+      scale_y_continuous(breaks=c(0:m), limits=c(0,m)) +
+      xlab("Before count") +ylab("After count") +
+      theme_bw() + theme(legend.position = "none") +
+        geom_abline(intercept=0, slope=1)
+
+      plot1 <- AA
+      plot2 <- BB
+      grid.arrange(plot1, plot2, ncol=2)
+
+
+})
+
+
+```
+
+
+### Typical expected dataset - Bland Altman plot, square root transformation
+ 
+ 
+```{r}
+
+
+ renderPlot({
+   
+    d <- dat2()
+
+    my_data <- data.frame( 
+      group = rep(c("before", "after"), each = input$N.p),
+      counts = c(d[,1],  d[,2]),
+      ID=rep(1:input$N.p,2)
+    )
+
+    m <- Meth(my_data,meth="group",item="ID",repl=NULL,y="counts",print=TRUE)
+    
+    BA.plot( m, model=NULL, repl.conn=TRUE, col.lines="blue",
+             axlim=c(0,20), diflim=c(-20,20), xaxs="i", yaxs="i",
+             las=1, eqn=FALSE, dif.type="lin", pl.type="BA", sd.type="lin",
+             grid=1:9*10, digits=3,font.eqn=1 , Transform='sqrt') 
+
+})
+
+```
+
 Wiki
 === 
  
-Notes: The binomial distribution describes the number of r successes in n trials. The geometric distribution describes the number of failures before the first success, r. The negative binomial distribution describes the number of failures before the rth success. Confusingly, the term ‘dispersion parameter’ can refer to either k or $\alpha$ ; other terms for k include ‘shape parameter’ 'heterogeneity (ancillary) parameter' and ‘clustering coefficient’. The only restriction placed on $\alpha$ is that it take positive rational values, rarely above 4 (according to Hilbe page 190). Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. The larger the gamma shape parameter, the more dispersed is the distribution. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. When $\alpha$ = 1, the negative binomial distribution takes the form of a
+**Notes:** The binomial distribution describes the number of r successes in n trials. The geometric distribution describes the number of failures before the first success, r. The negative binomial distribution describes the number of failures before the rth success. Confusingly, the term ‘dispersion parameter’ can refer to either k or $\alpha$ ; other terms for k include ‘shape parameter’ 'heterogeneity (ancillary) parameter' and ‘clustering coefficient’. The only restriction placed on $\alpha$ is that it take positive rational values, rarely above 4 (according to Hilbe page 190). Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. The larger the gamma shape parameter, the more dispersed is the distribution. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. When $\alpha$ = 1, the negative binomial distribution takes the form of a
 geometric distribution, which is the discrete correlate of the continuous negative
 exponential distribution. The negative binomial distribution with $\alpha$ = 0 is Poisson.
 As the mean increases, the probability of a zero decreases, and the more the shape approximates a Gaussian distribution. As the Poisson mean gets larger it approaches normality, this is not the case for the negative binomial distribution. 
@@ -1210,10 +1211,6 @@ An exploration of the Poisson and the gamma Poisson distribution (aka negative b
 
 An investigation of an analysis of count data and look at power for a 2 arm 1:1 randomised RCT, the outcome measure being a count. The simulations are analysed using the the gamma Poisson model. The user can input the number of patients per arm, the expected mean rate on placebo and the hypothesised treatment effect.  For this model a heterogeneity parameter inputted as 1/alpha is required (based on historical data perhaps). We also allow patients to discontinue treatment, when they do they are assumed to continue to the end of study but their mean rate (if randomised to the new treatment) reverts to the placebo rate. We also have inputs for the follow up time and the number of simulations. An estimate of power is returned, as well as the results of a typical trial that can be expected.
  
-**Poisson paired counts**
-
-An example of a paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. Nevertheless, we can adjust the total number of subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods. We will simulate the data based on a expected rate before the intervention and an hypothesised effect of the intervention. We also take into account the correlation between observations for the same individual, the starting value is 0.2. 
-
 **Gamma Poisson**
 
 A demonstration showing negative binomial and gamma Poisson are one and the same. Using the same adjustable population parameters one data set is simulated and analysed using the R rnbinom function and another data set simulated and analysed using the gamma and Poisson distributions. The gamma Poisson is a mixture of different Poisson distributions in which the response counts are assumed to follow a mixed Poisson distribution with a shared gamma distributed random subject effect. The tabs at the bottom present some diagnostic plots. 
@@ -1249,33 +1246,21 @@ The next step is computationally intensive, because we have to fit the NB model 
 We can then use apply() to compute the summary measures defining the center and limits for the simulated confidence interval.
 
 Finally, plot the observed against expected absolute residuals as points, and add the lines for the confidence interval.
+
+**Poisson paired counts**
+
+An example of a paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. Nevertheless, we can adjust the total number of subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods. We will simulate the data based on a expected rate before the intervention and an hypothesised effect of the intervention. We also take into account the correlation between observations for the same individual, the starting value is 0.2. 
  
 Notes
 ===
+
 gelmans book rnegbiniom function
-gamma and rnbinom equivalence
 investigate offset 
 predict
-friendly's book and code
-hilbe code with discontinuationand s  
 cor neg binomial not working
 explain corr poisson approach <- many packages
 understand neg binomial rct rnbinom inputs
-gamma - see basics plot
-
-
-
  
-
-
-file:///C:/Users/Lenovo/OneDrive/Documents/PAPERS/COUNT%20DATA/TRISTAN%20study%20Keene%202007.pdf
-thy dispersion is alpha in this paper example figure 1
- 
- 
-
-
-
-
 
 References
 ====
@@ -1289,3 +1274,4 @@ References
     add references for gen corr data
     add conroy stata paper on wrst
 
+ 
