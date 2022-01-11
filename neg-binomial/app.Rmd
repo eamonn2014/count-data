@@ -221,36 +221,36 @@ po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 p
 
 -----------------------------------------------------------------------
 
-Tab 1
+**Probability mass functions**
  
 Here we explore the Poisson and the gamma Poisson distribution (aka negative binomial). A common mean can be adjusted and alpha the heterogeneity  dispersion parameter can be adjusted for each individual curve. When alpha is 0 we get the Poisson distribution (actually we use a vanishingly small value for alpha and not zero). Also see the normal distribution plotted for comparison. We use the density functions (top left) and the random number generators (top right). Below are bar graphs based on the density functions. 
 
 
-Tab  2
+**Gamma Poisson power**
 
 Here we investigate an analysis of count data and look at power for a 2 arm 1:1 randomised RCT, the outcome measure being a count. The simulations are analysed using the the gamma Poisson model. The user can input the number of patients per arm, the expected mean rate on placebo and the hypothesised treatment effect.  For this model a heterogeneity parameter inputted as 1/alpha is required (based on historical data perhaps). we also allow patients to discontinue treatment, when they do they are assumed to continue to the end of study but their mean rate (if randomised to the new treatment) reverts to the placebo rate. We also have inputs for the follow up time and the number of simulations. An estimate of power is returned, as well as the results of a typical trial that can be expected.
  
-Tab  3
+**Poisson paired counts**
 
 This is an example of paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. Nevertheless, we can adjust the total number of subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods. We will simulate the data based on a expected rate before the intervention and an hypothesised effect of the intervention. We also take into account the correlation between observations for the same individual, the starting value is 0.2. 
 
-Tab  3
+**Gamma Poisson**
 
 Here we demonstrate that the negative binomial and gamma Poisson are one and the same. Using the same adjustable population parameters one data set is simulated and analysed using the R rnbinom function and another data set simulated and analysed using the gamma and Poisson distributions. The gamma Poisson is a mixture of different Poisson distributions in which the response counts are assumed to follow a mixed Poisson distribution with a shared gamma distributed random subject effect. The tabs at the bottom present some diagnostic plots. 
 
 
-The first tab plots hanging rootograms. The counts are square rooted to approximately adjust for scale differences across the count levels. Otherwise, deviations would only be visible for levels with large observed/expected frequencies.
+*The first tab* plots hanging rootograms. The counts are square rooted to approximately adjust for scale differences across the count levels. Otherwise, deviations would only be visible for levels with large observed/expected frequencies.
 
 Next we plots the number of occurrences against a certain frequency ratio (see Friendly (2000) for details) and should give a straight line if the data comes from a poisson, binomial, negative binomial or log-series distribution. The intercept and slope of this straight line conveys information about the underlying distribution. A OLS line (black) and a weighted OLS line (red) are shown. From the coefficients of the latter the distribution is estimated.   If none of the distributions fits well, no parameters are estimated.  A slope of 0 and + intercept suggest Poisson, a - slope and + interept suggest Binomial. ++ suggests Neg binomial and +- log series. 
 
-The following tab 'Poissoness?'  If the Poisson distribution fits the data, the plot should show a straight line
+*The following tab 'Poissoness?'*  If the Poisson distribution fits the data, the plot should show a straight line
 
-Followed by 'Negative Binomialness?' If the Negative binomial distribution fits the data, the plot should show a straight line
+*Followed by 'Negative Binomialness?'* If the Negative binomial distribution fits the data, the plot should show a straight line
 
 Default diagnostic plots for the negative-binomial model fit are shown next
 
 
-The last plot tab 'A distribution that fits well is looked for...' uses a more robust and useful version of these QQ plots: half normal plots, with simulated confidence envelopes. The essential ideas are:
+*The last plot tab 'A distribution that fits well is looked for...'* uses a more robust and useful version of these QQ plots: half normal plots, with simulated confidence envelopes. The essential ideas are:
 • Model departures and outliers are often easier to see for discrete data when the absolute values of residuals are plotted, because large positive and negative values are sorted together. This gives the half-normal plot, in which the absolute values of residuals, arranged in increasing
 order, |r|(i), are plotted against |z|(i) = Φ−1{(n + i −
 1/8)/(2n + 1/2)}. All outliers will then appear in the upper right of such a plot, as points separated from the trend of the remaining cells.
@@ -1107,7 +1107,7 @@ Column {.tabset .tabset-fade}
 
 ```
 
-###  A distribution that fits well is looked for..
+###  A distribution that fits well is looked for...
  
  
 ```{r}
