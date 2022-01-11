@@ -760,7 +760,7 @@ dat3 <- reactive({
   y_0 <- rpois(n = n*2, lambda = (length*lambda1))  +
          rpois(n = n*2, lambda = ((fup-length)*lambda2))  
    
-         logleng  <- rep(0, n*2)  # all patients have same length follow up
+         logleng  <- rep(log(fup), n*2)  # all patients have same length follow up
   
   f1<-glm.nb(y_0~dose+offset(logleng) )
 
@@ -806,7 +806,7 @@ dat4 <- reactive({
   y <-  rnbinom(n*2,  p=1/(1+ mu*    length* k),  size=1/k)  +
         rnbinom(n*2,  p=1/(1+ mu0*(fup-length)*k),  size=1/k)
   
-  logleng  <- rep(0, n*2)
+  logleng  <- rep(log(fup), n*2)
    
   f<-glm.nb(y~dose+offset(logleng) )
 
