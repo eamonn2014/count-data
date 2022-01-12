@@ -26,6 +26,15 @@ Probability mass functions
   library(vcd)
   lwd.=3
 
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # function for nice upper limits to count bar plots
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+    roundUpNice <- function(x, nice=c(1,2,4,5,6,8,10)) {
+    if(length(x) != 1) stop("'x' must be of length 1")
+    10^floor(log10(x)) * nice[[which(x <= 10^floor(log10(x)) * nice)[[1]]]]
+  }
+  
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # another dnbinom Function   
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -600,7 +609,7 @@ reactive({
 
 ```
  
-Row {data-height=350}
+Row {data-height=500}
 -------------------------------------
    
 ### A typical dataset that can be expected
@@ -623,6 +632,8 @@ Row {data-height=350}
   mu   <- c(rep(mu0,n),rep(mu1,n))
   if (drop1==0) {drop1=0.0001}
   if (drop2==0) {drop2=0.0001}
+  if (k==0) {k=0.0001}
+  
   drop <- c(rep(.1,n),rep(.1,n))
 
   f <- - rexp(2*n) / log(1-drop/fup) # scale according to follow up!
@@ -641,24 +652,21 @@ Row {data-height=350}
   trt <- y[dose %in% "trt"]
   pla <- y[!dose %in% "trt"]
   
-# examine
-# par(mfrow=c(1,2))
-# trt %>% table %>% barplot() #quick and dirty
-# trt %>% table %>% prop.table
-# pla %>% table %>% barplot() #quick and dirty
-# pla %>% table %>% prop.table
-# par(mfrow=c(1,1))
-  
+ 
   upp <- ceiling(max(prop.table(table(y))) * 100 ) 
-  par(mfrow=c(1,2))
+  par(mfrow=c(2,2))
   data_perc <- t(prop.table(table(trt))) * 100    # Convert data to probability table
-  barplot(data_perc, ylab = "Percent", main =paste0("Treated true mu=",mu1," & k=",k," \nso alpha=",round(1/k,2),""), ylim=c(0,upp ))     
+  barplot(data_perc, ylab = "Percent", main =paste0("Treated true \u03BC=",mu1," & k=",k," \nso \u03B1=",round(1/k,2),""), ylim=c(0,upp ), col='blue')     
   data_perc <- t(prop.table(table(pla))) * 100    # Convert data to probability table
-  barplot(data_perc, ylab = "Percent", main =paste0("Placebo true mu=",mu0," & k=",k," \nso alpha=",round(1/k,2),""), ylim=c(0,upp ))         
+  barplot(data_perc, ylab = "Percent", main =paste0("Placebo true \u03BC=",mu0," & k=",k," \nso \u03B1=",round(1/k,2),""), ylim=c(0,upp ), col='green') 
+  
+  u <- roundUpNice(max(trt %>% table, pla %>% table))
+  trt %>% table %>% barplot(ylim=c(0,u), main ="Treated counts" , col='blue') 
+  pla %>% table %>% barplot(ylim=c(0,u), main ="Placebo counts" , col='green')
   par(mfrow=c(1,1))
-
+   
+   
 })
-
 
 
 ```   
@@ -684,6 +692,8 @@ Row {data-height=350}
   mu   <- c(rep(mu0,n),rep(mu1,n))
   if (drop1==0) {drop1=0.0001}
   if (drop2==0) {drop2=0.0001}
+  if (k==0) {k=0.0001}
+  
   drop <- c(rep(.1,n),rep(.1,n))
 
    f <- - rexp(2*n) / log(1-drop/fup) # scale according to follow up!
@@ -749,22 +759,22 @@ Show the equivalent parameterisation of gamma Poisson and negative binomial (rnb
 # fup   <- 1
 # drop1 <- 0.1
 # drop2 <- 0.1
-  
-  
-  
+    
 ```
+
+The plots on this page are mostly from one model (data simulated gamma Poisson)  
+ 
 
 Column {data-width=400, height=300}
 -----------------------------------------------------------------------
 
-### Gamma Poisson data simulation
+### Gamma Poisson data simulation (theta is synonymous with $\alpha$)
 
 ```{r, eval=TRUE}
 
 
 dat3 <- reactive({
  
-
   k <-   input$k.pg
   n <-   input$N.pg 
   mu0 <- input$mu0.pg
@@ -786,8 +796,7 @@ dat3 <- reactive({
   drop <- c(rep(d1,n),rep(d2,n))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # discontinuations and follow up
-  
-  
+
   f        <- - rexp(2*n) / log(1-drop/fup) # scale according to follow up!
   
   length   <- ifelse(f>fup,fup,f)          # make sure fup here
@@ -816,7 +825,7 @@ renderPrint({
 ``` 
 
 
-### Negative binomial (rnbinom) data simulation
+### Negative binomial (rnbinom) data simulation (theta is synonymous with $\alpha$)
 
 
 ```{r, eval=TRUE}
@@ -1248,6 +1257,7 @@ Row {.tabset .tabset-fade}
 
 Wiki
 === 
+**In general the app is quite slow as almost each page has some Monte Carlo simulation. But be patient eventually some information will appear.**
  
 **Notes:** The binomial distribution describes the number of r successes in n trials. The geometric distribution describes the number of failures before the first success, r. The negative binomial distribution describes the number of failures before the rth success. Confusingly, the term ‘dispersion parameter’ can refer to either k or $\alpha$ ; other terms  include ‘shape parameter’ 'heterogeneity (ancillary) parameter' and ‘clustering coefficient’. The only restriction placed on $\alpha$ is that it take positive rational values, rarely above 4 (according to Hilbe page 190). Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. The larger the gamma shape parameter, the more dispersed is the distribution. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. When $\alpha$ = 1, the negative binomial distribution takes the form of a
 geometric distribution, which is the discrete correlate of the continuous negative
@@ -1317,15 +1327,51 @@ easier to not think about alpha and k when we use Poisson gamma ?
 
 References
 ====
+```{r}
  
+                    
+    tags$a(href = "https://stats.stackexchange.com/questions/71194/fitting-a-poisson-distribution-with-lme4-and-nlme", target="_blank",tags$span(style="color:blue", "[1] Poisson with lme4 and nlme"),) 
+    div(p(" "))
+    tags$a(href = "https://stats.stackexchange.com/questions/27869/fitting-a-poisson-glm-mixed-model-with-a-random-slope-and-intercept",target="_blank",  tags$span(style="color:blue", "[2] Mixed model Poisson"),)
+    div(p(" "))
+    tags$a(href = "https://stackoverflow.com/questions/6044800/adding-greek-character-to-axis-title", target="_blank",tags$span(style="color:blue", "[3] Adding Greek characters"),)
+    div(p(" "))
+    tags$a(href = "https://stackoverflow.com/questions/52225348/shiny-flexdashboard-reference-object-in-new-tabset#52225733", target="_blank",tags$span(style="color:blue", "[4] Reference object in new tab"),)  
+    div(p(" "))
+    tags$a(href = "https://journals.sagepub.com/doi/pdf/10.1177/1536867X1201200202", target="_blank",tags$span(style="color:blue", "[5] What hypotheses do “nonparametric” two-group tests actually test?"),) 
+    div(p(" "))
+    tags$a(href = "https://www.google.co.uk/books/edition/Discrete_Data_Analysis_with_R/danODwAAQBAJ?hl=en",target="_blank",
+           tags$span(style="color:blue", "[6] Discrete Data Analysis with R Visualization and Modeling Techniques for Categorical and Count Data"),) 
+    div(p(" "))
+    tags$a(href = "https://www.galitshmueli.com/system/files/ASMB_901_rev.pdf",target="_blank",
+           tags$span(style="color:blue", "[7] On generating multivariate Poisson data in management science applications"),) 
+     div(p(" "))
+    tags$a(href = "https://thomasward.com/simulating-correlated-data/",target="_blank",tags$span(style="color:blue", "[8] Simulating correlated data"),) 
+     div(p(" "))
+     tags$a(href = "https://www.rdocumentation.org/packages/simstudy/versions/0.3.0", target="_blank", tags$span(style="color:blue", "[9] package simstudy for simulating correlated data, not used but interesting"),) 
+     div(p(" "))
+     tags$a(href = "https://www.rdocumentation.org/packages/SimCorrMix/versions/0.1.1/topics/SimCorrMix",target="_blank", tags$span(style="color:blue", "[10] package SimCorrMix for simulating correlated data, not used but interesting"),) 
+      
+    div(p(" "))
+    
+    
+    
+    
+    tags$hr()                        
+                                             
+                                              
+  
+```
+
  
-    https://stackoverflow.com/questions/52225348/shiny-flexdashboard-reference-object-in-new-tabset#52225733
-    https://stats.stackexchange.com/questions/71194/fitting-a-poisson-distribution-with-lme4-and-nlme
-    https://stats.stackexchange.com/questions/27869/fitting-a-poisson-glm-mixed-model-with-a-random-slope-and-intercept
-    https://stackoverflow.com/questions/6044800/adding-greek-character-to-axis-title
-    Discrete Data Analysis with R Visualization and Modeling Techniques for Categorical and Count Data. Michael Friendly, 2015
-    add references for gen corr data
-    https://journals.sagepub.com/doi/pdf/10.1177/1536867X1201200202 What hypotheses do “nonparametric” two-group tests actually test?
+   
+     
+    
+     
+ 
+```{r}
+ 
+  url <- a("Google Homepage", href="https://www.google.com/")
 
 
- 
+```
