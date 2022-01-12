@@ -719,7 +719,7 @@ Show the equivalent parameterisation of gamma Poisson and negative binomial (rnb
 
 
     sliderInput('N.pg', 'Patients per arm', value=1000,
-                  min = 100, max = 100000, step=5, ticks=F)
+                  min = 1000, max = 100000, step=5, ticks=F)
     
     sliderInput('mu0.pg', 'Placebo event rate \u03BC per patient yr of follow up', value=1,
                   min = 0.1, max = 25, step=.05, ticks=F)
