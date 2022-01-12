@@ -26,7 +26,8 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   # discontinuations and follow up
-  f        <- - rexp(n) / log(1-drop)
+   
+  f        <- - rexp(n) / log(1-drop/fup) # scale according to follow up!
   length   <- ifelse(f > fup, fup, f)   
   logleng  <- log(length)  # offset
   
@@ -57,8 +58,8 @@
   # plot counts
   par(mfrow=c(2,2))
   u <- roundUpNice(max(trt %>% table, pla %>% table))
-  trt %>% table %>% barplot(ylim=c(0,u)) #q
-  pla %>% table %>% barplot(ylim=c(0,u)) #q
+  trt %>% table %>% barplot(ylim=c(0,u)) 
+  pla %>% table %>% barplot(ylim=c(0,u)) 
   trt %>% table %>% prop.table
   pla %>% table %>% prop.table
   # par(mfrow=c(1,1))
