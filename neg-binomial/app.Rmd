@@ -497,7 +497,7 @@ Gamma Poisson power
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-Use the inputs below to simulate an RCT with a count outcome measure. We estimate the treatment effect using a gamma Poisson model. Be careful with entering dispersion aka heterogeneity (ancillary) parameter. For example we may quote a negative binomial dispersion parameter of 0.8, referring to alpha, but we need to enter k or 1/alpha here so 1/0.8 = ~1.3 which is k
+Use the inputs below to simulate an RCT with a count outcome measure. We estimate the treatment effect using a gamma Poisson model. Be careful entering dispersion aka heterogeneity (ancillary) parameter. For example we may quote a negative binomial dispersion parameter of 0.8, referring to alpha, but we need to enter k or 1/alpha, so 1/0.8 = ~1.3 which is k.
 
 ```{r}
  
@@ -544,8 +544,8 @@ Use the inputs below to simulate an RCT with a count outcome measure. We estimat
     #               min = 500, max = 10000, step= 500, ticks=F)
  
 
-      sliderInput('N', 'Patients per arm', value=188,
-                  min = 10, max = 10000, step=5, ticks=F)
+      sliderInput('N', 'Patients per arm', value=190,
+                  min = 10, max = 1000, step=5, ticks=F)
 
     sliderInput('mu0', 'Placebo event rate \u03BC per patient yr of follow up', value=1.5,
                   min = 0.1, max = 25, step=.05, ticks=F)
@@ -652,9 +652,9 @@ Row {data-height=350}
   upp <- ceiling(max(prop.table(table(y))) * 100 ) 
   par(mfrow=c(1,2))
   data_perc <- t(prop.table(table(trt))) * 100    # Convert data to probability table
-  barplot(data_perc, ylab = "Percent", main ="Treated", ylim=c(0,upp ))     
+  barplot(data_perc, ylab = "Percent", main =paste0("Treated true mu=",mu1," & k=",k," \nso alpha=",round(1/k,2),""), ylim=c(0,upp ))     
   data_perc <- t(prop.table(table(pla))) * 100    # Convert data to probability table
-  barplot(data_perc, ylab = "Percent", main ="Placebo", ylim=c(0,upp ))     
+  barplot(data_perc, ylab = "Percent", main =paste0("Placebo true mu=",mu0," & k=",k," \nso alpha=",round(1/k,2),""), ylim=c(0,upp ))         
   par(mfrow=c(1,1))
 
 })
@@ -713,7 +713,7 @@ Gamma Poisson
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-Show the equivalent parameterisation of gamma Poisson and negative binomial (rnbinom) ! Be careful with entering dispersion aka heterogeneity (ancillary) parameter. For example we may quote a negative binomial dispersion parameter of 0.8, referring to alpha, but we need to enter k or 1/alpha here so 1/0.8 = ~1.3 which is k
+Show the equivalent parameterisation of gamma Poisson and negative binomial (rnbinom) ! Be careful entering dispersion aka heterogeneity (ancillary) parameter. For example we may quote a negative binomial dispersion parameter of 0.8, referring to alpha, but we need to enter k or 1/alpha, so 1/0.8 = ~1.3 which is k.
 
 ```{r}
 
