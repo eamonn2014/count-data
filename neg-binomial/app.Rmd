@@ -497,8 +497,7 @@ Gamma Poisson power
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-Use the inputs below to simulate an RCT with a count outcome measure. We estimate the treatment effect using a gamma Poisson model. Be careful with dispersion. For example we may quote a negative binomial dispersion parameter of 0.8, referring to alpha, but we need to enter k or 1/alpha here
-so 1/0.8 = ~1.3 which is k
+Use the inputs below to simulate an RCT with a count outcome measure. We estimate the treatment effect using a gamma Poisson model. Be careful with entering dispersion aka heterogeneity (ancillary) parameter. For example we may quote a negative binomial dispersion parameter of 0.8, referring to alpha, but we need to enter k or 1/alpha here so 1/0.8 = ~1.3 which is k
 
 ```{r}
  
@@ -554,7 +553,7 @@ so 1/0.8 = ~1.3 which is k
     sliderInput('eff', 'Hypothesised treatment effect ', value=.6, 
                   min = 0.1, max =5, step=.05, ticks=F)
 
-    sliderInput('k', 'This needs to be k = 1/\u03B1 the heterogeneity (ancillary) parameter', value = c(1.3),
+    sliderInput('k', 'This needs to be k the heterogeneity (ancillary) parameter. k = 1/\u03B1', value = c(1.3),
                   min = 0, max = 5 ,step=0.01, ticks=F)
 
     sliderInput('d1', 'Placebo discontinuation prob', value = c(0.15),
@@ -584,7 +583,7 @@ cat(paste0("A RCT with 1:1 randomisation is being planned to investigate an inte
 
 cat(paste0("The gamma Poisson model will be used as we expect patient heterogeneity of exacerbations beyond that captured by patient level covariates.\nWe will use the natural log of duration of follow up time as an offset variable, the duration of follow up ",input$fup, " will be the planned duration of follow up for all patients."))
 
-cat(paste0("\nk is the dispersion parameter, its value is " ,input$k,", this is the same as 1/alpha So alpha is ",1/input$k,". The rate for placebo is ",input$mu0," events per patient year of follow up.\nThe treatment effect hypothesised is ",input$eff, " so an event rate for treatment is hypothesised as ",input$mu0*input$eff, " events per patient year follow up. \nDrop out probabilities for treatment discontinuation and placebo over the follow up period (in years) are " ,input$d1, " and " ,input$d2," respectively. \nWe assume a constant exponential hazard rate over time for treatment discontinuation with ",input$d1," and ",input$d2,", the percentages of patients\noff treatment by follow up time in years in active and placebo. \nNo further treatment effect versus placebo is assumed during off treatment, that is ",input$mu0," events per patient year is assumed for patients after treatment discontinuation in treated and placebo.\n"))
+cat(paste0("\nk is the dispersion parameter, its value is " ,input$k,", this is the same as 1/alpha So alpha is ",1/input$k,". The rate for placebo is ",input$mu0," events per patient year of follow up.\nThe treatment effect hypothesised is ",input$eff, " so an event rate for treatment is hypothesised as ",input$mu0*input$eff, " events per patient year follow up. \nDrop out probabilities for treatment discontinuation and placebo over the follow up period (in years) are " ,input$d1, " and " ,input$d2," respectively. \nWe assume a constant exponential hazard rate over time for treatment discontinuation with ",input$d1," and ",input$d2,", the percentages of patients\noff treatment by follow up time in years in active and placebo. No further treatment effect versus placebo is assumed during off treatment, that is ",input$mu0," events per patient year is \nassumed for patients after treatment discontinuation in treated and placebo.\n"))
 
 cat(paste0("\nThe power estimate is..."))
 })
@@ -714,7 +713,7 @@ Gamma Poisson
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-Show the equivalent parameterisation of gamma Poisson and negative binomial (rnbinom) !
+Show the equivalent parameterisation of gamma Poisson and negative binomial (rnbinom) ! Be careful with entering dispersion aka heterogeneity (ancillary) parameter. For example we may quote a negative binomial dispersion parameter of 0.8, referring to alpha, but we need to enter k or 1/alpha here so 1/0.8 = ~1.3 which is k
 
 ```{r}
 
@@ -728,7 +727,7 @@ Show the equivalent parameterisation of gamma Poisson and negative binomial (rnb
     sliderInput('eff.pg', 'Hypothesised treatment effect ', value=.75,  # 1/2 ing to doubling
                   min = 0.5, max = 2, step=.05, ticks=F)
   
-    sliderInput('k.pg', '1/\u03B1 the heterogeneity (ancillary) parameter', value = c(1.3),
+    sliderInput('k.pg', 'This needs to be k the heterogeneity (ancillary) parameter. k = 1/\u03B1', value = c(1.3),
                   min = 0, max = 5 ,step=0.01, ticks=F)
     
     sliderInput('d1.pg', 'Placebo discontinuation prob', value = c(0.1),
@@ -1312,6 +1311,8 @@ predict
 cor neg binomial not working
 explain corr poisson approach <- many packages
 understand neg binomial rct rnbinom inputs
+
+easier to not think about alpha and k when we use Poisson gamma ? 
  
 
 References
