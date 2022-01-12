@@ -13,7 +13,7 @@ roundUpNice <- function(x, nice=c(1,2,4,5,6,8,10)) {
 }
 
 # pop parameters
-n  <- 1000
+n  <- 100000
 k  <- 1.3   # this is k, alpha=1/k
 1/k         # alpha reported as theta in neg binomial
 mu0 <- 1
@@ -29,8 +29,9 @@ mu   <- c(rep(mu0,n),rep(mu1,n))
 drop <- c(rep(.1,n),rep(.1,n))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # discontinuations and follow up
-f        <- - rexp(2*n) / log(1-drop)
-length   <- ifelse(f>1,1,f)
+ 
+f        <- - rexp(2*n) / log(1-drop/fup) # scale according to follow up!
+length   <- ifelse(f > fup, fup, f)  
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
@@ -38,7 +39,7 @@ length   <- ifelse(f>1,1,f)
 y <-  rnbinom(n*2,  p=1/(1+ mu*    length* k),  size=1/k)  +
       rnbinom(n*2,  p=1/(1+ mu0*(1-length)*k),  size=1/k)
 
-logleng  <- rep(0, n*2)
+logleng  <- rep(log(fup), n*2) 
  
 summary(f<-glm.nb(y~dose+offset(logleng) ))
 
@@ -77,7 +78,7 @@ lambda2 <- mu0 * s1  ## Simulate rate
 y_0 <- rpois(n = n*2, lambda = (length*lambda1))  +
        rpois(n = n*2, lambda = ((1-length)*lambda2))  
  
-       logleng  <- rep(0, n*2)  # all patients have same length follow up
+logleng  <- rep(log(fup), n*2)  # all patients same f up
 
 summary(f1<-glm.nb(y_0~dose+offset(logleng) ))
 
@@ -150,11 +151,11 @@ summary(glm.nb(ys~dose+offset(logleng) ))
 
 #https://data.library.virginia.edu/simulating-data-for-count-models/
 require(countreg)
-rootogram(f)
+countreg::rootogram(f)
 
-rootogram(f, style = "standing",   main = "Standing")
-rootogram(f, style = "hanging",     main = "Hanging")
-rootogram(f, style = "suspended",   main = "Suspended")
+countreg::rootogram(f, style = "standing",   main = "Standing")
+countreg::rootogram(f, style = "hanging",     main = "Hanging")
+countreg::rootogram(f, style = "suspended",   main = "Suspended")
  
 rootogram(f, style = "hanging",     main = "Hanging", scale="raw")
  
