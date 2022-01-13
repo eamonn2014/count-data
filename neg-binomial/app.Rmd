@@ -30,7 +30,7 @@ Probability mass functions
   # function for nice upper limits to count bar plots
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-    roundUpNice <- function(x, nice=c(1,1.5, 2,4,5,6,8,10)) {
+    roundUpNice <- function(x, nice=c(1,1.5, 2,4,5,6,8,10)) { #added 1.5 to help barplot y scale
     if(length(x) != 1) stop("'x' must be of length 1")
     10^floor(log10(x)) * nice[[which(x <= 10^floor(log10(x)) * nice)[[1]]]]
   }
@@ -672,15 +672,28 @@ Row {data-height=500}
   barplot(data_perc, ylab = "Percent",
           main =paste0("Placebo true \u03BC=",mu0," & k=",k," \nso \u03B1=",round(1/k,2),""), ylim=c(0,upp ), col='green') 
   
+  
+  
  # count plot
    u <- ceiling(max(table(y))/2)
    u <- roundUpNice(u)
-  # trt %>% table %>% barplot(ylim=c(0, u), main ="Treated counts" , col='blue')
-  # pla %>% table %>% barplot(ylim=c(0, u), main ="Placebo counts" , col='green')
-  # 
-  barplot(table(factor(trt, levels=0:max(y)))  , main ="Treated counts" , col='blue',   ylim=c(0,u ))
-  barplot(table(factor(pla, levels=0:max(y)))  , main ="Placebo counts" , col='green',  ylim=c(0,u ))
-   
+ 
+  #get the midpoints in bars with b object
+  b<- barplot(table(factor(trt, levels=0:max(y)))  , main ="Treated counts" , col='blue',   ylim=c(0,u+25)) #u+ to allow text
+  nn <- table(factor(trt))
+  x <-as.numeric(names(nn))
+  y1 <- as.vector(nn)+10
+  z <- as.character(as.vector(nn))
+  text(x=b[x+1],y=(y1),labels=z)  # x+1 th of b vector because bars start at zero 
+  
+  
+  b <-barplot(table(factor(pla, levels=0:max(y)))  , main ="Placebo counts" , col='green',  ylim=c(0,u+25 ))
+  nn <- table(factor(pla))
+  x <-as.numeric(names(nn))
+  y1 <- as.vector(nn)+10
+  z <- as.character(as.vector(nn))
+  text(x=b[x+1],y=(y1),labels=z)
+  
   par(mfrow=c(1,1))
     
 })
