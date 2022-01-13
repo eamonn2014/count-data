@@ -1296,19 +1296,9 @@ order, |r|(i), are plotted against |z|(i) = Φ−1{(n + i −1/8)/(2n + 1/2)}. A
 The normal-theory reference line, |r|(i) = |z|(i) and the normal-theory confidence interval can be replaced by simulating residuals from the assumed distribution, that need not be normal. The reference line is taken as the mean of S simulations and the interval with 1 − α coverage is
 taken as the (α/2, 1 − α/2) quantiles of their values.
 
-Specifically, for a GLM, S sets of random observations yj , j = 1, 2, . . . S are generated from the fitted model, each with mean µ hat, the fitted values under from the model and with the same distribution. In R, this is readily accomplished using the generic simulate() function; the random variation around µ hat uses rnorm(), rpois(), rnegbin(), etc., as appropriate for the family of the model.
+Specifically, for a GLM, S sets of random observations yj , j = 1, 2, . . . S are generated from the fitted model, each with mean µ hat, the fitted values under from the model and with the same distribution. In R, this is readily accomplished using the generic simulate() function; the random variation around µ hat uses rnorm(), rpois(), rnegbin(), etc., as appropriate for the family of the model.The same model is then fit to each simulated yj , giving a new set of residuals for each simulation. Sorting their absolute values then gives the simulation distribution used as reference for the observed residuals.
 
-The same model is then fit to each simulated yj , giving a new set of residuals for each simulation. Sorting their absolute values then gives the simulation distribution used as reference for the observed residuals.
-
-First, calculate the sorted absolute values of the residuals |r|(i) and their expected normal values, |z|(i) . The basic plot will be a  plot of expected v observed.
-
-Then, use simulate() to generate S = 100 simulated response vectors around the fitted values in the model. Here this uses the negative-binomial random number generator (rnegbin()) with the same dispersion value estimated in the model. The result, called sims here, is a data frame of n rows and S = 100 columns, named sim_1, sim_2, ....
-
-The next step is computationally intensive, because we have to fit the NB model S = 100 times and a little bit tricky, because we need to use the same model formula as the original, but with the simulated y. We first define a function resids to do this for a given y, and then use apply to calculate them all. To save computing time, the coefficients from the original model are used as starting values.
-
-We can then use apply() to compute the summary measures defining the center and limits for the simulated confidence interval.
-
-Finally, plot the observed against expected absolute residuals as points, and add the lines for the confidence interval.
+First, calculate the sorted absolute values of the residuals |r|(i) and their expected normal values, |z|(i) . The basic plot will be a  plot of expected v observed. Then, use simulate() to generate S = 100 simulated response vectors around the fitted values in the model. Here this uses the negative-binomial random number generator (rnegbin()) with the same dispersion value estimated in the model. The result, called sims here, is a data frame of n rows and S = 100 columns, named sim_1, sim_2, .... Next we have to fit the NB model S times and use the same model formula as the original, but with the simulated y. We first define a function to do this for a given y, and then use apply() to calculate them all. To save computing time, the coefficients from the original model are used as starting values. We then use apply() to compute the summary measures defining the center and limits for the simulated confidence interval. Finally, we plot the observed against expected absolute residuals as points, and add the lines for the confidence interval.
 
 **Poisson paired counts**
 
