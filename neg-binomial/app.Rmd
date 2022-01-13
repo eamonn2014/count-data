@@ -1259,9 +1259,7 @@ Row {.tabset .tabset-fade}
 
 Wiki
 === 
-**In general the app is quite slow as almost each page has some Monte Carlo simulation. But be patient eventually some information will appear.**
- 
-**Notes:** The binomial distribution describes the number of r successes in n trials. The geometric distribution describes the number of failures before the first success, r. The negative binomial distribution describes the number of failures before the rth success. Confusingly, the term ‘dispersion parameter’ can refer to either k or $\alpha$ ; other terms  include ‘shape parameter’ 'heterogeneity (ancillary) parameter' and ‘clustering coefficient’. The only restriction placed on $\alpha$ is that it take positive rational values, rarely above 4 (according to Hilbe page 190). Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. The larger the gamma shape parameter, the more dispersed is the distribution. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. When $\alpha$ = 1, the negative binomial distribution takes the form of a
+**Notes: In general the app is quite slow as almost each page has some Monte Carlo simulation. But be patient eventually some information will appear.** The binomial distribution describes the number of r successes in n trials. The geometric distribution describes the number of failures before the first success, r. The negative binomial distribution describes the number of failures before the rth success. Confusingly, the term ‘dispersion parameter’ can refer to either k or $\alpha$ ; other terms  include ‘shape parameter’ 'heterogeneity (ancillary) parameter' and ‘clustering coefficient’. The only restriction placed on $\alpha$ is that it take positive rational values, rarely above 4 (according to Hilbe page 190). Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. The larger the gamma shape parameter, the more dispersed is the distribution. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. When $\alpha$ = 1, the negative binomial distribution takes the form of a
 geometric distribution, which is the discrete correlate of the continuous negative
 exponential distribution. The negative binomial distribution with $\alpha$ = 0 is Poisson.
 As the mean increases, the probability of a zero decreases, and the more the shape approximates a Gaussian distribution. As the Poisson mean gets larger it approaches normality, this is not the case for the negative binomial distribution. 
@@ -1291,12 +1289,9 @@ The first plot tab shows hanging **Rootograms**. The counts are square rooted to
 **Quantile quantile and half normal plots** quantile quantile (qq) plots and a more robust and useful version of qq lots: half normal plots, with simulated confidence intervals. The essential ideas are:
 
 Model departures and outliers are often easier to see for discrete data when the absolute values of residuals are plotted, because large positive and negative values are sorted together. This gives the half-normal plot, in which the absolute values of residuals, arranged in increasing
-order, |r|(i), are plotted against |z|(i) = Φ−1{(n + i −1/8)/(2n + 1/2)}. All outliers will then appear in the upper right of such a plot, as points separated from the trend.
+order, |r|(i), are plotted against |z|(i) = Φ−1{(n + i −1/8)/(2n + 1/2)}. All outliers will then appear in the upper right of such a plot, as points separate from the trend. The normal-theory reference line, |r|(i) = |z|(i) and the normal-theory confidence interval can be replaced by simulating residuals from the assumed distribution, that need not be normal. The reference line is taken as the mean of S simulations and the interval with 1 − α coverage is taken as the ($\alpha$/2, 1 − $\alpha$/2) quantiles of their values.
 
-The normal-theory reference line, |r|(i) = |z|(i) and the normal-theory confidence interval can be replaced by simulating residuals from the assumed distribution, that need not be normal. The reference line is taken as the mean of S simulations and the interval with 1 − α coverage is
-taken as the (α/2, 1 − α/2) quantiles of their values.
-
-Specifically, for a GLM, S sets of random observations yj , j = 1, 2, . . . S are generated from the fitted model, each with mean µ hat, the fitted values under from the model and with the same distribution. In R, this is readily accomplished using the generic simulate() function; the random variation around µ hat uses rnorm(), rpois(), rnegbin(), etc., as appropriate for the family of the model.The same model is then fit to each simulated yj , giving a new set of residuals for each simulation. Sorting their absolute values then gives the simulation distribution used as reference for the observed residuals.
+Specifically, for a GLM, S sets of random observations yj , j = 1, 2, ... S are generated from the fitted model, each with mean µ hat, the fitted values under from the model and with the same distribution. In R, this is readily accomplished using the generic simulate() function; the random variation around µ hat uses rnorm(), rpois(), rnegbin(), etc., as appropriate for the family of the model.The same model is then fit to each simulated yj , giving a new set of residuals for each simulation. Sorting their absolute values then gives the simulation distribution used as reference for the observed residuals.
 
 First, calculate the sorted absolute values of the residuals |r|(i) and their expected normal values, |z|(i) . The basic plot will be a  plot of expected v observed. Then, use simulate() to generate S = 100 simulated response vectors around the fitted values in the model. Here this uses the negative-binomial random number generator (rnegbin()) with the same dispersion value estimated in the model. The result, called sims here, is a data frame of n rows and S = 100 columns, named sim_1, sim_2, .... Next we have to fit the NB model S times and use the same model formula as the original, but with the simulated y. We first define a function to do this for a given y, and then use apply() to calculate them all. To save computing time, the coefficients from the original model are used as starting values. We then use apply() to compute the summary measures defining the center and limits for the simulated confidence interval. Finally, we plot the observed against expected absolute residuals as points, and add the lines for the confidence interval.
 
@@ -1308,11 +1303,14 @@ Notes
 ===
 
 gelmans book rnegbiniom function
+
 investigate offset 
+
 predict
+
 cor neg binomial not working
-explain corr poisson approach <- many packages
-understand neg binomial rct rnbinom inputs
+
+ understand neg binomial rct rnbinom inputs
 
 easier to not think about alpha and k when we use Poisson gamma ? 
  
@@ -1337,12 +1335,12 @@ References
     div(p(" "))
     tags$a(href = "https://www.galitshmueli.com/system/files/ASMB_901_rev.pdf",target="_blank",
            tags$span(style="color:blue", "[7] On generating multivariate Poisson data in management science applications"),) 
-     div(p(" "))
+    div(p(" "))
     tags$a(href = "https://thomasward.com/simulating-correlated-data/",target="_blank",tags$span(style="color:blue", "[8] Simulating correlated data"),) 
-     div(p(" "))
-     tags$a(href = "https://www.rdocumentation.org/packages/simstudy/versions/0.3.0", target="_blank", tags$span(style="color:blue", "[9] package simstudy for simulating correlated data, not used but interesting"),) 
-     div(p(" "))
-     tags$a(href = "https://www.rdocumentation.org/packages/SimCorrMix/versions/0.1.1/topics/SimCorrMix",target="_blank", tags$span(style="color:blue", "[10] package SimCorrMix for simulating correlated data, not used but interesting"),) 
+    div(p(" "))
+    tags$a(href = "https://www.rdocumentation.org/packages/simstudy/versions/0.3.0", target="_blank", tags$span(style="color:blue", "[9] package simstudy for simulating correlated data, not used but interesting"),) 
+    div(p(" "))
+    tags$a(href = "https://www.rdocumentation.org/packages/SimCorrMix/versions/0.1.1/topics/SimCorrMix",target="_blank", tags$span(style="color:blue", "[10] package SimCorrMix for simulating correlated data, not used but interesting"),) 
       
     div(p(" "))
     
