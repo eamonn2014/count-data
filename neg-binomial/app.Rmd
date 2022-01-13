@@ -232,7 +232,7 @@ po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 p
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-Count data analysis is explored...
+**Count data analysis is explored**
 
 ```{r}
 
@@ -654,6 +654,7 @@ Row {data-height=500}
   
  
   upp <- ceiling(max(prop.table(table(y))) * 100 ) 
+  #upp <- roundUpNice(max(trt %>% table, pla %>% table))
   par(mfrow=c(2,2))
   data_perc <- t(prop.table(table(trt))) * 100    # Convert data to probability table
   barplot(data_perc, ylab = "Percent", main =paste0("Treated true \u03BC=",mu1," & k=",k," \nso \u03B1=",round(1/k,2),""), ylim=c(0,upp ), col='blue')     
@@ -661,6 +662,7 @@ Row {data-height=500}
   barplot(data_perc, ylab = "Percent", main =paste0("Placebo true \u03BC=",mu0," & k=",k," \nso \u03B1=",round(1/k,2),""), ylim=c(0,upp ), col='green') 
   
   u <- roundUpNice(max(trt %>% table, pla %>% table))
+  u <- ceiling(max(table(y)) ) 
   trt %>% table %>% barplot(ylim=c(0,u), main ="Treated counts" , col='blue') 
   pla %>% table %>% barplot(ylim=c(0,u), main ="Placebo counts" , col='green')
   par(mfrow=c(1,1))
