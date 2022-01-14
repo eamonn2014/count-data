@@ -573,7 +573,7 @@ Use the inputs below to simulate an RCT with a count outcome measure. We estimat
                   min = 0, max = .5 ,step=0.05, ticks=F)
 
     sliderInput('fup', 'Follow up (yrs)', value = c(1),
-            min = 0, max = 10, step=1,ticks=F)
+            min = 1, max = 10, step=1,ticks=F)
 
     sliderInput('sims2', 'Power simulations', value= 500,
                   min = 500, max = 10000, step= 500, ticks=F)
@@ -661,39 +661,57 @@ Row {data-height=500}
   # proportion plot
   u1 <- max(prop.table(table(trt)) , prop.table(table(pla)))*100
   upp <- roundUpNice( u1)
-  
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
   x <- factor(trt, levels=0:max(y))
-  data_perc <- t(prop.table(table(x))) * 100    # Convert data to probability table
-  barplot(data_perc, ylab = "Percent", 
-          main =paste0("Treated true \u03BC=",mu1," & k=",k," \nso \u03B1=",round(1/k,2),""), ylim=c(0,upp ), col='blue')  #
+  nn <- data_perc <- t(prop.table(table(x))) * 100    # Convert data to probability table
+  b <- barplot(data_perc, ylab = "Percent", 
+          main =paste0("Treated true \u03BC=",mu1," & k=",k," \nso \u03B1=",
+                       round(1/k,2),""), ylim=c(0,upp+5 ), col='blue')  #
+  x <-as.numeric(colnames(nn))  # work on getting % onto top of bars
+  y1 <- as.vector(nn)+4
+  z <- as.character(as.vector(nn))
+  z <-  round(as.numeric(z),0)
+  z <- paste0(z,"%")
+  text(x=b[x+1],y=(y1),labels=z, cex = 1)
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
   
   x <- factor(pla, levels=0:max(y))
-  data_perc <- t(prop.table(table(x))) * 100    # Convert data to probability table
-  barplot(data_perc, ylab = "Percent",
-          main =paste0("Placebo true \u03BC=",mu0," & k=",k," \nso \u03B1=",round(1/k,2),""), ylim=c(0,upp ), col='green') 
-  
-  
-  
+  nn <- data_perc <- t(prop.table(table(x))) * 100    # Convert data to probability table
+  b <-barplot(data_perc, ylab = "Percent",
+          main =paste0("Placebo true \u03BC=",mu0," & k=",k," \nso \u03B1=",
+                       round(1/k,2),""), ylim=c(0,upp+5 ), col='green') 
+  x <-as.numeric(colnames(nn))   # work on getting % onto top of bars
+  y1 <- as.vector(nn)+4
+  z <- as.character(as.vector(nn))
+  z <-  round(as.numeric(z),0)
+  z <- paste0(z,"%")
+  text(x=b[x+1],y=(y1),labels=z, cex = 1)
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  # count plot
    u <- ceiling(max(table(y))/2)
    u <- roundUpNice(u)
  
   #get the midpoints in bars with b object
   b<- barplot(table(factor(trt, levels=0:max(y)))  , main ="Treated counts" , col='blue',   ylim=c(0,u+25)) #u+ to allow text
-  nn <- table(factor(trt))
+  nn <- table(factor(trt))  # work on getting counts onto top of bars
   x <-as.numeric(names(nn))
   y1 <- as.vector(nn)+10
   z <- as.character(as.vector(nn))
-  text(x=b[x+1],y=(y1),labels=z)  # x+1 th of b vector because bars start at zero 
+  text(x=b[x+1],y=(y1),labels=z, cex = 1)  # x+1 th of b vector because bars start at zero 
   
-  
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
   b <-barplot(table(factor(pla, levels=0:max(y)))  , main ="Placebo counts" , col='green',  ylim=c(0,u+25 ))
-  nn <- table(factor(pla))
+  nn <- table(factor(pla))  # work on getting counts onto top of bars
   x <-as.numeric(names(nn))
   y1 <- as.vector(nn)+10
   z <- as.character(as.vector(nn))
-  text(x=b[x+1],y=(y1),labels=z)
+  text(x=b[x+1],y=(y1),labels=z, cex = 1)
   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
   par(mfrow=c(1,1))
     
 })
@@ -777,7 +795,7 @@ Show the equivalent parameterisation of gamma Poisson and negative binomial (rnb
                   min = 0, max = .5 ,step=0.05, ticks=F)
   
     sliderInput('fup.pg', 'Follow up (yrs)', value = c(1),
-            min = 0, max = 10, step=1,ticks=F)
+            min = 1, max = 10, step=1,ticks=F)
      
     
 # n  <- 1000
