@@ -259,7 +259,7 @@ Column {.sidebar}
   sliderInput('y_range', 'Plot y-range', value = c(0,.4),
           min = 0, max = 1,step=.05,ticks=F)
 
- 
+  checkboxInput('perc','show stats on barplot')
 
 ```
 
@@ -453,9 +453,19 @@ renderPlot({
   
   par(mar=c(2.1,4.1,4.1,4.1))
       
-  barplot(yb, xlim=c(0,xmax+2), ylab = "Percent", xlab="x", col='black', ylim=c(0,ymax),
+  b <- barplot(yb, xlim=c(0,xmax+2), ylab = "Percent", xlab="x", col='black', ylim=c(0,ymax),
           main = paste("Poisson \u03BC=", mu, ", based on common \u03BC",sep=""),
           names.arg= as.character(xx))
+   
+  if(input$perc) {
+  x <-0:length(b) # work on getting % onto top of bars
+  y1 <- yb + 0.02
+  z <- round(yb,2) *100
+  z <- paste0(z,"%")
+  text(x=b[x+1],y=(y1),labels=z, cex = 1)
+  }
+  
+  
 })
 
 ```
@@ -487,11 +497,18 @@ renderPlot({
   
   par(mar=c(2.1,4.1,4.1,4.1))
       
-  barplot(yb, xlim=c(0,xmax+2), ylab = "Percent", xlab="x", col='red',
+  b <- barplot(yb, xlim=c(0,xmax+2), ylab = "Percent", xlab="x", col='red',
           ylim=c(0,ymax),
           main =  paste("Negative Binomial \u03BC=",mu," \u03B1=",alpha_a,", based on common mean and red curve \u03B1",sep=""),
           names.arg= as.character(xx))
   
+  if(input$perc) {
+  x <-0:length(b) # work on getting % onto top of bars
+  y1 <- yb + 0.02
+  z <- round(yb,2) *100
+  z <- paste0(z,"%")
+  text(x=b[x+1],y=(y1),labels=z, cex = 1)
+  }
 })
     
     
@@ -577,7 +594,8 @@ Use the inputs below to simulate an RCT with a count outcome measure. We estimat
 
     sliderInput('sims2', 'Power simulations', value= 500,
                   min = 500, max = 10000, step= 500, ticks=F)
-
+    
+    checkboxInput('perc1','show stats on barplot')
 
 ```
 
@@ -631,6 +649,7 @@ Row {data-height=500}
    
   dose <- c(rep("placebo",n),rep("trt",n))
   mu   <- c(rep(mu0,n),rep(mu1,n))
+  
   if (drop1==0) {drop1=0.0001}
   if (drop2==0) {drop2=0.0001}
   if (k==0) {k=0.0001}
@@ -640,7 +659,7 @@ Row {data-height=500}
   f <- - rexp(2*n) / log(1-drop/fup) # scale according to follow up!
   length <- ifelse(f>fup,fup,f)
  
-  y <-  rnbinom(n*2,  p=1/(1+ mu*length* k),      size=1/k)  +
+  y <-  rnbinom(n*2,  p=1/(1+ mu*length* k),        size=1/k)  +
         rnbinom(n*2,  p=1/(1+ mu0*(fup-length)*k),  size=1/k)
 
   logleng  <- rep(log(fup), n*2)            # make sure follow up here !
@@ -669,12 +688,15 @@ Row {data-height=500}
   b <- barplot(data_perc, ylab = "Percent", 
           main =paste0("Treated true \u03BC=",mu1," & k=",k," \nso \u03B1=",
                        round(1/k,2),""), ylim=c(0,upp+5 ), col='blue')  #
+  
+     if(input$perc1) {
   x <-as.numeric(colnames(nn))  # work on getting % onto top of bars
   y1 <- as.vector(nn)+4
   z <- as.character(as.vector(nn))
   z <-  round(as.numeric(z),0)
   z <- paste0(z,"%")
   text(x=b[x+1],y=(y1),labels=z, cex = 1)
+     }
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
   
   x <- factor(pla, levels=0:max(y))
@@ -682,12 +704,15 @@ Row {data-height=500}
   b <-barplot(data_perc, ylab = "Percent",
           main =paste0("Placebo true \u03BC=",mu0," & k=",k," \nso \u03B1=",
                        round(1/k,2),""), ylim=c(0,upp+5 ), col='green') 
+  
+    if(input$perc1) {
   x <-as.numeric(colnames(nn))   # work on getting % onto top of bars
   y1 <- as.vector(nn)+4
   z <- as.character(as.vector(nn))
   z <-  round(as.numeric(z),0)
   z <- paste0(z,"%")
   text(x=b[x+1],y=(y1),labels=z, cex = 1)
+    }
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  # count plot
    u <- ceiling(max(table(y))/2)
@@ -695,21 +720,23 @@ Row {data-height=500}
  
   #get the midpoints in bars with b object
   b<- barplot(table(factor(trt, levels=0:max(y)))  , main ="Treated counts" , col='blue',   ylim=c(0,u+25)) #u+ to allow text
+    if(input$perc1) {
   nn <- table(factor(trt))  # work on getting counts onto top of bars
   x <-as.numeric(names(nn))
   y1 <- as.vector(nn)+10
   z <- as.character(as.vector(nn))
   text(x=b[x+1],y=(y1),labels=z, cex = 1)  # x+1 th of b vector because bars start at zero 
-  
+    }
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
   b <-barplot(table(factor(pla, levels=0:max(y)))  , main ="Placebo counts" , col='green',  ylim=c(0,u+25 ))
+    if(input$perc1) {
   nn <- table(factor(pla))  # work on getting counts onto top of bars
   x <-as.numeric(names(nn))
   y1 <- as.vector(nn)+10
   z <- as.character(as.vector(nn))
   text(x=b[x+1],y=(y1),labels=z, cex = 1)
-  
+    }
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   par(mfrow=c(1,1))
