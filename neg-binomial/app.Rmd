@@ -1299,6 +1299,10 @@ References
     tags$a(href = "https://www.rdocumentation.org/packages/simstudy/versions/0.3.0", target="_blank", tags$span(style="color:blue", "[9] package simstudy for simulating correlated data, not used but interesting"),) 
     div(p(" "))
     tags$a(href = "https://www.rdocumentation.org/packages/SimCorrMix/versions/0.1.1/topics/SimCorrMix",target="_blank", tags$span(style="color:blue", "[10] package SimCorrMix for simulating correlated data, not used but interesting"),) 
+    div(p(" "))
+    tags$a(href = "https://www.amazon.com/Negative-Binomial-Regression-Joseph-Hilbe/dp/0521198151",target="_blank", tags$span(style="color:blue", "[11] Negative Binomial Regression 2nd Edition by Joseph M. Hilbe"),) 
+    
+    
       
     div(p(" "))
     tags$hr()                        
