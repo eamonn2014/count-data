@@ -1362,6 +1362,8 @@ predict
 
 cor neg binomial not working
 
+more refs
+
 
 References
 ====
