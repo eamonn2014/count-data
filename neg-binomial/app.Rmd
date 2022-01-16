@@ -100,13 +100,15 @@ GenerateMultivariatePoisson<-function(p, samples, R, lambda){
   
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # function to simulate negative binomial RCT
+# 
+# rnbinom simulation accounting for trt discontinuation, outputs p value
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
 nb.power <- function(n=220, k=1.3, mu0=1, eff=0.65, drop1=.1, drop2=.1, fup=1) {
   
   mu1 <- eff*mu0
   
-  # n=220; alpha=1.3; mu0=1; mu1=.65; drop1=.01; drop2=.01; fup=1
+  # n=220; alpha=1.3; mu0=1; mu1=.65; drop1=.01; drop2=.01; fup=1; k=.8
   # just so there is no error if drop out is or k=0
  
   if (drop1==0) {drop1=0.0001}
@@ -130,12 +132,74 @@ nb.power <- function(n=220, k=1.3, mu0=1, eff=0.65, drop1=.1, drop2=.1, fup=1) {
   logleng  <- rep(log(fup), n*2)            # make sure follow up here !
   
   # analyse with neg. binomial model
-  x <- summary(MASS::glm.nb(y~dose+offset((logleng))))
+  mod <- MASS::glm.nb(y~dose+offset((logleng)))
+  x <- summary(mod)
  
   # collect p-values
   p <-  x$coefficients["dosetrt","Pr(>|z|)"]
+   
+  return(list(p, y ,dose, x, mod, logleng))
   
-  return(p)
+} 
+    example1 <-  nb.power(n=220, k=1.3, mu0=1, eff=.65, drop1=.1, drop2=.1, fup=1)
+    barplot(unlist(table(example1[2])))
+  
+    res <- replicate( 1000, 
+         nb.power(n=220, k=1.3, mu0=1, eff=.65, drop1=.1, drop2=.1, fup=1))
+    mean(unlist(res[1,]<.05))
+
+
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# function to simulate negative binomial RCT
+# 
+# Poisson gamma simulation accounting for trt discontinuation, outputs p value
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+nb.power2 <- function(n=220, k=1.3, mu0=1, eff=0.65, drop1=.1, drop2=.1, fup=1) {
+  
+  mu1 <- eff*mu0
+  
+  # n=220; alpha=1.3; mu0=1; mu1=.65; drop1=.1; drop2=.1; fup=1; k=.8
+  # just so there is no error if drop out is or k=0
+  
+  if (drop1==0) {drop1=0.0001}
+  if (drop2==0) {drop2=0.0001}
+  if (k==0) {k=0.0001} 
+  
+  dose <- c(rep("placebo",n),rep("trt",n)) # 50:50 split of patients
+  
+  mu   <- c(rep(mu0,n), rep(mu1,n))        # rates in two arms
+  
+  drop <- c(rep(drop1,n), rep(drop2,n))    # tr discontinuation rates
+  
+  f <- - rexp(2*n) / log(1-drop/fup)       # generate drop outs and scale time according to follow up!
+  
+  length <- ifelse(f > fup, fup, f)        # curtail at follow up time 
+
+  s <-  rgamma(2*n, shape = 1/k, scale = k)
+  
+ # lambda1 <- mu   * s  ## Simulate rate
+
+  # y <-   rpois(n = n*2, lambda = (length*lambda1))  +
+  #        rpois(n = n*2, lambda = ((fup-length)*lambda1))  # ensure follow up here!
+  
+  y <-   rpois(n = n*2, lambda = (length*mu*s))  +
+         rpois(n = n*2, lambda = ((fup-length)*mu0*s))  # ensure follow up here!
+  
+  # assume no one is lost to the study but can discontinue treatment
+  logleng  <- rep(log(fup), n*2)            # make sure follow up here !
+  
+  # analyse with neg. binomial model
+  mod <- MASS::glm.nb(y~dose+offset((logleng)))
+  x <- summary(mod)
+  
+  # collect p-values
+  p <-  x$coefficients["dosetrt","Pr(>|z|)"]
+  
+  return(list(p, y ,dose,x,mod, logleng))
   
 }
 
@@ -331,15 +395,7 @@ renderPlot({
   }
   
   nor <-       dnorm(x, mu, sqrt(mu))
-
-# 
-#   x=  append(0,x)  
-#   y=  append(0,y)
-#   yb= append(0,yb)
-#   yc= append(0,yc)
-#   yd= append(0,yd)
-#   nor=append(0,nor)
-#   
+ 
   x=  c(0,x)  
   y=  c(0,y)
   yb= c(0,yb)
@@ -349,15 +405,15 @@ renderPlot({
   
   l = !is.na(y+yb+yc+yd+nor)
   
-  plot(x[l],y[l],ylim=c(0,ymax),xlim=c(low,xmax),type="l",lwd=lwd.,xlab="x",
-       ylab="prob(x)",main="Probability distributions")
+  plot(x[l],y[l], ylim=c(0,ymax), xlim=c(low,xmax), type="l", lwd=lwd., xlab="x",
+       ylab="prob(x)", main="Probability distributions")
   
   lines(x[l],yb[l], col=2,lwd=lwd.,type="l")
   lines(x[l],yc[l], col=4,lwd=lwd.,type="l")
   lines(x[l],nor[l],col=5,lwd=lwd.,type="l")
   lines(x[l],yd[l], col=6,lwd=lwd.,type="l")
    
-  apois = paste("Poisson \u03BC=",mu,sep="")
+  apois = paste("Poisson \u03BC=", mu,sep="")
   nb_a = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep="")
   nb_b = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,sep="")
   nb_c = paste("Normal \u03BC=",   mu," \u03C3=sqrt(",mu,")",sep="")
@@ -404,8 +460,9 @@ renderPlot({
     
     atitle = paste("Distributions of",n,"random numbers")
     
-    plot(a$mids,a$density,type="s",lwd=lwd.,col=1,ylim=c(0,ymax),main=atitle,xlim=c(low,xmax),
-         xlab="x",ylab="Fraction falling within each bin")
+    plot(a$mids,a$density,type="s",lwd=lwd., col=1, ylim=c(0,ymax),
+         main=atitle, xlim=c(low,xmax),
+         xlab="x", ylab="Fraction falling within each bin")
     
     lines(b$mids,b$density,type="s",lwd=lwd.,col=2)
     lines(c$mids,c$density,type="s",lwd=lwd.,col=4)
@@ -601,9 +658,26 @@ Use the inputs below to simulate an RCT with a count outcome measure. We estimat
 
 Row {data- height=650}
 -----------------------------------------------------------------------
-### Power will appear here iminently...be patient...
+### Power will appear here imminently...be patient...
   
 ```{r, eval=TRUE}
+
+r1<- reactive({
+  
+  res <- replicate( input$sims2, 
+        nb.power(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)) 
+  mean(unlist(res[1,]<.05))
+
+})
+ 
+r2 <- reactive({
+  
+  res1 <- replicate( input$sims2, 
+        nb.power2(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)) 
+  mean(unlist(res1[1,]<.05))
+
+})
+
 
 reactive({
   
@@ -613,69 +687,52 @@ cat(paste0("The gamma Poisson model will be used as we expect patient heterogene
 
 cat(paste0("\nk is the dispersion parameter, its value is " ,input$k,", this is the same as 1/alpha So alpha is ",1/input$k,". The rate for placebo is ",input$mu0," events per patient year of follow up.\nThe treatment effect hypothesised is ",input$eff, " so an event rate for treatment is hypothesised as ",input$mu0*input$eff, " events per patient year follow up. \nDrop out probabilities for treatment discontinuation and placebo over the follow up period (in years) are " ,input$d1, " and " ,input$d2," respectively. \nWe assume a constant exponential hazard rate over time for treatment discontinuation with ",input$d1," and ",input$d2,", the percentages of patients\noff treatment by follow up time in years in active and placebo. No further treatment effect versus placebo is assumed during off treatment, that is ",input$mu0," events per patient year is \nassumed for patients after treatment discontinuation in treated and placebo.\n"))
 
-cat(paste0("\nThe power estimate is..."))
+cat(paste0("\nThe power estimate is based on simulation using rnbinom...",r1()," and ",r2()," based on Poisson gamma simulation"))
 })
   
  
-reactive({
-  
-  res <- replicate( input$sims2, 
-        nb.power(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)) 
-  mean(res<0.05)
-
-})
-
 
 ```
  
-Row {data-height=500}
+Row {data-height=700}
 -------------------------------------
    
 ### A typical dataset that can be expected
 
 ```{r}
 
+r3 <- reactive({
+  
+  example1 <-  nb.power(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)
+  mu1 <- input$eff*input$mu0
+ return(list( y=example1[2][[1]], dose=example1[3][[1]] , model=example1[4][[1]]   , mu1=mu1)  )
+  
+})
+
+
+
+
+
+
  renderPlot({
   
-   n=     (input$N)
-   k=     (input$k)
-   mu0=   (input$mu0)
-   eff=   (input$eff)
-   drop1= (input$d1)
-   drop2= (input$d2)
-   fup=   (input$fup)
+   
+   
+    mu1 <- r3()$mu1
+    dose <- r3()$dose
+    y <- r3()$y
+    
+    k=     (input$k)
+    mu0=   (input$mu0)
+    
    statz <-   (input$perc1)
    
-   mu1 <- eff*mu0
-   
-  dose <- c(rep("placebo",n),rep("trt",n))
-  mu   <- c(rep(mu0,n),rep(mu1,n))
-  
-  if (drop1==0) {drop1=0.0001}
-  if (drop2==0) {drop2=0.0001}
-  if (k==0) {k=0.0001}
-  
-  drop <- c(rep(.1,n),rep(.1,n))
-
-  f <- - rexp(2*n) / log(1-drop/fup) # scale according to follow up!
-  length <- ifelse(f>fup,fup,f)
- 
-  y <-  rnbinom(n*2,  p=1/(1+ mu*length* k),        size=1/k)  +
-        rnbinom(n*2,  p=1/(1+ mu0*(fup-length)*k),  size=1/k)
-
-  logleng  <- rep(log(fup), n*2)            # make sure follow up here !
-
-  #addmargins(table( y,  dose))
-
- # d <- cbind.data.frame(dose, mu, length, y, logleng)
- # summary(MASS::glm.nb(y~dose+offset((logleng)), data=d))
-
-  trt <- y[dose %in% "trt"]
-  pla <- y[!dose %in% "trt"]
+    trt <- y[dose %in% "trt"]
+    pla <- y[!dose %in% "trt"]
+    
   
   
-  
-
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   par(mfrow=c(2,2))
   
   # proportion plot
@@ -767,36 +824,9 @@ Row {data-height=500}
 
  renderPrint({
   
- n=input$N
- k=input$k
- mu0=input$mu0
- eff=input$eff
- drop1=input$d1
- drop2=input$d2
- fup=input$fup
- 
- mu1 <- eff*mu0
- 
-  dose <- c(rep("placebo",n),rep("trt",n))
-  mu   <- c(rep(mu0,n),rep(mu1,n))
-  if (drop1==0) {drop1=0.0001}
-  if (drop2==0) {drop2=0.0001}
-  if (k==0) {k=0.0001}
-  
-  drop <- c(rep(.1,n),rep(.1,n))
-
-   f <- - rexp(2*n) / log(1-drop/fup) # scale according to follow up!
-  length <- ifelse(f>fup,fup,f)
- 
-  y <-  rnbinom(n*2,  p=1/(1+ mu*length* k),      size=1/k)  +
-        rnbinom(n*2,  p=1/(1+ mu0*(fup-length)*k),  size=1/k)
-
-  logleng  <- rep(log(fup), n*2)            # make sure follow up here !
-
-  #addmargins(table( y,  dose))
-
-  d <- cbind.data.frame(dose, mu, length, y, logleng)
-  print (f <- summary(MASS::glm.nb(y~dose+offset((logleng)), data=d)))
+   f <- r3()$model
+   print(f)
+   
   
 cat(paste0("\nPlacebo rate ",round(exp(f$coef[1]),4)," and multiplicative treatement effect of ",round(exp(f$coef[2]),4),""))
     
@@ -862,53 +892,23 @@ Column {data-width=400, height=300}
 ```{r, eval=TRUE}
 
 
-dat3 <- reactive({
- 
-  k <-   input$k.pg
-  n <-   input$N.pg 
-  mu0 <- input$mu0.pg
-  mu1 <- mu0*input$eff.pg
-  d1 <-  input$d1.pg
-  d2 <-  input$d2.pg
-  fup <-  input$fup.pg
-  
-  if (d1==0) {d1=0.0001}
-  if (d2==0) {d2=0.0001}
-  if (k==0) {k=0.0001}
-   
-  s <-  rgamma(n, shape = 1/k, scale = k)
-  s1 <- rgamma(n, shape = 1/k, scale = k)
- 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  dose <- c(rep("placebo",n),rep("trt",n))
-  mu   <- c(rep(mu0,n),rep(mu1,n))
-  drop <- c(rep(d1,n),rep(d2,n))
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # discontinuations and follow up
 
-  f        <- - rexp(2*n) / log(1-drop/fup) # scale according to follow up!
+r4 <- reactive({
   
-  length   <- ifelse(f>fup,fup,f)          # make sure fup here
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-
-  lambda1 <- mu   * s  ## Simulate rate
-  lambda2 <- mu0 * s1  ## Simulate rate
+ example1 <-  nb.power2(n=input$N.pg, k=input$k.pg, mu0=input$mu0.pg, eff=input$eff.pg,
+                         drop1=input$d1.pg, drop2=input$d2.pg, fup=input$fup.pg)
+  mu1 <- input$eff.pg*input$mu0.pg
+ return(list( y=example1[2][[1]], dose=example1[3][[1]] , smodel=example1[4][[1]]   , mu1=mu1,  model=example1[5][[1]] ,
+     L=example1[6][[1]]   ))
   
-  y_0 <- rpois(n = n*2, lambda = (length*lambda1))  +
-         rpois(n = n*2, lambda = ((fup-length)*lambda2))  
-         # ensure follow up here!
-         logleng  <- rep(log(fup), n*2)  # all patients have same length follow up
-  
-  f1<-glm.nb(y_0~dose+offset(logleng) )
-
 })
-
+ 
 
 renderPrint({
  
-     dat3 <- dat3()
-     summary(dat3)
+   f <- r4()$smodel
+   print(f)
+    
     })
 
 ``` 
@@ -920,46 +920,24 @@ renderPrint({
 ```{r, eval=TRUE}
 
 
-dat4 <- reactive({
+ 
 
-  k <-    input$k.pg
-  n <-    input$N.pg 
-  mu0 <-  input$mu0.pg
-  mu1 <-  mu0*input$eff.pg
-  d1 <-   input$d1.pg
-  d2 <-   input$d2.pg
-  fup <-  input$fup.pg
+r5 <- reactive({
   
-  if (d1==0) {d1=0.0001}
-  if (d2==0) {d2=0.0001}
-   if (k==0) {k=0.0001}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  dose <- c(rep("placebo",n),rep("trt",n))
-  mu   <- c(rep(mu0,n),rep(mu1,n))
-  drop <- c(rep(d1,n),rep(d2,n))
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# discontinuations and follow up
-  f        <- - rexp(2*n) / log(1-drop/fup) # scale according to follow up!
-  length   <- ifelse(f>fup,fup,f)           # make sure fup here!
-
-  y <-  rnbinom(n*2,  p=1/(1+ mu*    length* k),  size=1/k)  +
-        rnbinom(n*2,  p=1/(1+ mu0*(fup-length)*k),  size=1/k)
+  example1 <-  nb.power(n=input$N.pg, k=input$k.pg, mu0=input$mu0.pg, eff=input$eff.pg,
+                         drop1=input$d1.pg, drop2=input$d2.pg, fup=input$fup.pg)
+  mu1 <- input$eff.pg*input$mu0.pg
+ return(list( y=example1[2][[1]], dose=example1[3][[1]] , smodel=example1[4][[1]]   , mu1=mu1, model=example1[5][[1]] ,
+     L=example1[6][[1]]   ))
   
-  logleng  <- rep(log(fup), n*2)            # make sure follow up here !
-   
-  f<-glm.nb(y~dose+offset(logleng) )
-
- return(list(  f=f, y=y, logleng=logleng, dose=dose))
-
 })
  
 
 renderPrint({
  
-     dat4 <- dat4()$f
-     
-     summary(dat4)
-     
+   f <- r5()$smodel
+   print(f)
+    
     })
 
 
@@ -977,8 +955,8 @@ Column {.tabset .tabset-fade}
 
  renderPlot({
    
- f1 <- dat3()
- f <- dat4()$f  
+ f1 <- r4()$model
+ f <- r5()$model  
    
  par(mfrow=c(1,2))
  countreg::rootogram(f1, style = "hanging",     main = "Hanging plot based on gamma poisson simulation")
@@ -997,7 +975,7 @@ Column {.tabset .tabset-fade}
  
  renderPlot({
    
- f1 <- dat3()
+ f1 <- r4()
  
  Ord_plot(f1$y)
  
@@ -1016,7 +994,7 @@ Column {.tabset .tabset-fade}
 
  renderPlot({
    
- f1 <- dat3()
+ f1 <- r4()
 
  distplot(f1$y, type="poisson")
  
@@ -1033,7 +1011,7 @@ Column {.tabset .tabset-fade}
 
  renderPlot({
    
- f1 <- dat3()
+ f1 <- r4()
   
  distplot(f1$y, type="nbinom")
  
@@ -1051,7 +1029,7 @@ Column {.tabset .tabset-fade}
 
  renderPlot({
    
- f1 <- dat3()
+ f1 <- r4()$model
  
  op <- par(mfrow=c(2,2), mar=c(4,4,2,1)+.1, cex.lab=1.2)
 
@@ -1073,10 +1051,10 @@ Column {.tabset .tabset-fade}
 
  renderPlot({
    
-   f <- dat4()$f
-   dose <- dat4()$dose
-   y <- dat4()$dose
-   logleng <- dat4()$logleng
+   f       <- r4()$model
+   dose    <- r4()$dose
+   y       <- r4()$dose
+   logleng <- r4()$L
 
 par(mfrow=c(1,2))
 qqPlot(rstudent(f), xlab="Normal quantiles", ylab="Studentized residuals")
