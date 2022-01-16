@@ -27,7 +27,7 @@ Probability mass functions
   lwd.=3  # used when plotting
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # function for nice upper limits to count bar plots
+  # function for nice upper limits to count bar plots, stack exchange
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
     roundUpNice <- function(x, nice=c(1,1.5, 2,4,5,6,8,10)) { #added 1.5 to help bar plot y scale
@@ -35,23 +35,25 @@ Probability mass functions
     10^floor(log10(x)) * nice[[which(x <= 10^floor(log10(x)) * nice)[[1]]]]
   }
   
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# another dnbinom Function   
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+##################################################################################
+# Define the Negative Binomial probability density function, with parameters
+# mu and alpha. The mean of this NB distribution is mu, and variance is sigma^2=mu+alpha*mu^2
+##################################################################################
 
- my_dnbinom=function(x,mu,alpha){
-  m = mu
-  k = 1/alpha
-  # lgamma is log(gamma)
-  a = lgamma(k+x)-lgamma(k)-lgamma(x+1)
-  b = x*log(m/(m+k))
-  c = -k*log(1+m/k)
-  prob = exp(a+b+c)
-  prob[x<0] = 0
-  prob[prob>1] = 1
-  prob[prob<0] = 0
-  return(prob)
-}
+   my_dnbinom=function(x,mu,alpha){
+    m = mu
+    k = 1/alpha
+    # lgamma is log(gamma)
+    a = lgamma(k+x)-lgamma(k)-lgamma(x+1)
+    b = x*log(m/(m+k))
+    c = -k*log(1+m/k)
+    prob = exp(a+b+c)
+    prob[x<0] = 0
+    prob[prob>1] = 1
+    prob[prob<0] = 0
+    return(prob)
+  }
 
 # check
 # dnbinom(   1, size=2,   mu=3)
@@ -63,23 +65,24 @@ Probability mass functions
 # PLoS paper. This function translates the mu and alpha parameters
 # into the format needed by R to generate the NB random numbers
 ##################################################################################
-my_rnbinom=function(n,mu,alpha){
-  size = 1/alpha          # so now we can just enter alpha this is converted to 1/ alpha
-  prob = size/(mu+size)   # so now we can enter mu the mean and that is converted to prob
-  return(rnbinom(n,size=size,prob=prob))
-}
+    
+  my_rnbinom=function(n,mu,alpha){
+    size = 1/alpha          # so now we can just enter alpha this is converted to 1/ alpha
+    prob = size/(mu+size)   # so now we can enter mu the mean and that is converted to prob
+    return(rnbinom(n,size=size,prob=prob))
+  }
 
  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  # generate cor data function, see references
  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GenerateMultivariatePoisson<-function(p, samples, R, lambda){
-  normal_mu=rep(0, p)
-  normal = mvrnorm(samples, normal_mu, R)
-  unif=pnorm(normal)
-  pois=t(qpois(t(unif), lambda))
-  return(pois)
-}
+  GenerateMultivariatePoisson<-function(p, samples, R, lambda){
+    normal_mu=rep(0, p)
+    normal = mvrnorm(samples, normal_mu, R)
+    unif=pnorm(normal)
+    pois=t(qpois(t(unif), lambda))
+    return(pois)
+  }
  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  # another function to generate cor data , see references
  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -101,45 +104,47 @@ GenerateMultivariatePoisson<-function(p, samples, R, lambda){
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # function to simulate negative binomial RCT
 # rnbinom simulation accounting for trt discontinuation, outputs p value and other objects
+# enter one arm n, k, placebo rate, trt effect, drop off trt rates and follow up time
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-nb.power <- function(n=220, k=1.3, mu0=1, eff=0.65, drop1=.1, drop2=.1, fup=1) {
-  
-  mu1 <- eff*mu0
-  
-  # n=220; alpha=1.3; mu0=1; mu1=.65; drop1=.01; drop2=.01; fup=1; k=.8
-  # just so there is no error if drop out is or k=0
- 
-  if (drop1==0) {drop1=0.0001}
-  if (drop2==0) {drop2=0.0001}
-  if (k==0) {k=0.0001} 
-
-  dose <- c(rep("placebo",n),rep("trt",n)) # 50:50 split of patients
-  
-  mu   <- c(rep(mu0,n), rep(mu1,n))        # rates in two arms
-
-  drop <- c(rep(drop1,n), rep(drop2,n))    # tr discontinuation rates
-  
-  f <- - rexp(2*n) / log(1-drop/fup)       # generate drop outs and scale time according to follow up!
-  
-  length <- ifelse(f > fup, fup, f)       # curtail at follow up time 
-  
-  y  <-  rnbinom(n*2,  prob=1/(1+ mu*length* k),        size=1/k)  +   # on treatment events
-         rnbinom(n*2,  prob=1/(1+ mu0*(fup-length)*k),  size=1/k)      # accounting for any off treat. 
-  
-  # assume no one is lost to the study but can discontinue treatment
-  logleng  <- rep(log(fup), n*2)            # make sure follow up here !
-  
-  # analyse with neg. binomial model
-  mod <- MASS::glm.nb(y~dose+offset((logleng)))
-  x <- summary(mod)
- 
-  # collect p-values
-  p <-  x$coefficients["dosetrt","Pr(>|z|)"]
+  nb.power <- function(n=220, k=1.3, mu0=1, eff=0.65, drop1=.1, drop2=.1, fup=1) {
+    
+    # n=220; alpha=1.3; mu0=1; mu1=.65; drop1=.01; drop2=.01; fup=1; k=.8
+    
+    mu1 <- eff*mu0 # manifest the true trt effect
+    
+    # just so there is no error if drop out or k=0
    
-  return(list(p, y ,dose, x, mod, logleng))
+    if (drop1==0) {drop1=0.0001}
+    if (drop2==0) {drop2=0.0001}
+    if (k==0) {k=0.0001} 
   
-} 
+    dose <- c(rep("placebo",n),rep("trt",n)) # 50:50 split of patients
+    
+    mu   <- c(rep(mu0,n), rep(mu1,n))        # rates in two arms
+  
+    drop <- c(rep(drop1,n), rep(drop2,n))    # tr discontinuation rates
+    
+    f <- - rexp(2*n) / log(1-drop/fup)       # generate drop outs and scale time according to follow up!
+    
+    indiv.time <- ifelse(f > fup, fup, f)       # curtail at follow up time 
+    
+    y  <-  rnbinom(n*2,  prob=1/(1+ mu*indiv.time* k),        size=1/k)  +   # on treatment events
+           rnbinom(n*2,  prob=1/(1+ mu0*(fup-indiv.time)*k),  size=1/k)      # accounting for any off treat. 
+    
+    # assume no one is lost to the study but can discontinue treatment
+    logtime  <- rep(log(fup), n*2)          # make sure follow up here !
+    
+    # analyse with neg. binomial model
+    mod <- glm.nb(y~dose+offset((logtime)))
+    x <- summary(mod)
+   
+    # collect p-values
+    p <-  x$coefficients["dosetrt","Pr(>|z|)"]
+     
+    return(list(p, y ,dose, x, mod, logtime))
+    
+  } 
 
 
     # example1 <-  nb.power(n=220, k=1.3, mu0=1, eff=.65, drop1=.1, drop2=.1, fup=1)
@@ -152,7 +157,8 @@ nb.power <- function(n=220, k=1.3, mu0=1, eff=0.65, drop1=.1, drop2=.1, fup=1) {
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # function to simulate negative binomial RCT
-#  Poisson gamma simulation accounting for trt discontinuation, outputs p value and other objects
+# Poisson gamma simulation accounting for trt discontinuation, outputs p value and other objects
+# enter one arm n, k, placebo rate, trt effect, drop off trt rates and follow up time
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
 nb.power2 <- function(n=220, k=1.3, mu0=1, eff=0.65, drop1=.1, drop2=.1, fup=1) {
@@ -174,29 +180,28 @@ nb.power2 <- function(n=220, k=1.3, mu0=1, eff=0.65, drop1=.1, drop2=.1, fup=1) 
   
   f <- - rexp(2*n) / log(1-drop/fup)       # generate drop outs and scale time according to follow up!
   
-  length <- ifelse(f > fup, fup, f)        # curtail at follow up time 
+  indiv.time <- ifelse(f > fup, fup, f)    # curtail at follow up time 
 
   s <-  rgamma(2*n, shape = 1/k, scale = k)
   
- # lambda1 <- mu   * s  ## Simulate rate
-
-  # y <-   rpois(n = n*2, lambda = (length*lambda1))  +
-  #        rpois(n = n*2, lambda = ((fup-length)*lambda1))  # ensure follow up here!
+  # lambda1 <- mu   * s  # Simulate rate
+  # y <-   rpois(n = n*2, lambda = (indiv.time*lambda1))  +
+  #        rpois(n = n*2, lambda = ((fup-indiv.time)*lambda1))  # ensure follow up here!
   
-  y <-   rpois(n = n*2, lambda = (length*mu*s))  +
-         rpois(n = n*2, lambda = ((fup-length)*mu0*s))  # ensure follow up here!
+  y <- rpois(n = n*2, lambda = (indiv.time*mu*s))  +
+       rpois(n = n*2, lambda = ((fup-indiv.time)*mu0*s))  # ensure follow up here!
   
   # assume no one is lost to the study but can discontinue treatment
-  logleng  <- rep(log(fup), n*2)            # make sure follow up here !
+  logtime  <- rep(log(fup), n*2)          # make sure follow up here !
   
   # analyse with neg. binomial model
-  mod <- MASS::glm.nb(y~dose+offset((logleng)))
+  mod <- glm.nb(y~dose+offset((logtime)))
   x <- summary(mod)
   
   # collect p-values
   p <-  x$coefficients["dosetrt","Pr(>|z|)"]
   
-  return(list(p, y ,dose,x,mod, logleng))
+  return(list(p, y ,dose,x,mod, logtime))
   
 }
 
@@ -215,7 +220,6 @@ po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 p
   L2 <- mu0*eff.p
   
   # generate correlated poisson ref: https://thomasward.com/simulating-correlated-data/
-  
   # Sample correlated N(0, 1) distributions from a multivariate normal distribution.
   # Transform them to correlated Uniform(0, 1) distributions with the normal CDF.
   # Transform them to any correlated probability distribution you desire with that probability distribution’s inverse CDF.
@@ -341,15 +345,11 @@ Column {data-width=400, height=300}
 ```{r}
 
 renderPlot({
-  
-##################################################################################
-# Define the Negative Binomial probability density function, with parameters
-# mu and alpha. The mean of this NB distribution is mu, and variance is sigma^2=mu+alpha*mu^2
-##################################################################################
+
 
 ##################################################################################
-# Now let's try out the NB density function, and overlay the Poisson
-# distribution with the same mean
+# NB density function, and overlay the Poisson distribution with the same mean
+# Normal withen variance equal to mean also
 ##################################################################################
  
   # mu = sample(1:25,1)
@@ -512,7 +512,7 @@ renderPlot({
           names.arg= as.character(xx))
    
   if(input$perc) {
-  x <-0:length(b) # work on getting % onto top of bars
+  x <-0:length(b) #  % onto top of bars
   y1 <- yb + 0.02
   z <- round(yb,2) *100
   z <- paste0(z,"%")
@@ -557,7 +557,7 @@ renderPlot({
           names.arg= as.character(xx))
   
   if(input$perc) {
-  x <-0:length(b) # work on getting % onto top of bars
+  x <-0:length(b) # % onto top of bars
   y1 <- yb + 0.02
   z <- round(yb,2) *100
   z <- paste0(z,"%")
@@ -582,14 +582,7 @@ Use the inputs below to simulate an RCT with a count outcome measure. We estimat
 
 ```{r}
  
-# 188
-# 1.5
-# .6
-# 1/.8
-# .15
-# .15
-# 1
-# 
+ 
 # 220
 # 1
 # .75
@@ -597,35 +590,9 @@ Use the inputs below to simulate an RCT with a count outcome measure. We estimat
 # .1
 # .1
 # 1
-# talk about a neg binomial dispersion parameter of 0.8, so this is alpha
-# but then enter 1/.8 = ~1.3 so this is k
+# talk about a neg binomial dispersion parameter of 0.8, so this is alpha but then enter 1/.8 = ~1.3 so this is k
 
-    # sliderInput('N', 'Patients per arm', value=220,
-    #               min = 10, max = 10000, step=5, ticks=F)
-    # 
-    # sliderInput('mu0', 'Placebo event rate \u03BC per patient yr of follow up', value=1,
-    #               min = 0.1, max = 25, step=.05, ticks=F)
-    # 
-    # sliderInput('eff', 'Hypothesised treatment effect ', value=.75,
-    #               min = 0.1, max =5, step=.05, ticks=F)
-    # 
-    # sliderInput('k', '1/\u03B1 the heterogeneity (ancillary) parameter', value = c(1.3),
-    #               min = 0, max = 5 ,step=0.01, ticks=F)
-    # 
-    # sliderInput('d1', 'Placebo discontinuation prob', value = c(0.1),
-    #               min = 0, max = .5 ,step=0.05, ticks=F)
-    # 
-    # sliderInput('d2', 'Treatment discontinuation prob', value = c(0.1),
-    #               min = 0, max = .5 ,step=0.05, ticks=F)
-    # 
-    # sliderInput('fup', 'Follow up (yrs)', value = c(1),
-    #         min = 0, max = 10, step=1,ticks=F)
-    #  
-    # sliderInput('sims2', 'Power simulations', value= 500,
-    #               min = 500, max = 10000, step= 500, ticks=F)
- 
-
-      sliderInput('N', 'Patients per arm', value=190,
+    sliderInput('N', 'Patients per arm', value=190,
                   min = 10, max = 1000, step=5, ticks=F)
 
     sliderInput('mu0', 'Placebo event rate \u03BC per patient yr of follow up', value=1.5,
@@ -730,14 +697,11 @@ r3 <- reactive({
   
  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   par(mfrow=c(2,2))
-  
   # proportion plot
   u1 <- max(prop.table(table(trt)) , prop.table(table(pla)))*100
   upp <- roundUpNice( u1)
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- ##
-   
   
   x <- factor(trt, levels=0:max(y))
   nn <- data_perc <- t(prop.table(table(x))) * 100    # Convert data to probability table
@@ -750,14 +714,14 @@ r3 <- reactive({
         
            
        
-  x <-as.numeric(colnames(nn))  # work on getting % onto top of bars
+  x <-as.numeric(colnames(nn))  # % onto top of bars
   y1 <- as.vector(nn)+4
   z <- as.character(as.vector(nn))
   z <-  round(as.numeric(z),0)
   z <- paste0(z,"%")
   
   if(isolate(statz)) { 
-  text(x=b[x+1],y=(y1),labels=z, cex = 1, col='black') }  
+    text(x=b[x+1],y=(y1),labels=z, cex = 1, col='black') }  
           
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
   
@@ -766,14 +730,15 @@ r3 <- reactive({
   b <-barplot(data_perc, ylab = "Percent",
           main =paste0("Placebo true \u03BC=",mu0," & k=",k," \nso \u03B1=",
                        round(1/k,2),""), ylim=c(0,upp+5 ), col='green') 
+  
   if(isolate(statz)) { 
       
-  x <-as.numeric(colnames(nn))   # work on getting % onto top of bars
-  y1 <- as.vector(nn)+4
-  z <- as.character(as.vector(nn))
-  z <-  round(as.numeric(z),0)
-  z <- paste0(z,"%")
-  text(x=b[x+1],y=(y1),labels=z, cex = 1)
+      x <-as.numeric(colnames(nn))   #  % onto top of bars
+      y1 <- as.vector(nn)+4
+      z <- as.character(as.vector(nn))
+      z <-  round(as.numeric(z),0)
+      z <- paste0(z,"%")
+      text(x=b[x+1],y=(y1),labels=z, cex = 1)
   
     } 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -786,11 +751,11 @@ r3 <- reactive({
   
     if(isolate(statz)) { 
        
-  nn <- table(factor(trt))  # work on getting counts onto top of bars
-  x <-as.numeric(names(nn))
-  y1 <- as.vector(nn)+10
-  z <- as.character(as.vector(nn))
-  text(x=b[x+1],y=(y1),labels=z, cex = 1)  # x+1 th of b vector because bars start at zero 
+      nn <- table(factor(trt))  # counts onto top of bars
+      x <-as.numeric(names(nn))
+      y1 <- as.vector(nn)+10
+      z <- as.character(as.vector(nn))
+      text(x=b[x+1],y=(y1),labels=z, cex = 1)  # x+1 th of b vector because bars start at zero 
     }
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
@@ -798,11 +763,11 @@ r3 <- reactive({
   
      if(isolate(statz)) { 
         
-   nn <- table(factor(pla))  # work on getting counts onto top of bars
-  x <-as.numeric(names(nn))
-  y1 <- as.vector(nn)+10
-  z <- as.character(as.vector(nn))
-  text(x=b[x+1],y=(y1),labels=z, cex = 1)
+      nn <- table(factor(pla))  # counts onto top of bars
+      x <-as.numeric(names(nn))
+      y1 <- as.vector(nn)+10
+      z <- as.character(as.vector(nn))
+      text(x=b[x+1],y=(y1),labels=z, cex = 1)
     }
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -822,9 +787,8 @@ r3 <- reactive({
   
    f <- r3()$model
    print(f)
-   
-  
-cat(paste0("\nPlacebo rate ",round(exp(f$coef[1]),4)," and multiplicative treatement effect of ",round(exp(f$coef[2]),4),""))
+
+  cat(paste0("\nEstimated placebo rate ",round(exp(f$coef[1]),4)," and multiplicative treatement effect estimate of ",round(exp(f$coef[2]),4),""))
     
 })
   
@@ -865,16 +829,16 @@ Show the equivalence of gamma Poisson and negative binomial (rnbinom) parmetrisa
             min = 1, max = 10, step=1,ticks=F)
      
     
-# n  <- 1000
-# k  <- 1.3   # this is k, alpha=1/k
-# 1/k         # alpha reported as theta in neg binomial
-# mu0 <- 1
-# mu1 <- mu0*0.75
-# 
-# fup   <- 1
-# drop1 <- 0.1
-# drop2 <- 0.1
-    
+    # n  <- 1000
+    # k  <- 1.3   # this is k, alpha=1/k
+    # 1/k         # alpha reported as theta in neg binomial
+    # mu0 <- 1
+    # mu1 <- mu0*0.75
+    # 
+    # fup   <- 1
+    # drop1 <- 0.1
+    # drop2 <- 0.1
+        
 ```
 
 The plots on this page are mostly from one model (data simulated gamma Poisson)  
@@ -889,23 +853,23 @@ Column {data-width=400, height=300}
 
 # single simulation of gamma poisson
 
-r4 <- reactive({
-  
- example1 <-  nb.power2(n=input$N.pg, k=input$k.pg, mu0=input$mu0.pg, eff=input$eff.pg,
-                         drop1=input$d1.pg, drop2=input$d2.pg, fup=input$fup.pg)
-  mu1 <- input$eff.pg*input$mu0.pg
- return(list( y=example1[2][[1]], dose=example1[3][[1]] , smodel=example1[4][[1]]   , mu1=mu1,  model=example1[5][[1]] ,
-     L=example1[6][[1]]   ))
-  
-})
+  r4 <- reactive({
+    
+   example1 <-  nb.power2(n=input$N.pg, k=input$k.pg, mu0=input$mu0.pg, eff=input$eff.pg,
+                           drop1=input$d1.pg, drop2=input$d2.pg, fup=input$fup.pg)
+    mu1 <- input$eff.pg*input$mu0.pg
+   return(list( y=example1[2][[1]], dose=example1[3][[1]] , smodel=example1[4][[1]]   , mu1=mu1,  model=example1[5][[1]] ,
+       L=example1[6][[1]]   ))
+    
+  })
  
 
-renderPrint({
- 
-   f <- r4()$smodel
-   print(f)
-    
-    })
+  renderPrint({
+   
+     f <- r4()$smodel
+     print(f)
+      
+  })
 
 ``` 
 
@@ -918,23 +882,23 @@ renderPrint({
 # single simulation using rnbinom
  
 
-r5 <- reactive({
-  
-  example1 <-  nb.power(n=input$N.pg, k=input$k.pg, mu0=input$mu0.pg, eff=input$eff.pg,
-                         drop1=input$d1.pg, drop2=input$d2.pg, fup=input$fup.pg)
-  mu1 <- input$eff.pg*input$mu0.pg
- return(list( y=example1[2][[1]], dose=example1[3][[1]] , smodel=example1[4][[1]]   , mu1=mu1, model=example1[5][[1]] ,
-     L=example1[6][[1]]   ))
-  
-})
+  r5 <- reactive({
+    
+    example1 <-  nb.power(n=input$N.pg, k=input$k.pg, mu0=input$mu0.pg, eff=input$eff.pg,
+                           drop1=input$d1.pg, drop2=input$d2.pg, fup=input$fup.pg)
+    mu1 <- input$eff.pg*input$mu0.pg
+   return(list( y=example1[2][[1]], dose=example1[3][[1]] , smodel=example1[4][[1]]   , mu1=mu1, model=example1[5][[1]] ,
+       L=example1[6][[1]]   ))
+    
+  })
  
 
-renderPrint({
- 
-   f <- r5()$smodel
-   print(f)
-    
-    })
+  renderPrint({
+   
+     f <- r5()$smodel
+     print(f)
+      
+  })
 
 
 
@@ -971,11 +935,10 @@ Column {.tabset .tabset-fade}
  
  renderPlot({
    
- f1 <- r4()   # gamma Poisson approach simulation
+   f1 <- r4()   # gamma Poisson approach simulation
+   
+   Ord_plot(f1$y)
  
- Ord_plot(f1$y)
- 
-
  })
 
 
@@ -990,11 +953,10 @@ Column {.tabset .tabset-fade}
 
  renderPlot({
    
- f1 <- r4()   # gamma Poisson approach simulation
-
- distplot(f1$y, type="poisson")
+   f1 <- r4()   # gamma Poisson approach simulation
+  
+   distplot(f1$y, type="poisson")
  
-
  })
 
 
@@ -1006,12 +968,12 @@ Column {.tabset .tabset-fade}
 ```{r}
 
  renderPlot({
+     
+     f1 <- r4()  # gamma Poisson approach simulation
+      
+     distplot(f1$y, type="nbinom")
    
- f1 <- r4()  # gamma Poisson approach simulation
-  
- distplot(f1$y, type="nbinom")
- 
- })
+   })
 
 
  
@@ -1023,19 +985,19 @@ Column {.tabset .tabset-fade}
  
 ```{r}
 
- renderPlot({
+   renderPlot({
+     
+     f1 <- r4()$model # gamma Poisson approach simulation
+     
+     op <- par(mfrow=c(2,2), mar=c(4,4,2,1)+.1, cex.lab=1.2)
+    
+     plot(f1)
+     
+     par(op)
    
- f1 <- r4()$model # gamma Poisson approach simulation
- 
- op <- par(mfrow=c(2,2), mar=c(4,4,2,1)+.1, cex.lab=1.2)
-
- plot(f1)
- 
- par(op)
- 
-
- })
- 
+  
+   })
+   
 
 ```
 
@@ -1051,34 +1013,33 @@ Column {.tabset .tabset-fade}
    f       <- r4()$model
    dose    <- r4()$dose
    y       <- r4()$dose
-   logleng <- r4()$L
+   logtime <- r4()$L
 
-par(mfrow=c(1,2))
+  par(mfrow=c(1,2))
 
 qqPlot(rstudent(f), xlab="Normal quantiles", ylab="Studentized residuals")
 
+# ref: michael friendly
+# Figure 11.38: Half-normal QQ plot of studentized residuals for the NB model fit 
+# The reference line and confidence envelope reflect the mean and (2.5%, 97.5%) quantiles of
+# the simulation distribution under the negative-binomial model for the same data
 
-# michael friendly
-# Figure 11.38: Half-normal QQ plot of studentized residuals for the NB model fit to the PhdPubs
-# data. The reference line and confidence envelope reflect the mean and (2.5%, 97.5%) quantiles of
-# {fig:phd-halfnorm} the simulation distribution under the negative-binomial model for the same data
-
-observed <- sort(abs(rstudent(f)))
-
-n <- length(observed)
-
-expected <- qnorm((1:n + n - 1/8)/(2*n + 1/2))
-
-S <- 100
-sims <- simulate(f, nsim=S)
- 
- resids <- function(y)
-           rstudent(glm.nb(y ~ dose + offset(logleng),
- start=coef(f)))
-
-z <- apply(sims,2,resids)
-z <- abs(z)
-z <- apply(z, 2, sort)
+  observed <- sort(abs(rstudent(f)))
+  
+  n <- length(observed)
+  
+  expected <- qnorm((1:n + n - 1/8)/(2*n + 1/2))
+  
+  S <- 100
+  sims <- simulate(f, nsim=S)
+   
+  resids <- function(y)
+             rstudent(glm.nb(y ~ dose + offset(logtime),
+  start=coef(f)))
+  
+  z <- apply(sims,2,resids)
+  z <- abs(z)
+  z <- apply(z, 2, sort)
  
 
  lim <- 0.95
@@ -1086,15 +1047,14 @@ z <- apply(z, 2, sort)
  lower <- apply(z, 1, quantile, prob=(1 - lim)/2)
  upper <- apply(z, 1, quantile, prob=(1 + lim)/2)
 
-
-plot(expected, observed,
- xlab='Expected value of half-normal order statistic',
- ylab='Absolute value of studentized residual')
- lines(expected, mean, lty=1, lwd=2, col="blue")
- lines(expected, lower, lty=2, lwd=2, col="red")
- lines(expected, upper, lty=2, lwd=2, col="red")
- 
+ plot(expected, observed,
+   xlab='Expected value of half-normal order statistic',
+   ylab='Absolute value of studentized residual')
+   lines(expected, mean, lty=1, lwd=2, col="blue")
+   lines(expected, lower, lty=2, lwd=2, col="red")
+   lines(expected, upper, lty=2, lwd=2, col="red")
 par(mfrow=c(1,1))
+
 # res <- rstudent(f)
 # plot(density(res), lwd=2, col="blue", 
 # main="Density of studentized residuals")
@@ -1103,6 +1063,7 @@ par(mfrow=c(1,1))
 #  # why the bimodality?
 #  plot(jitter(log(y+1), factor=1.5), res,
 #  xlab="log (articles+1)", ylab="Studentized residual")
+
 })
 
 ```
@@ -1265,7 +1226,6 @@ Row {.tabset .tabset-fade}
     theme_bw() + theme(legend.position = "none") 
     
 #~~~~~~~~~~~~~~~~~~~~~
-  
      # scatter plot
 
      d <- data.frame(y = B ,
@@ -1282,7 +1242,6 @@ Row {.tabset .tabset-fade}
       plot1 <- AA
       plot2 <- BB
       grid.arrange(plot1, plot2, ncol=2)
-
 
 })
 
