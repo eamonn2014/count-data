@@ -41,13 +41,11 @@ Probability mass functions
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
    e_dnbinom=function(x,mu,alpha){
-    m = mu
     k = 1/alpha
-    # lgamma is log(gamma)
-    a = lgamma(k+x)-lgamma(k)-lgamma(x+1)
-    b = x*log(m/(m+k))
-    c = -k*log(1+m/k)
-    prob = exp(a+b+c)
+    s1 = lgamma(k+x)-lgamma(k)-lgamma(x+1)    # lgamma is log(gamma)
+    s2 = x*log(mu/(mu+k))
+    s3 = -k*log(1+mu/k)
+    prob = exp(s1+s2+s3)
     prob[x<0] = 0
     prob[prob>1] = 1
     prob[prob<0] = 0
@@ -58,12 +56,10 @@ Probability mass functions
 # dnbinom(   1, size=2,   mu=3)
 # e_dnbinom(1, alpha=1/2,mu=3)
 
-##################################################################################
-# R has built-in random number generators for the binomial distribution,
-# but they are expressed in different form than the form in the Lloyd-Smith
-# PLoS paper. This function translates the mu and alpha parameters
-# into the format needed by R to generate the NB random numbers
-##################################################################################
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# This function translates the mu and alpha parameters
+# into an alternative
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
   e_rnbinom=function(n,mu,alpha){
     size = 1/alpha          # so now we can just enter alpha this is converted to 1/ alpha
@@ -71,9 +67,9 @@ Probability mass functions
     return(rnbinom(n,size=size,prob=prob))
   }
 
- #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- # generate cor data function, see references
- #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# generate cor data function, see references
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   GenerateMultivariatePoisson<-function(p, samples, R, lambda){
     normal_mu=rep(0, p)
@@ -82,9 +78,10 @@ Probability mass functions
     pois=t(qpois(t(unif), lambda))
     return(pois)
   }
- #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- # another function to generate cor data , see references
- #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# another function to generate cor data , see references
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   mvrnorm <- function(n = 1, mu = 0, Sigma) {
     nvars <- nrow(Sigma)
@@ -101,7 +98,7 @@ Probability mass functions
   }
   
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# function to simulate negative binomial RCT
+# function to simulate negative binomial RCT.
 # rnbinom simulation accounting for trt discontinuation, outputs p value and other objects
 # enter one arm n, k, placebo rate, trt effect, drop off trt rates and follow up time
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,15 +122,15 @@ Probability mass functions
     
     f <- - rexp(2*n) / log(1-drop/fup)       # generate drop outs and scale time according to follow up!
     
-    indiv.time <- ifelse(f > fup, fup, f)       # curtail at follow up time 
+    indiv.time <- ifelse(f > fup, fup, f)    # curtail at follow up time 
     
     y  <-  rnbinom(n*2,  prob=1/(1+ mu*indiv.time* k),        size=1/k)  +   # on treatment events
-           rnbinom(n*2,  prob=1/(1+ mu0*(fup-indiv.time)*k),  size=1/k)      # accounting for any off treat. 
+           rnbinom(n*2,  prob=1/(1+ mu0*(fup-indiv.time)*k),  size=1/k)      # accounting for any time off treat. 
     
     # assume no one is lost to the study but can discontinue treatment
     logtime  <- rep(log(fup), n*2)          # make sure follow up here !
     
-    # analyse with neg. binomial model
+    # analyse with negative binomial model
     mod <- glm.nb(y~dose+offset((logtime)))
     
     x <- summary(mod)
@@ -145,15 +142,13 @@ Probability mass functions
     
   } 
 
-
     # example1 <-  nb.power(n=220, k=1.3, mu0=1, eff=.65, drop1=.1, drop2=.1, fup=1)
     # barplot(unlist(table(example1[2])))
     # 
     # res <- replicate( 1000, 
     #      nb.power(n=220, k=1.3, mu0=1, eff=.65, drop1=.1, drop2=.1, fup=1))
     # mean(unlist(res[1,]<.05))
-
-
+  
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # function to simulate negative binomial RCT
 # Poisson gamma simulation accounting for trt discontinuation, outputs p value and other objects
@@ -280,7 +275,6 @@ po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 p
    c(rate.reduction,mix , wil,t.t,  ttor,intercept, beta ,sdd, wile, cor.)
   
 }
-
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # start of app
@@ -448,7 +442,7 @@ renderPlot({
     d=hist(zd,plot=F,breaks=200)
     e=hist(ze,plot=F,breaks=seq(-1.5,n+.5,1))
     
-    atitle = paste("Distributions of",n,"random numbers")
+    atitle = paste("Distributions based on",n,"random draws")
     
     plot(a$mids,a$density,type="s",lwd=lwd., col=1, ylim=c(0,ymax),
          main=atitle, xlim=c(low,xmax),
@@ -572,7 +566,7 @@ Use the inputs below to simulate an RCT with a count outcome measure. We estimat
 # .1
 # .1
 # 1
-# talk about a neg binomial dispersion parameter of 0.8, so this is alpha but then enter 1/.8 = ~1.3 so this is k
+ 
 
     sliderInput('N', 'Patients per arm', value=190,
                   min = 10, max = 1000, step=5, ticks=F)
@@ -896,7 +890,6 @@ Column {.tabset .tabset-fade}
 
 ```{r, eval=TRUE}
 
-
  renderPlot({
    
  f1 <- r4()$model  # gamma Poisson approach simulation
@@ -974,9 +967,7 @@ Column {.tabset .tabset-fade}
      
      par(op)
    
-  
    })
-   
 
 ```
 
@@ -1057,14 +1048,13 @@ Use the inputs below to generate correlated count data !
 
 ```{r}
 
-
   sliderInput('N.p', 'Patients per arm', value=22,
                 min = 10, max = 200, step=5, ticks=F)
   
   sliderInput('mu0.p', 'Placebo mean rate \u03BC', value=10,
                 min = 0.1, max = 25, step=.05, ticks=F)
   
-  sliderInput('eff.p', 'Hypothesised treatment effect ', value=.75,  # 1/2 ing to doubling
+  sliderInput('eff.p', 'Hypothesised treatment effect ', value=.75,   
                 min = 0.5, max = 2, step=.05, ticks=F)
   
   sliderInput('r', 'Correlation', value = c(.20),
@@ -1072,7 +1062,6 @@ Use the inputs below to generate correlated count data !
    
   sliderInput('sims.p', 'Power simulations', value= 10,
                 min = 100, max = 1000, step= 100, ticks=F)
- 
 
 ```
 
@@ -1098,7 +1087,6 @@ cat(paste0("\n2) Transform them to correlated Uniform(0, 1) distributions using 
 cat(paste0("\n3) Transform them to the desired correlated probability distribution desired using that probability distribution’s inverse CDF!"))
  
 })
-
 
 ``` 
 
@@ -1150,7 +1138,6 @@ reactive({
       sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R)),
       "\n"))
    
-
 })
 
 ```
@@ -1181,7 +1168,7 @@ Row {.tabset .tabset-fade}
   dat2 <- dat2()
   dx <- dat2
 
-  # boxplot
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ boxplot
   A <- dx[,1]
   B <- dx[,2]
   m <- max(A,B)
@@ -1202,8 +1189,7 @@ Row {.tabset .tabset-fade}
      scale_y_continuous(breaks=c(0:m), limits=c(0,m)) +
     theme_bw() + theme(legend.position = "none") 
     
-#~~~~~~~~~~~~~~~~~~~~~
-     # scatter plot
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ scatter plot
 
      d <- data.frame(y = B ,
                      x = A)
@@ -1287,18 +1273,6 @@ First, calculate the sorted absolute values of the residuals |r|(i) and their ex
 **Poisson paired counts**
 
 An example of a paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. Nevertheless, we can adjust the total number of subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods. We will simulate the data based on a expected rate before the intervention and an hypothesised effect of the intervention. We also take into account the correlation between observations for the same individual, the starting value is 0.2. 
- 
-Notes
-===
-
-gelmans book rnegbiniom function
- 
-predict
-
-cor neg binomial not working
-
-more refs
-
 
 References
 ====
