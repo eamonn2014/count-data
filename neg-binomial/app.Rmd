@@ -690,7 +690,27 @@ cat(paste0("\nk is the dispersion parameter, its value is " ,input$k,", this is 
 cat(paste0("\nThe power estimate is based on simulation using rnbinom...",r1()," and ",r2()," based on Poisson gamma simulation"))
 })
   
+<<<<<<< HEAD
  
+=======
+# cat(paste0("\nrnbinom simulation..."))
+# r1<- reactive({
+#   
+#   res <- replicate( input$sims2, 
+#         nb.power(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)) 
+#   mean(res<0.05)
+# 
+# })
+# cat(paste0("\nPoisson gamma simulation..."))
+# r2 <- reactive({
+#   
+#   res <- replicate( input$sims2, 
+#         nb.power2(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)) 
+#   mean(res<0.05)
+# 
+# })
+
+>>>>>>> 74864954f33b590cbf5381242ecc0b4bc3100a9d
 
 ```
  
@@ -708,12 +728,19 @@ r3 <- reactive({
  return(list( y=example1[2][[1]], dose=example1[3][[1]] , model=example1[4][[1]]   , mu1=mu1)  )
   
 })
+<<<<<<< HEAD
+
+=======
+>>>>>>> 74864954f33b590cbf5381242ecc0b4bc3100a9d
 
 
 
 
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> 74864954f33b590cbf5381242ecc0b4bc3100a9d
  renderPlot({
   
    
