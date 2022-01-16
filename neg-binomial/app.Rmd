@@ -706,14 +706,10 @@ r3 <- reactive({
   x <- factor(trt, levels=0:max(y))
   nn <- data_perc <- t(prop.table(table(x))) * 100    # Convert data to probability table
  
-      
-        b <- barplot(data_perc, ylab = "Percent", 
+  b <- barplot(data_perc, ylab = "Percent", 
           main =paste0("Treated true \u03BC=",mu1," & k=",k," \nso \u03B1=",
                        round(1/k,2),""), ylim=c(0,upp+5 ), col='blue')  #
   
-        
-           
-       
   x <-as.numeric(colnames(nn))  # % onto top of bars
   y1 <- as.vector(nn)+4
   z <- as.character(as.vector(nn))
@@ -788,7 +784,8 @@ r3 <- reactive({
    f <- r3()$model
    print(f)
 
-  cat(paste0("\nEstimated placebo rate ",round(exp(f$coef[1]),4)," and multiplicative treatement effect estimate of ",round(exp(f$coef[2]),4),""))
+  cat(paste0("\nEstimated placebo rate ",
+             round(exp(f$coef[1]),4)," and multiplicative treatement effect estimate of ",round(exp(f$coef[2]),4),""))
     
 })
   
@@ -932,7 +929,6 @@ Column {.tabset .tabset-fade}
  
 ```{r}
 
- 
  renderPlot({
    
    f1 <- r4()   # gamma Poisson approach simulation
@@ -940,7 +936,6 @@ Column {.tabset .tabset-fade}
    Ord_plot(f1$y)
  
  })
-
 
 
 ```
@@ -975,9 +970,6 @@ Column {.tabset .tabset-fade}
    
    })
 
-
- 
-
 ```
 
 ### Default diagnostic plots
@@ -1005,8 +997,6 @@ Column {.tabset .tabset-fade}
 
 ```{r, eval=TRUE}
 
- 
-
  renderPlot({
    
    # gamma Poisson approach simulation
@@ -1017,7 +1007,7 @@ Column {.tabset .tabset-fade}
 
   par(mfrow=c(1,2))
 
-qqPlot(rstudent(f), xlab="Normal quantiles", ylab="Studentized residuals")
+  qqPlot(rstudent(f), xlab="Normal quantiles", ylab="Studentized residuals")
 
 # ref: michael friendly
 # Figure 11.38: Half-normal QQ plot of studentized residuals for the NB model fit 
@@ -1053,6 +1043,7 @@ qqPlot(rstudent(f), xlab="Normal quantiles", ylab="Studentized residuals")
    lines(expected, mean, lty=1, lwd=2, col="blue")
    lines(expected, lower, lty=2, lwd=2, col="red")
    lines(expected, upper, lty=2, lwd=2, col="red")
+   
 par(mfrow=c(1,1))
 
 # res <- rstudent(f)
@@ -1200,7 +1191,6 @@ Row {.tabset .tabset-fade}
  renderPlot({   
    
   dat2 <- dat2()
-
   dx <- dat2
 
   # boxplot
@@ -1214,7 +1204,6 @@ Row {.tabset .tabset-fade}
                   x = rep(c(1,2), each=n),
                   id = factor(rep(1:n,2)))
 
-  
   d$xj <- jitter(d$x, amount=.03)
   AA <- ggplot(data=d, aes(y=y) ) +
     geom_boxplot(aes(x=x, group=x), width=0.2, outlier.shape = NA) +
@@ -1328,7 +1317,6 @@ References
 ====
 ```{r}
  
-                    
     tags$a(href = "https://stats.stackexchange.com/questions/71194/fitting-a-poisson-distribution-with-lme4-and-nlme", target="_blank",tags$span(style="color:blue", "[1] Poisson with lme4 and nlme"),) 
     div(p(" "))
     tags$a(href = "https://stats.stackexchange.com/questions/27869/fitting-a-poisson-glm-mixed-model-with-a-random-slope-and-intercept",target="_blank",  tags$span(style="color:blue", "[2] Mixed model Poisson"),)
@@ -1353,11 +1341,5 @@ References
       
     div(p(" "))
     tags$hr()                        
-                                             
-                                              
-  
-```
 
- 
-   
-     
+```
