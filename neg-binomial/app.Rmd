@@ -1411,12 +1411,3 @@ References
  
    
      
-    
-     
- 
-```{r}
- 
-  url <- a("Google Homepage", href="https://www.google.com/")
-
-
-```
