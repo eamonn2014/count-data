@@ -26,22 +26,21 @@ Probability mass functions
   library(vcd)  # diagnostics
   lwd.=3  # used when plotting
 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # function for nice upper limits to count bar plots, stack exchange
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# function for nice upper limits to count bar plots, stack exchange
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
     roundUpNice <- function(x, nice=c(1,1.5, 2,4,5,6,8,10)) { #added 1.5 to help bar plot y scale
     if(length(x) != 1) stop("'x' must be of length 1")
     10^floor(log10(x)) * nice[[which(x <= 10^floor(log10(x)) * nice)[[1]]]]
   }
   
-  
-##################################################################################
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Define the Negative Binomial probability density function, with parameters
 # mu and alpha. The mean of this NB distribution is mu, and variance is sigma^2=mu+alpha*mu^2
-##################################################################################
-
-   my_dnbinom=function(x,mu,alpha){
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+   e_dnbinom=function(x,mu,alpha){
     m = mu
     k = 1/alpha
     # lgamma is log(gamma)
@@ -57,7 +56,7 @@ Probability mass functions
 
 # check
 # dnbinom(   1, size=2,   mu=3)
-# my_dnbinom(1, alpha=1/2,mu=3)
+# e_dnbinom(1, alpha=1/2,mu=3)
 
 ##################################################################################
 # R has built-in random number generators for the binomial distribution,
@@ -66,7 +65,7 @@ Probability mass functions
 # into the format needed by R to generate the NB random numbers
 ##################################################################################
     
-  my_rnbinom=function(n,mu,alpha){
+  e_rnbinom=function(n,mu,alpha){
     size = 1/alpha          # so now we can just enter alpha this is converted to 1/ alpha
     prob = size/(mu+size)   # so now we can enter mu the mean and that is converted to prob
     return(rnbinom(n,size=size,prob=prob))
@@ -114,7 +113,6 @@ Probability mass functions
     mu1 <- eff*mu0 # manifest the true trt effect
     
     # just so there is no error if drop out or k=0
-   
     if (drop1==0) {drop1=0.0001}
     if (drop2==0) {drop2=0.0001}
     if (k==0) {k=0.0001} 
@@ -137,6 +135,7 @@ Probability mass functions
     
     # analyse with neg. binomial model
     mod <- glm.nb(y~dose+offset((logtime)))
+    
     x <- summary(mod)
    
     # collect p-values
@@ -209,7 +208,6 @@ nb.power2 <- function(n=220, k=1.3, mu0=1, eff=0.65, drop1=.1, drop2=.1, fup=1) 
 # function to generate correlated poisson and analyse and evaluate
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- 
 po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 placebo rate, mu1 expected change in rate
    
   #n=22; r=.75; mu0=10; eff.p=.75
@@ -290,7 +288,6 @@ po.cor.power <- function(n=22, r=.75, mu0=10, eff.p=.75) { # r correlation mu0 p
 
 ```
 
-
 Column {.sidebar}
 -----------------------------------------------------------------------
 
@@ -347,10 +344,10 @@ Column {data-width=400, height=300}
 renderPlot({
 
 
-##################################################################################
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # NB density function, and overlay the Poisson distribution with the same mean
-# Normal withen variance equal to mean also
-##################################################################################
+# Normal with variance equal to mean also
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  
   # mu = sample(1:25,1)
   # alpha_a = 0.1
@@ -376,19 +373,19 @@ renderPlot({
   if(alpha_a==0) {
   yb =          dpois(x,mu)
   }else{
-  yb=     my_dnbinom(x,mu,alpha_a)
+  yb=     e_dnbinom(x,mu,alpha_a)
   }
   
   if(alpha_b==0){
   yc =          dpois(x,mu)
   }else{
-  yc=     my_dnbinom(x,mu,alpha_b)
+  yc=     e_dnbinom(x,mu,alpha_b)
   }
   
   if(alpha_d==0){
   yd =          dpois(x,mu)
   }else{
-  yd=     my_dnbinom(x,mu,alpha_d)
+  yd=     e_dnbinom(x,mu,alpha_d)
   }
   
   nor <-       dnorm(x, mu, sqrt(mu))
@@ -420,9 +417,6 @@ renderPlot({
  }
 )
 
-
-
-
 ```
 
 
@@ -432,7 +426,6 @@ renderPlot({
 
 renderPlot({
   
-
     n=input$sims
     
     mu = input$mu
@@ -444,10 +437,10 @@ renderPlot({
     ymax =     input$y_range[2]
     
     z  =      rpois(n,mu)
-    zb = my_rnbinom(n,mu,alpha_a)
-    zc = my_rnbinom(n,mu,alpha_b)
+    zb = e_rnbinom(n,mu,alpha_a)
+    zc = e_rnbinom(n,mu,alpha_b)
     zd =      rnorm(n,mu,sqrt(mu))
-    ze = my_rnbinom(n,mu,alpha_d)
+    ze = e_rnbinom(n,mu,alpha_d)
     
     a=hist(z, plot=F,breaks=seq(-1.5,n+.5,1))
     b=hist(zb,plot=F,breaks=seq(-1.5,n+.5,1))
@@ -478,8 +471,6 @@ renderPlot({
 
 })
 
-
- 
 ```
 
 Column {data-width=400}
@@ -488,7 +479,6 @@ Column {data-width=400}
 ### Chart 3
 
 ```{r}
-
 
 renderPlot({
   
@@ -500,7 +490,6 @@ renderPlot({
   
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- 
   xx <- c(seq(0,xmax,1))
 
   yb = dpois(xx,mu)
@@ -518,8 +507,7 @@ renderPlot({
   z <- paste0(z,"%")
   text(x=b[x+1],y=(y1),labels=z, cex = 1)
   }
-  
-  
+
 })
 
 ```
@@ -528,12 +516,10 @@ renderPlot({
 
 ```{r}
 
- 
     renderPlot({
   
     mu = input$mu
     alpha_a = input$alpha_a
-  
   
     low =  input$x_range[1]
     xmax=  input$x_range[2]
@@ -546,7 +532,7 @@ renderPlot({
   if(alpha_a==0) {
   yb =          dpois(xx,mu)
   }else{
-  yb=     my_dnbinom(xx,mu,alpha_a)
+  yb=     e_dnbinom(xx,mu,alpha_a)
   }
   
   par(mar=c(2.1,4.1,4.1,4.1))
@@ -564,10 +550,6 @@ renderPlot({
   text(x=b[x+1],y=(y1),labels=z, cex = 1)
   }
 })
-    
-    
-   
-
 
 ```
  
@@ -626,6 +608,7 @@ Row {data- height=650}
   
 ```{r, eval=TRUE}
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # large simulations of rnbionom approach
 
 r1<- reactive({
@@ -636,6 +619,7 @@ r1<- reactive({
 
 })
  
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # large simulations of gamma Poisson approach
 
 r2 <- reactive({
@@ -646,6 +630,7 @@ r2 <- reactive({
 
 })
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 reactive({
   
@@ -668,6 +653,8 @@ Row {data-height=700}
 
 ```{r}
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # single simulation of rnbinom approach
 
 r3 <- reactive({
@@ -678,9 +665,10 @@ r3 <- reactive({
   
 })
  
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
  renderPlot({
   
-   
     mu1 <-  r3()$mu1
     dose <- r3()$dose
     y <-    r3()$y
@@ -693,8 +681,6 @@ r3 <- reactive({
     trt <- y[dose %in% "trt"]
     pla <- y[!dose %in% "trt"]
     
-  
-  
  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   par(mfrow=c(2,2))
   # proportion plot
@@ -706,14 +692,10 @@ r3 <- reactive({
   x <- factor(trt, levels=0:max(y))
   nn <- data_perc <- t(prop.table(table(x))) * 100    # Convert data to probability table
  
-      
-        b <- barplot(data_perc, ylab = "Percent", 
+  b <- barplot(data_perc, ylab = "Percent", 
           main =paste0("Treated true \u03BC=",mu1," & k=",k," \nso \u03B1=",
                        round(1/k,2),""), ylim=c(0,upp+5 ), col='blue')  #
   
-        
-           
-       
   x <-as.numeric(colnames(nn))  # % onto top of bars
   y1 <- as.vector(nn)+4
   z <- as.character(as.vector(nn))
@@ -775,7 +757,6 @@ r3 <- reactive({
     
 })
 
-
 ```   
  
    
@@ -788,12 +769,11 @@ r3 <- reactive({
    f <- r3()$model
    print(f)
 
-  cat(paste0("\nEstimated placebo rate ",round(exp(f$coef[1]),4)," and multiplicative treatement effect estimate of ",round(exp(f$coef[2]),4),""))
+  cat(paste0("\nEstimated placebo rate ",
+             round(exp(f$coef[1]),4)," and multiplicative treatement effect estimate of ",round(exp(f$coef[2]),4),""))
     
 })
   
-
- 
 ``` 
 
 Gamma Poisson
@@ -805,7 +785,6 @@ Column {.sidebar}
 Show the equivalence of gamma Poisson and negative binomial (rnbinom) parmetrisations ! Be careful entering dispersion aka heterogeneity (ancillary) parameter. For example we may quote a negative binomial dispersion parameter of 0.8, referring to alpha, but we need to enter k or 1/alpha, so 1/0.8 = ~1.3 which is k.
 
 ```{r}
-
 
     sliderInput('N.pg', 'Patients per arm', value=1000,
                   min = 1000, max = 100000, step=5, ticks=F)
@@ -828,7 +807,6 @@ Show the equivalence of gamma Poisson and negative binomial (rnbinom) parmetrisa
     sliderInput('fup.pg', 'Follow up (yrs)', value = c(1),
             min = 1, max = 10, step=1,ticks=F)
      
-    
     # n  <- 1000
     # k  <- 1.3   # this is k, alpha=1/k
     # 1/k         # alpha reported as theta in neg binomial
@@ -851,6 +829,8 @@ Column {data-width=400, height=300}
 
 ```{r, eval=TRUE}
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # single simulation of gamma poisson
 
   r4 <- reactive({
@@ -863,6 +843,7 @@ Column {data-width=400, height=300}
     
   })
  
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   renderPrint({
    
@@ -871,16 +852,18 @@ Column {data-width=400, height=300}
       
   })
 
-``` 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+``` 
 
 ### Negative binomial (rnbinom) data simulation (theta is synonymous with $\alpha$)
 
 
 ```{r, eval=TRUE}
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # single simulation using rnbinom
- 
 
   r5 <- reactive({
     
@@ -891,7 +874,7 @@ Column {data-width=400, height=300}
        L=example1[6][[1]]   ))
     
   })
- 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   renderPrint({
    
@@ -900,6 +883,7 @@ Column {data-width=400, height=300}
       
   })
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 ```
@@ -925,6 +909,7 @@ Column {.tabset .tabset-fade}
  
  })
 
+
 ```
 
 ###  A distribution that fits well is looked for...
@@ -932,7 +917,6 @@ Column {.tabset .tabset-fade}
  
 ```{r}
 
- 
  renderPlot({
    
    f1 <- r4()   # gamma Poisson approach simulation
@@ -942,9 +926,7 @@ Column {.tabset .tabset-fade}
  })
 
 
-
 ```
- 
 
 ### Poissoness?
   
@@ -975,9 +957,6 @@ Column {.tabset .tabset-fade}
    
    })
 
-
- 
-
 ```
 
 ### Default diagnostic plots
@@ -1005,8 +984,6 @@ Column {.tabset .tabset-fade}
 
 ```{r, eval=TRUE}
 
- 
-
  renderPlot({
    
    # gamma Poisson approach simulation
@@ -1017,7 +994,7 @@ Column {.tabset .tabset-fade}
 
   par(mfrow=c(1,2))
 
-qqPlot(rstudent(f), xlab="Normal quantiles", ylab="Studentized residuals")
+  qqPlot(rstudent(f), xlab="Normal quantiles", ylab="Studentized residuals")
 
 # ref: michael friendly
 # Figure 11.38: Half-normal QQ plot of studentized residuals for the NB model fit 
@@ -1053,6 +1030,7 @@ qqPlot(rstudent(f), xlab="Normal quantiles", ylab="Studentized residuals")
    lines(expected, mean, lty=1, lwd=2, col="blue")
    lines(expected, lower, lty=2, lwd=2, col="red")
    lines(expected, upper, lty=2, lwd=2, col="red")
+   
 par(mfrow=c(1,1))
 
 # res <- rstudent(f)
@@ -1106,7 +1084,6 @@ Row {data-height=275}
 
 ```{r, eval=TRUE}
 
- 
 reactive({
   
 cat(paste0("This is an example of paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. \nNevertheless, we have ",input$N.p," subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods.\n"))
@@ -1187,6 +1164,8 @@ Row {.tabset .tabset-fade}
 
 ```{r, eval=TRUE}
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
    # use function
    dat2 <- reactive(
  
@@ -1195,12 +1174,11 @@ Row {.tabset .tabset-fade}
                                 lambda=c(input$mu0.p, input$mu0.p*input$eff.p))
     )
 
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  renderPlot({   
    
   dat2 <- dat2()
-
   dx <- dat2
 
   # boxplot
@@ -1214,7 +1192,6 @@ Row {.tabset .tabset-fade}
                   x = rep(c(1,2), each=n),
                   id = factor(rep(1:n,2)))
 
-  
   d$xj <- jitter(d$x, amount=.03)
   AA <- ggplot(data=d, aes(y=y) ) +
     geom_boxplot(aes(x=x, group=x), width=0.2, outlier.shape = NA) +
@@ -1253,7 +1230,6 @@ Row {.tabset .tabset-fade}
  
  
 ```{r}
-
 
  renderPlot({
    
@@ -1328,14 +1304,13 @@ References
 ====
 ```{r}
  
-                    
     tags$a(href = "https://stats.stackexchange.com/questions/71194/fitting-a-poisson-distribution-with-lme4-and-nlme", target="_blank",tags$span(style="color:blue", "[1] Poisson with lme4 and nlme"),) 
     div(p(" "))
     tags$a(href = "https://stats.stackexchange.com/questions/27869/fitting-a-poisson-glm-mixed-model-with-a-random-slope-and-intercept",target="_blank",  tags$span(style="color:blue", "[2] Mixed model Poisson"),)
     div(p(" "))
-    tags$a(href = "https://stackoverflow.com/questions/6044800/adding-greek-character-to-axis-title", target="_blank",tags$span(style="color:blue", "[3] Adding Greek characters"),)
+    tags$a(href = "https://stackoverflow.com/questions/6044800/adding-greek-character-to-axis-title", target="_blank",tags$span(style="color:blue", "[3] Adding Greek characters - shiny"),)
     div(p(" "))
-    tags$a(href = "https://stackoverflow.com/questions/52225348/shiny-flexdashboard-reference-object-in-new-tabset#52225733", target="_blank",tags$span(style="color:blue", "[4] Reference object in new tab"),)  
+    tags$a(href = "https://stackoverflow.com/questions/52225348/shiny-flexdashboard-reference-object-in-new-tabset#52225733", target="_blank",tags$span(style="color:blue", "[4] Reference object in new tab - shiny"),)  
     div(p(" "))
     tags$a(href = "https://journals.sagepub.com/doi/pdf/10.1177/1536867X1201200202", target="_blank",tags$span(style="color:blue", "[5] What hypotheses do “nonparametric” two-group tests actually test?"),) 
     div(p(" "))
@@ -1353,11 +1328,5 @@ References
       
     div(p(" "))
     tags$hr()                        
-                                             
-                                              
-  
-```
 
- 
-   
-     
+```
