@@ -1270,7 +1270,7 @@ Step by step first, calculate the sorted absolute values of the residuals |r|(i)
 
 **Poisson paired counts**
 
-An example of a paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. Nevertheless, we can adjust the total number of subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods. We will simulate the data based on a expected rate before the intervention and an hypothesised effect of the intervention. We also take into account the correlation between observations for the same individual, the starting value is 0.2. 
+An example of a paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. Nevertheless, we can adjust the total number of subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods. We will simulate the data based on a expected rate before the intervention and an hypothesised effect of the intervention. We also take into account the correlation between observations for the same individual. 
 
 References
 ====
