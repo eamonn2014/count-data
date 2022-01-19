@@ -1451,9 +1451,9 @@ Row {data-height=450}
   B <- 2 * round(B/2) # need even number in each group for my sim functions
   
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   cat("FUNCTION 1\n") #2nd approach
+   cat("FUNCTION 1\n") #1st approach
 
-   cat(paste0("Total sample size based on the user inputs and a function using equation 8 gives ",B," total patients required (rounded up to an even number)\n"))
+   cat(paste0("Total sample size based on the user inputs and a function using equation 8 from 'Sample size calculations for skewed distributions' gives ",B," total patients required (rounded up to an even number)\n"))
    
   cat("\nFUNCTION 2\n") #2nd approach
    
@@ -1463,6 +1463,19 @@ Row {data-height=450}
    cat(paste0("Using R function skewsampl::n_negbinom whose R help quotes the above paper we obtain...\n\n")) 
    print(B1)
    cat("\n")
+   
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  cat("\nFUNCTION 3\n") #  
+   
+   Ax <- qnorm(1-type1/2)
+   Bx <- qnorm(power.)
+   mu0=mu0.
+   mu1=mu1.
+   k0=1/k0.   # need to be careful of k0!!!
+   
+   cat(paste0("\nHere is another formula from 'Keene, O. N., Jones, M. R. K., Lane, P. W., & Anderson, J. (2007). Analysis of exacerbation rates in asthma and chronic obstructive pulmonary disease: \nexample from the TRISTAN study. Pharmaceutical Statistics, 6(2), 89–97. doi:10.1002/pst.250 page 95,' this gives an idea of the ball park subjects per treatment group,\nonly one dispersion parameter is allowed here and equal groups assumed, so 'Treatment dispersion' input will not work, \nso to compare this to other functions need to keep dispersion parameters equal. Also note dispersion is reciprocated here! Estimate...", ceiling(((mu0+mu1)/(mu0*mu1) +2*k0) * ((Ax+Bx)/(log(mu0/mu1)))^2) ," \n"))
+    
+
 })
    
  
@@ -1562,7 +1575,7 @@ References
     tags$a(href = "https://bmcmedresmethodol.biomedcentral.com/track/pdf/10.1186/s12874-015-0023-0.pdf",target="_blank", tags$span(style="color:blue", "[13] Sample size calculations for skewed distributions"),) 
         div(p(" "))
       tags$a("xxx", href = "https://bmcmedresmethodol.biomedcentral.com/track/pdf/10.1186/s12g874-015-0023-0.pdf", target="_blank",
-           tags$span(style="color:blue", "'Sample size calculations for skewed distributions (equation 8) used in function 1"),) 
+           tags$span(style="color:blue", "'Sample size calculations for skewed distributions' (equation 8) used in function 1"),) 
     
     div(p(" "))
     tags$hr()                        
