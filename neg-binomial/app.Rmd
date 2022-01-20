@@ -25,8 +25,10 @@ Probability mass functions
   library(car)  # diagnostics
   library(vcd)  # diagnostics
   library(skewsamp)  # power for neg binom
+  #library(shinyWidgets)
   lwd.=3  # used when plotting
-
+  # 
+  
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # page 5 Cundill and Alexander BMC Medical Research Methodology (2015) 15:28
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -384,7 +386,7 @@ Column {.sidebar}
 
 ```{r}
 
-
+ 
   sliderInput('mu', 'Common  \u03BC', value=1.5,
                 min = 1, max = 25, step=.5, ticks=F)
   
@@ -1373,6 +1375,10 @@ think about changing from 1:1 randomisation in my functions and 2 dispersion par
 ```{r newxxx}
  
 
+      # setSliderColor(c("blue ", "blue", "blue", "blue",
+      #                  "blue ", "blue", "blue", "green"), c(1, 2, 3,4,5,6,7,8))
+
+
       sliderInput('P.can', 'Power', value=.9,
                     min = 0.5, max = 1, step=.01, ticks=F)
       
@@ -1400,7 +1406,7 @@ think about changing from 1:1 randomisation in my functions and 2 dispersion par
  
 ```
 
-Row {data-height=800}
+Row {data-height=600}
 -----------------------------------------------------------------------
 
 ### We use canned formulae for sample size and allow comparison. The formulae don't account for follow up nor treatment discontinuation, so simulation is preferable. They are useful for a sanity check on simulation and also that you are not mixing up k and alpha.
@@ -1454,7 +1460,12 @@ reactive({
     z <-  mean(res<0.05)
                   
      cat(paste0("This returns power from a simple simulation ",z," after feeding in the total sample size from the first canned function...we should recover the slider power!\n"))
-         })
+       
+
+ cat("\nNOTE\n") #
+ 
+ cat(paste0("In order to align, the first two functions use k, the third and simulation use 1/k.\n\n")) 
+})
 
  
 ```
@@ -1492,6 +1503,11 @@ Step by step first, calculate the sorted absolute values of the residuals |r|(i)
 **Poisson paired counts**
 
 An example of a paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. Nevertheless, we can adjust the total number of subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods. We will simulate the data based on a expected rate before the intervention and an hypothesised effect of the intervention. We also take into account the correlation between observations for the same individual. 
+
+**Canned power, sample size functions**
+
+This tab examines the published formula for sample size/power and a simulation is also used. It is important to ensure the correct version of dispersion is used (k or 1/k)
+
 
 References
 ====
