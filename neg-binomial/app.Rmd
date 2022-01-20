@@ -1523,10 +1523,10 @@ References
     div(p(" "))
     tags$a(href = "https://www.amazon.co.uk/Discrete-Data-Analysis-Visualization-Categorical/dp/149872583X",target="_blank", tags$span(style="color:blue", "[12] Discrete Data Analysis with R: Visualization and Modeling Techniques for Categorical and Count Data, Michael Friendly, David Meyer"),) 
       div(p(" "))
-    tags$a(href = "https://bmcmedresmethodol.biomedcentral.com/track/pdf/10.1186/s12874-015-0023-0.pdf",target="_blank", tags$span(style="color:blue", "[13] Sample size calculations for skewed distributions"),) 
+    tags$a(href = "https://bmcmedresmethodol.biomedcentral.com/track/pdf/10.1186/s12874-015-0023-0.pdf",target="_blank", tags$span(style="color:blue", "[13] Sample size calculations for skewed distributions - see canned power tab"),) 
         div(p(" "))
       tags$a(href = "https://pubmed.ncbi.nlm.nih.gov/17230434/", target="_blank",
-           tags$span(style="color:blue", "Analysis of exacerbation rates in asthma and chronic obstructive pulmonary disease: example from the TRISTAN study"),) 
+           tags$span(style="color:blue", "[14] Analysis of exacerbation rates in asthma and chronic obstructive pulmonary disease: example from the TRISTAN study - see canned power tab "),) 
     
     div(p(" "))
     tags$hr()                        
