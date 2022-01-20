@@ -1454,7 +1454,7 @@ reactive({
     res <- replicate( simy, nb.power.simp(n=B/2, k=k0, mu0=mu0., eff=mu1./mu0., fup=1))
     z <-  mean(res<0.05)
                   
-     cat(paste0("This returns power from a simple simulation, feeding in the total sample size from the first canned function...we should recover the slider power! ...\n"))
+     cat(paste0("This returns power from a simple simulation, feeding",z," in the total sample size from the first canned function...we should recover the slider power! ...\n"))
          })
 
  
