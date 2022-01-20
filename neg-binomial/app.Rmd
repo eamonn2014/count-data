@@ -1403,8 +1403,7 @@ think about changing from 1:1 randomisation in my functions and 2 dispersion par
 Row {data-height=800}
 -----------------------------------------------------------------------
 
-### We use canned formulae for sample size and allow comparison
-  
+### We use canned formulae for sample size and allow comparison. The formulae don't account for follow up nor treatment discontinuation, so simulation is preferable. They are useful for a sanity check on simulation and also that you are not mixing up k and alpha.
 
 ```{r, eval=TRUE}
 
@@ -1454,7 +1453,7 @@ reactive({
     res <- replicate( simy, nb.power.simp(n=B/2, k=k0, mu0=mu0., eff=mu1./mu0., fup=1))
     z <-  mean(res<0.05)
                   
-     cat(paste0("This returns power from a simple simulation ",z," after feeding in the total sample size from the first canned function...we should recover the slider power! ...\n"))
+     cat(paste0("This returns power from a simple simulation ",z," after feeding in the total sample size from the first canned function...we should recover the slider power!\n"))
          })
 
  
@@ -1526,8 +1525,8 @@ References
       div(p(" "))
     tags$a(href = "https://bmcmedresmethodol.biomedcentral.com/track/pdf/10.1186/s12874-015-0023-0.pdf",target="_blank", tags$span(style="color:blue", "[13] Sample size calculations for skewed distributions"),) 
         div(p(" "))
-      tags$a("xxx", href = "https://bmcmedresmethodol.biomedcentral.com/track/pdf/10.1186/s12g874-015-0023-0.pdf", target="_blank",
-           tags$span(style="color:blue", "'Sample size calculations for skewed distributions' (equation 8) used in function 1"),) 
+      tags$a(href = "https://pubmed.ncbi.nlm.nih.gov/17230434/", target="_blank",
+           tags$span(style="color:blue", "Analysis of exacerbation rates in asthma and chronic obstructive pulmonary disease: example from the TRISTAN study"),) 
     
     div(p(" "))
     tags$hr()                        
