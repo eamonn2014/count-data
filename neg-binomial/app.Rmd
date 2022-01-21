@@ -1511,9 +1511,13 @@ withMathJax(
                                          helpText('
                            $${{ }{{{m}  + {(\\alpha)}{ (m^2)}}}}\\!$$'))  
  
-HTML(" <strong>In short, either the parameter k or its reciprocal alpha is referred to as the 'dispersion parameter', 'shape parameter' or 'clustering coefficient',or the 'heterogeneity' or 'aggregation' parameter. The term 'aggregation' is particularly used in ecology when describing counts of individual organisms. Decrease of the aggregation parameter k towards zero corresponds to increasing aggregation of the organisms; increase of r towards infinity corresponds to absence of aggregation, as can be described by Poisson regression.</strong>")
-
-HTML(" <strong>These two formulations can introduce confusion, so it is important to clarify if a dispersion value is k or alpha.</strong>")
+HTML(" <strong>In short, either the parameter k or its reciprocal alpha is referred to as the 'dispersion parameter', 'shape parameter' or 'clustering coefficient', or the 'heterogeneity' or 'aggregation' parameter.  </strong>")
+br()
+br()
+HTML(" <strong>The term 'aggregation' is particularly used in ecology when describing counts of individual organisms. Decrease of the aggregation parameter k towards zero corresponds to increasing aggregation of the organisms; increase of r towards infinity corresponds to absence of aggregation, as can be described by Poisson regression.</strong>")
+br()
+br()
+HTML(" <strong> These two formulations can introduce confusion, so it is important to clarify if a dispersion value is k or alpha.</strong>")
  
  
 
