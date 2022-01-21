@@ -419,7 +419,7 @@ Column {.sidebar}
 
 This page of the app uses  $\alpha$. 
 
-$\alpha$ takes on positive rational values, rarely above 4 (Hilbe page 190)
+$\alpha$ takes on positive rational values, rarely above 4 (Hilbe page 190). Values of alpha greater than 2 usually indicate that there is substantial over-dispersion or correlation in the Poisson data.
 
 When  $\alpha$ approaches 0, k is infinite and Poisson emerges (move red $\alpha$ slider to 0).
 
