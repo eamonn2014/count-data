@@ -816,7 +816,7 @@ r3 <- reactive({
   nn <- data_perc <- t(prop.table(table(x))) * 100    # Convert data to probability table
  
   b <- barplot(data_perc, ylab = "Percent", 
-          main =paste0("Treated true \u03BC=",mu1," & k=",k," \nso \u03B1=",
+          main =paste0("Treated true \u03BC=",mu1," & \u03B1=",k," \nso k=",
                        round(1/k,2),""), ylim=c(0,upp+5 ), col='blue')  #
   
   x <-as.numeric(colnames(nn))  # % onto top of bars
@@ -833,7 +833,7 @@ r3 <- reactive({
   x <- factor(pla, levels=0:max(y))
   nn <- data_perc <- t(prop.table(table(x))) * 100    # Convert data to probability table
   b <-barplot(data_perc, ylab = "Percent",
-          main =paste0("Placebo true \u03BC=",mu0," & k=",k," \nso \u03B1=",
+          main =paste0("Placebo true \u03BC=",mu0," & \u03B1=",k," \nso k=",
                        round(1/k,2),""), ylim=c(0,upp+5 ), col='green') 
   
   if(isolate(statz)) { 
@@ -1393,10 +1393,10 @@ think about changing from 1:1 randomisation in my functions and 2 dispersion par
       sliderInput('mu1.can', 'Treatment mean rate \u03BC 1', value=.9,   
                     min = 0.5, max = 2, step=.05, ticks=F)
       
-      sliderInput('pl.k.can', 'Placebo dispersion', value= 1/1.3,
+      sliderInput('pl.k.can', 'Placebo dispersion (enter k = 1/\u03B1)', value= 1/1.3,
                     min = 0, max = 5, step= .1, ticks=F)
        
-      sliderInput('trt.k.can', 'Treatment dispersion', value= 1/1.3,
+      sliderInput('trt.k.can', 'Treatment dispersion (enter k = 1\u03B1)', value= 1/1.3,
                     min = 0, max = 5, step= .1, ticks=F)
 
       sliderInput('p.prop.can', 'Placebo proportion N0/N', value=.50,
