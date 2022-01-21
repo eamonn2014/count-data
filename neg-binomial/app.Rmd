@@ -395,13 +395,13 @@ Column {.sidebar}
   sliderInput('mu', 'Common  \u03BC', value=1.5,
                 min = 1, max = 25, step=.5, ticks=F)
   
-  sliderInput('alpha_a', '\u03B1 for red curve', value = c(0.8),
+  sliderInput('alpha_a', '\u03B1 for red curve', value = c(1.3),
                 min = 0, max = 5 ,step=0.01, ticks=F)
   
-  sliderInput('alpha_b', '\u03B1 for dark blue curve', value = c(0.8),
+  sliderInput('alpha_b', '\u03B1 for dark blue curve', value = c(1.3),
                 min = 0, max = 5 ,step=0.01, ticks=F)
   
-  sliderInput('alpha_d', '\u03B1 for purple curve', value = c(0.8),
+  sliderInput('alpha_d', '\u03B1 for purple curve', value = c(1.3),
                 min = 0, max = 5 ,step=0.01, ticks=F)
   
   sliderInput('sims', 'Simulations (chart 2)', 50000,
@@ -410,7 +410,7 @@ Column {.sidebar}
   sliderInput('x_range', 'Plot x-range', value = c(0,10),
           min = 0, max = 80,step=5,ticks=F)
   
-  sliderInput('y_range', 'Plot y-range', value = c(0,.4),
+  sliderInput('y_range', 'Plot y-range', value = c(0,.5),
           min = 0, max = 1,step=.05,ticks=F)
 
   checkboxInput('perc','show stats on barplot', value=TRUE)
@@ -423,7 +423,7 @@ $\alpha$ takes on positive rational values, rarely above 4 (Hilbe page 190)
 
 When  $\alpha$ approaches 0, k is infinite and Poisson emerges (move red $\alpha$ slider to 0).
 
-When  $\alpha$ > 1, k < 1 highly leads to over dispersed data ($\alpha$ big).
+When  $\alpha$ > 1, k < 1 leads to over dispersed data ($\alpha$ big).
 
 $\alpha$ = 1/k
 
@@ -635,7 +635,7 @@ renderPlot({
       
   b <- barplot(yb, xlim=c(0,xmax+2), ylab = "Percent", xlab="x", col='red',
           ylim=c(0,ymax),
-          main =  paste("Negative Binomial \u03BC=",mu," \u03B1=",alpha_a,", based on common mean and red curve \u03B1",sep=""),
+          main =  paste("Negative Binomial \u03BC=",mu," \u03B1=",alpha_a,", based on common mean and red curve \u03B1 variance =",    mu+mu^2* alpha_a,""),
           names.arg= as.character(xx))
   
   if(input$perc) {
@@ -669,7 +669,7 @@ Use the inputs below to simulate an RCT with a count outcome measure. We estimat
 # .1
 # 1
 
-    sliderInput('N', 'Patients per arm', value=188,
+    sliderInput('N', 'Patients per arm', value=174,
                   min = 10, max = 1000, step=5, ticks=F)
 
     sliderInput('mu0', 'Placebo event rate \u03BC per patient yr of follow up', value=1.5,
@@ -1492,26 +1492,26 @@ HTML(" <strong> With regard to negative binomial regression the variance can the
                                      
 withMathJax(
                                          helpText('
-                           $${{ }{{{m} + \\frac{m^2}{r}}}}\\!$$'))      
+                           $${{ }{{{m} + \\frac{m^2}{k}}}}\\!$$'))      
 
-HTML(" <strong>Some authors prefer to set</strong>")
+HTML(" <strong>Sometimes this relationship is used</strong>")
                                      
 withMathJax(
                                          helpText('
-                           $${{ }{{{\\alpha} = \\frac{1}{r}}}}\\!$$'))      
+                           $${{ }{{{\\alpha} = \\frac{1}{k}}}}\\!$$'))      
 
 
-HTML(" <strong>And so the variance is expressed as</strong>")
+HTML(" <strong>And then the variance is expressed as</strong>")
                                      
 withMathJax(
                                          helpText('
                            $${{ }{{{m}  + {(\\alpha)}{ (m^2)}}}}\\!$$'))  
  
-HTML(" <strong>In this context, and depending on the author, either the parameter r or its reciprocal alpha is referred to as the 'dispersion parameter', 'shape parameter' or 'clustering coefficient',or the 'heterogeneity' or 'aggregation' parameter.The term 'aggregation' is particularly used in ecology when describing counts of individual organisms. Decrease of the aggregation parameter r towards zero corresponds to increasing aggregation of the organisms; increase of r towards infinity corresponds to absence of aggregation, as can be described by Poisson regression.</strong>")
+HTML(" <strong>In short, either the parameter k or its reciprocal alpha is referred to as the 'dispersion parameter', 'shape parameter' or 'clustering coefficient',or the 'heterogeneity' or 'aggregation' parameter. The term 'aggregation' is particularly used in ecology when describing counts of individual organisms. Decrease of the aggregation parameter k towards zero corresponds to increasing aggregation of the organisms; increase of r towards infinity corresponds to absence of aggregation, as can be described by Poisson regression.</strong>")
 
-HTML(" <strong>This two formulations can introduce confusion and so it is important to clarify if a dispersion value is k or alpha.</strong>")
+HTML(" <strong>These two formulations can introduce confusion, so it is important to clarify if a dispersion value is k or alpha.</strong>")
  
-HTML(" <strong>Imagine being quoted a dispersion valus of 0.8 is this alpha or is this k? As we are using negative binomial regression we may assume we are expecting over dispersion.  As alpha approaches zero the dispersion reduces, therefore we may guess this is k. As k gets smaller dispersion increases. Best however to confirm.</strong>")
+ 
 
 
 ```
@@ -1589,6 +1589,13 @@ References
         div(p(" "))
       tags$a(href = "https://pubmed.ncbi.nlm.nih.gov/17230434/", target="_blank",
            tags$span(style="color:blue", "[14] Analysis of exacerbation rates in asthma and chronic obstructive pulmonary disease: example from the TRISTAN study - see canned power tab "),) 
+      
+        div(p(" "))
+      tags$a(href = "https://stats.stackexchange.com/questions/10419/what-is-theta-in-a-negative-binomial-regression-fitted-with-r", target="_blank",
+           tags$span(style="color:blue", "[15] J Hilbe explains what is reported by R's negative binomial model output "),) 
+      
+      
+      
     
     div(p(" "))
     tags$hr()                        
