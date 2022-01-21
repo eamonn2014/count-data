@@ -678,13 +678,13 @@ Use the inputs below to simulate an RCT with a count outcome measure. We estimat
     sliderInput('eff', 'Hypothesised treatment effect ', value=.6, 
                   min = 0.1, max =5, step=.01, ticks=F)
 
-    sliderInput('k', 'This needs to be k the heterogeneity (ancillary) parameter. k = 1/\u03B1', value = 1.3 , #c(10/13),
+    sliderInput('k', 'This needs to be \u03B1 the heterogeneity (ancillary) parameter. \u03B1 = 1/k', value = 1.3 , #c(10/13),
                   min = 0, max = 5 ,step=0.1, ticks=F)
 
-    sliderInput('d1', 'Placebo discontinuation prob', value = c(0.15),
+    sliderInput('d1', 'Placebo discontinuation prob', value = c(0),
                   min = 0, max = .5 ,step=0.05, ticks=F)
 
-    sliderInput('d2', 'Treatment discontinuation prob', value = c(0.15),
+    sliderInput('d2', 'Treatment discontinuation prob', value = c(0),
                   min = 0, max = .5 ,step=0.05, ticks=F)
 
     sliderInput('fup', 'Follow up (yrs)', value = c(1),
@@ -761,7 +761,7 @@ cat(paste0("A RCT with 1:1 randomisation is being planned to investigate an inte
 
 cat(paste0("The gamma Poisson model will be used as we expect patient heterogeneity of exacerbations beyond that captured by patient level covariates.\nWe will use the natural log of duration of follow up time as an offset variable, the duration of follow up ",input$fup, " will be the planned duration of follow up for all patients."))
 
-cat(paste0("\nk is the dispersion parameter, its value is " ,input$k,", this is the same as 1/alpha So alpha is ",1/input$k,". The rate for placebo is ",input$mu0," events per patient year of follow up.\nThe treatment effect hypothesised is ",input$eff, " so an event rate for treatment is hypothesised as ",input$mu0*input$eff, " events per patient year follow up. \nDrop out probabilities for treatment discontinuation and placebo over the follow up period (in years) are " ,input$d1, " and " ,input$d2," respectively. \nWe assume a constant exponential hazard rate over time for treatment discontinuation with ",input$d1," and ",input$d2,", the percentages of patients\noff treatment by follow up time in years in active and placebo. No further treatment effect versus placebo is assumed during off treatment, that is ",input$mu0," events per patient year is \nassumed for patients after treatment discontinuation in treated and placebo.\n"))
+cat(paste0("\nk is the dispersion parameter, its value is " ,input$k,", this is alpha so 1/alpha is ",1/input$k,". The rate for placebo is ",input$mu0," events per patient year of follow up.\nThe treatment effect hypothesised is ",input$eff, " so an event rate for treatment is hypothesised as ",input$mu0*input$eff, " events per patient year follow up. \nDrop out probabilities for treatment discontinuation and placebo over the follow up period (in years) are " ,input$d1, " and " ,input$d2," respectively. \nWe assume a constant exponential hazard rate over time for treatment discontinuation with ",input$d1," and ",input$d2,", the percentages of patients\noff treatment by follow up time in years in active and placebo. No further treatment effect versus placebo is assumed during off treatment, that is ",input$mu0," events per patient year is \nassumed for patients after treatment discontinuation in treated and placebo.\n"))
 
 cat(paste0("\nThe power estimate is based on simulation using rnbinom...",r1()," and ",r2()," based on Poisson gamma simulation"))
 })
@@ -883,7 +883,7 @@ r3 <- reactive({
 ```   
  
    
-### A typical result that can be expected, here theta is synonymous with $\alpha$
+### A typical result that can be expected, here theta is synonymous with k or 1/$\alpha$
 
 ```{r}
 
@@ -1486,36 +1486,34 @@ reactive({
 k or $\alpha$
 ====
 
-It is important to be sure whether the dispersion parameter is quoted in terms of alpha or k. The Wikipedia page 
-
-To quote wikipedia 'The variance can then be written as {\textstyle m+{\frac {m^{2}}{r}}}{\textstyle m+{\frac {m^{2}}{r}}}. Some authors prefer to set {\textstyle \alpha ={\frac {1}{r}}}{\textstyle \alpha ={\frac {1}{r}}}, and express the variance as {\textstyle m+\alpha m^{2}}{\textstyle m+\alpha m^{2}}. 
-
 ```{r}
  
-HTML(" <strong>To quote dirctly from Wikipedia 'The variance can then be written as .</strong>")
+HTML(" <strong> With regard to negative binomial regression the variance can then be written as </strong>")
                                      
 withMathJax(
                                          helpText('
                            $${{ }{{{m} + \\frac{m^2}{r}}}}\\!$$'))      
 
-HTML(" <strong>Some authors prefer to set.</strong>")
+HTML(" <strong>Some authors prefer to set</strong>")
                                      
 withMathJax(
                                          helpText('
                            $${{ }{{{\\alpha} = \\frac{1}{r}}}}\\!$$'))      
 
 
-HTML(" <strong>And so the variance is expressed as.</strong>")
+HTML(" <strong>And so the variance is expressed as</strong>")
                                      
 withMathJax(
                                          helpText('
-                           $${{ }{{{m}  + {\\alpha}{ m^2}}}}\\!$$'))  
+                           $${{ }{{{m}  + {(\\alpha)}{ (m^2)}}}}\\!$$'))  
  
 HTML(" <strong>In this context, and depending on the author, either the parameter r or its reciprocal alpha is referred to as the 'dispersion parameter', 'shape parameter' or 'clustering coefficient',or the 'heterogeneity' or 'aggregation' parameter.The term 'aggregation' is particularly used in ecology when describing counts of individual organisms. Decrease of the aggregation parameter r towards zero corresponds to increasing aggregation of the organisms; increase of r towards infinity corresponds to absence of aggregation, as can be described by Poisson regression.</strong>")
 
-
 HTML(" <strong>This two formulations can introduce confusion and so it is important to clarify if a dispersion value is k or alpha.</strong>")
  
+HTML(" <strong>Imagine being quoted a dispersion valus of 0.8 is this alpha or is this k? As we are using negative binomial regression we may assume we are expecting over dispersion.  As alpha approaches zero the dispersion reduces, therefore we may guess this is k. As k gets smaller dispersion increases. Best however to confirm.</strong>")
+
+
 ```
 
 Wiki
