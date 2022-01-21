@@ -1488,27 +1488,33 @@ k or $\alpha$
 
 It is important to be sure whether the dispersion parameter is quoted in terms of alpha or k. The Wikipedia page 
 
-To quote The variance can then be written as {\textstyle m+{\frac {m^{2}}{r}}}{\textstyle m+{\frac {m^{2}}{r}}}. Some authors prefer to set {\textstyle \alpha ={\frac {1}{r}}}{\textstyle \alpha ={\frac {1}{r}}}, and express the variance as {\textstyle m+\alpha m^{2}}{\textstyle m+\alpha m^{2}}. In this context, and depending on the author, either the parameter r or its reciprocal α is referred to as the "dispersion parameter", "shape parameter" or "clustering coefficient",[17] or the "heterogeneity"[16] or "aggregation" parameter.[11] The term "aggregation" is particularly used in ecology when describing counts of individual organisms. Decrease of the aggregation parameter r towards zero corresponds to increasing aggregation of the organisms; increase of r towards infinity corresponds to absence of aggregation, as can be described by Poisson regression.
+To quote wikipedia 'The variance can then be written as {\textstyle m+{\frac {m^{2}}{r}}}{\textstyle m+{\frac {m^{2}}{r}}}. Some authors prefer to set {\textstyle \alpha ={\frac {1}{r}}}{\textstyle \alpha ={\frac {1}{r}}}, and express the variance as {\textstyle m+\alpha m^{2}}{\textstyle m+\alpha m^{2}}. 
 
 ```{r}
  
-HTML(" <strong>When the between variance component is estimated to be negative we apply the following adjustments.</strong>")
+HTML(" <strong>To quote dirctly from Wikipedia 'The variance can then be written as .</strong>")
                                      
-                                     
-                                     p("Since three batches is not sufficient to reliably estimate the between batch component, the total
-                                        variances are estimated as the between canister variance of the 'super-batch' consisting of the three
-                                        batches combined [2]. It is not uncommon that the mean square between (MSB) is less than the mean square within (MSW) with a one way ANOVA. This results in a negative estimate 
-                                        for the between variance component. 
-                             Thus concluding there is no additional variability due to the between variance component. In such cases the FDA PBE equations are adjusted. 
-                             We have",HTML(" <em>m</em>"),"replicates, 
-                             ",HTML(" <em>n</em>")," items per batch and",HTML(" <em>l</em>"),"is the no batches per product (test and reference). Refer to the FDA guidance document.")
-                                     br()
-                                     
-                                     
-                                     HTML(" <strong>Impact to the total variances</strong>")
-                                     withMathJax(
+withMathJax(
                                          helpText('
-                           $${{\\sigma_R = }{\\sqrt{\\frac{MSB_R}{m} + \\frac{(m-1)MSW_R}{m}}}}\\!$$'))
+                           $${{ }{{{m} + \\frac{m^2}{r}}}}\\!$$'))      
+
+HTML(" <strong>Some authors prefer to set.</strong>")
+                                     
+withMathJax(
+                                         helpText('
+                           $${{ }{{{\\alpha} = \\frac{1}{r}}}}\\!$$'))      
+
+
+HTML(" <strong>And so the variance is expressed as.</strong>")
+                                     
+withMathJax(
+                                         helpText('
+                           $${{ }{{{m}  + {\\alpha}{ m^2}}}}\\!$$'))  
+ 
+HTML(" <strong>In this context, and depending on the author, either the parameter r or its reciprocal alpha is referred to as the 'dispersion parameter', 'shape parameter' or 'clustering coefficient',or the 'heterogeneity' or 'aggregation' parameter.The term 'aggregation' is particularly used in ecology when describing counts of individual organisms. Decrease of the aggregation parameter r towards zero corresponds to increasing aggregation of the organisms; increase of r towards infinity corresponds to absence of aggregation, as can be described by Poisson regression.</strong>")
+
+
+HTML(" <strong>This two formulations can introduce confusion and so it is important to clarify if a dispersion value is k or alpha.</strong>")
  
 ```
 
