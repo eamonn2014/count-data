@@ -1393,10 +1393,10 @@ think about changing from 1:1 randomisation in my functions and 2 dispersion par
       sliderInput('mu1.can', 'Treatment mean rate \u03BC 1', value=.9,   
                     min = 0.5, max = 2, step=.05, ticks=F)
       
-      sliderInput('pl.k.can', 'Placebo dispersion (enter k = 1/\u03B1)', value= 1/1.3,
+      sliderInput('pl.k.can', 'Placebo dispersion (enter \u03B1 = 1/k)', value= 1.3,
                     min = 0, max = 5, step= .1, ticks=F)
        
-      sliderInput('trt.k.can', 'Treatment dispersion (enter k = 1\u03B1)', value= 1/1.3,
+      sliderInput('trt.k.can', 'Treatment dispersion (enter \u03B1 = 1/k)', value= 1.3,
                     min = 0, max = 5, step= .1, ticks=F)
 
       sliderInput('p.prop.can', 'Placebo proportion N0/N', value=.50,
@@ -1431,8 +1431,12 @@ reactive({
   type1 <- input$type1.can
   simy <-  input$simy
   
-   if ( k0.==0) { k0.=0.0001} 
-   if ( k1.==0) { k1.=0.0001} 
+  k0. <-  1/k0. 
+  k1. <-  1/k1. 
+  
+  if ( k0.==0) { k0.=0.0001} 
+  if ( k1.==0) { k1.=0.0001} 
+  
   # this returns total sample size
   B <- ceiling(BMC_negbin_power(pow=power., mu0=mu0., mu1=mu1., k0=k0., k1=k1.,  Q0=Q0., type1=type1))
   B <- 2 * round(B/2) # need even number in each group for my sim functions
