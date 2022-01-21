@@ -1385,7 +1385,7 @@ think about changing from 1:1 randomisation in my functions and 2 dispersion par
 
 
       sliderInput('P.can', 'Power', value=.9,
-                    min = 0.5, max = 1, step=.01, ticks=F)
+                    min = 0.5, max = .99, step=.01, ticks=F)
       
       sliderInput('mu0.can', 'Placebo mean rate \u03BC 0',  value=1.5,   
                     min = 0.5, max = 2, step=.05, ticks=F)
@@ -1430,7 +1430,9 @@ reactive({
   Q0. <-   input$p.prop.can
   type1 <- input$type1.can
   simy <-  input$simy
-   
+  
+   if ( k0.==0) { k0.=0.0001} 
+   if ( k1.==0) { k1.=0.0001} 
   # this returns total sample size
   B <- ceiling(BMC_negbin_power(pow=power., mu0=mu0., mu1=mu1., k0=k0., k1=k1.,  Q0=Q0., type1=type1))
   B <- 2 * round(B/2) # need even number in each group for my sim functions
@@ -1471,8 +1473,42 @@ reactive({
  cat("\nNOTE\n") #
  
  cat(paste0("In order to align, the first two functions use k, the third and simulation use 1/k.\n\n")) 
+ 
+ cat(paste0("An example analysis from the simulation\n\n")) 
+ 
+ print(res[2,][[1]])
+ 
 })
 
+ 
+```
+
+k or $\alpha$
+====
+
+It is important to be sure whether the dispersion parameter is quoted in terms of alpha or k. The Wikipedia page 
+
+To quote The variance can then be written as {\textstyle m+{\frac {m^{2}}{r}}}{\textstyle m+{\frac {m^{2}}{r}}}. Some authors prefer to set {\textstyle \alpha ={\frac {1}{r}}}{\textstyle \alpha ={\frac {1}{r}}}, and express the variance as {\textstyle m+\alpha m^{2}}{\textstyle m+\alpha m^{2}}. In this context, and depending on the author, either the parameter r or its reciprocal α is referred to as the "dispersion parameter", "shape parameter" or "clustering coefficient",[17] or the "heterogeneity"[16] or "aggregation" parameter.[11] The term "aggregation" is particularly used in ecology when describing counts of individual organisms. Decrease of the aggregation parameter r towards zero corresponds to increasing aggregation of the organisms; increase of r towards infinity corresponds to absence of aggregation, as can be described by Poisson regression.
+
+```{r}
+ 
+HTML(" <strong>When the between variance component is estimated to be negative we apply the following adjustments.</strong>")
+                                     
+                                     
+                                     p("Since three batches is not sufficient to reliably estimate the between batch component, the total
+                                        variances are estimated as the between canister variance of the 'super-batch' consisting of the three
+                                        batches combined [2]. It is not uncommon that the mean square between (MSB) is less than the mean square within (MSW) with a one way ANOVA. This results in a negative estimate 
+                                        for the between variance component. 
+                             Thus concluding there is no additional variability due to the between variance component. In such cases the FDA PBE equations are adjusted. 
+                             We have",HTML(" <em>m</em>"),"replicates, 
+                             ",HTML(" <em>n</em>")," items per batch and",HTML(" <em>l</em>"),"is the no batches per product (test and reference). Refer to the FDA guidance document.")
+                                     br()
+                                     
+                                     
+                                     HTML(" <strong>Impact to the total variances</strong>")
+                                     withMathJax(
+                                         helpText('
+                           $${{\\sigma_R = }{\\sqrt{\\frac{MSB_R}{m} + \\frac{(m-1)MSW_R}{m}}}}\\!$$'))
  
 ```
 
