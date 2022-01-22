@@ -1259,13 +1259,8 @@ reactive({
     z <- mean(unlist(res[1,]< type1))
                   
      cat(paste0("This returns power from a simple simulation ",z," after feeding in the total sample size from the first canned function...we should recover the slider power!\n"))
-       
-
- cat("\nNOTE\n") #
  
- cat(paste0("In order to align, the first two functions use k, the third and simulation use 1/k.\n\n")) 
- 
- cat(paste0("An example analysis from the simulation\n\n")) 
+ cat(paste0("\nAn example analysis from the simulation is presented...\n")) 
  
  print(res[2,][[1]])
  
