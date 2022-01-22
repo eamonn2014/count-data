@@ -1238,7 +1238,7 @@ reactive({
    B1 <- n_negbinom(mean0 = mu0.,effect = 1-mu1./mu0., dispersion0 = k0., dispersion1 = k1., q=Q0.,
                      alpha = type1, power = power.)
   
-   cat(paste0("Using R function skewsampl::n_negbinom whose R help quotes the above paper we obtain...\n\n")) 
+   cat(paste0("Using R function skewsampl::n_negbinom whose R help quotes the above paper, we obtain...\n\n")) 
    print(B1)
    cat("\n")
 
