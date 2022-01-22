@@ -1128,6 +1128,121 @@ par(mfrow=c(1,1))
 
 ```
 
+Canned power, sample size functions
+====
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+ 
+think about changing from 1:1 randomisation in my functions and 2 dispersion parameters?
+
+
+```{r power canned}
+  
+
+      sliderInput('P.can', 'Power', value=.9,
+                    min = 0.5, max = .99, step=.01, ticks=F)
+      
+      sliderInput('mu0.can', 'Placebo mean rate \u03BC 0',  value=1.5,   
+                    min = 0.5, max = 2, step=.05, ticks=F)
+      
+      sliderInput('mu1.can', 'Treatment mean rate \u03BC 1', value=.9,   
+                    min = 0.5, max = 2, step=.05, ticks=F)
+      
+      sliderInput('pl.k.can', 'Placebo dispersion (enter \u03B1 = 1/k)', value= 1.3,
+                    min = 0, max = 5, step= .1, ticks=F)
+       
+      sliderInput('trt.k.can', 'Treatment dispersion (enter \u03B1 = 1/k)', value= 1.3,
+                    min = 0, max = 5, step= .1, ticks=F)
+
+      sliderInput('p.prop.can', 'Placebo proportion N0/N', value=.50,
+                min = .1, max = 1, step= .1, ticks=F)
+  
+       sliderInput('type1.can', 'Type I error', value= .05,
+             min = .01, max = .2, step= .01, ticks=F)
+   
+       sliderInput('simy', 'Power simulations', value= 200,
+                    min = 200, max = 10000, step= 200, ticks=F)
+  
+ 
+```
+
+Row {data-height=600}
+-----------------------------------------------------------------------
+
+### We use canned formulae for sample size and allow comparison. The formulae don't account for follow up nor treatment discontinuation, so simulation is preferable. They are useful for a sanity check on simulation and also that you are not mixing up k and alpha.
+
+```{r power canned result, eval=TRUE}
+
+
+reactive({
+  
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  power.<- input$P.can
+  mu0. <-  input$mu0.can
+  mu1.  <- input$mu1.can
+  k0. <-   input$pl.k.can
+  k1.<-    input$trt.k.can
+  Q0. <-   input$p.prop.can
+  type1 <- input$type1.can
+  simy <-  input$simy
+  
+  k0. <-  1/k0. 
+  k1. <-  1/k1. 
+  
+  if ( k0.==0) { k0.=0.0001} 
+  if ( k1.==0) { k1.=0.0001} 
+  
+  # this returns total sample size
+  B <- ceiling(BMC_negbin_power(pow=power., mu0=mu0., mu1=mu1., k0=k0., k1=k1.,  Q0=Q0., type1=type1))
+  B <- 2 * round(B/2) # need even number in each group for my sim functions
+  
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   cat("FUNCTION 1\n") #1st approach
+
+   cat(paste0("Total sample size based on user inputs and a function using equation 8 from 'Sample size calculations for skewed distributions' which gives ",B," total patients (rounded up to an even number).\n"))
+   
+  cat("\nFUNCTION 2\n") #2nd approach
+   
+   B1 <- n_negbinom(mean0 = mu0.,effect = 1-mu1./mu0., dispersion0 = k0., dispersion1 = k1., q=Q0.,
+                     alpha = type1, power = power.)
+  
+   cat(paste0("Using R function skewsampl::n_negbinom whose R help quotes the above paper we obtain...\n\n")) 
+   print(B1)
+   cat("\n")
+
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  cat("\nFUNCTION 3\n") #  
+   
+   Ax <- qnorm(1-type1/2)
+   Bx <- qnorm(power.)
+   k0=1/k0.   # need to be careful of k0!!!
+   
+   cat(paste0("Here is another formula from 'Keene, O. N., Jones, M. R. K., Lane, P. W., & Anderson, J. (2007) Analysis of exacerbation rates in asthma and chronic obstructive pulmonary disease: \nexample from the TRISTAN study. Pharmaceutical Statistics, 6(2), 89–97. doi:10.1002/pst.250 page 95,' this gives an idea of the ball park subjects per treatment group,\nonly one dispersion parameter is allowed and equal groups assumed, so the 'Treatment dispersion' input will not work, nor the placebo proportion.\nIn order to compare this to the other functions one needs to keep dispersion parameters equal. Also note dispersion is reciprocated here! Estimate...", ceiling(((mu0.+mu1.)/(mu0.*mu1.) +2*k0) * ((Ax+Bx)/(log(mu0./mu1.)))^2) ," \n"))
+  
+   
+    cat("\nSIMULATION\n") #2nd approach
+  
+    res <- replicate( simy, nb.power.simp(n=B/2, k=k0, mu0=mu0., eff=mu1./mu0., fup=1))
+    #z <-  mean(res<0.05)
+    z <- mean(unlist(res[1,]< type1))
+                  
+     cat(paste0("This returns power from a simple simulation ",z," after feeding in the total sample size from the first canned function...we should recover the slider power!\n"))
+       
+
+ cat("\nNOTE\n") #
+ 
+ cat(paste0("In order to align, the first two functions use k, the third and simulation use 1/k.\n\n")) 
+ 
+ cat(paste0("An example analysis from the simulation\n\n")) 
+ 
+ print(res[2,][[1]])
+ 
+})
+
+ 
+```
+
 Poisson paired counts
 ====
 
@@ -1328,121 +1443,6 @@ Row {.tabset .tabset-fade}
 })
 
 
-```
-
-Canned power, sample size functions
-====
-
-Column {.sidebar}
------------------------------------------------------------------------
- 
-think about changing from 1:1 randomisation in my functions and 2 dispersion parameters?
-
-
-```{r power canned}
-  
-
-      sliderInput('P.can', 'Power', value=.9,
-                    min = 0.5, max = .99, step=.01, ticks=F)
-      
-      sliderInput('mu0.can', 'Placebo mean rate \u03BC 0',  value=1.5,   
-                    min = 0.5, max = 2, step=.05, ticks=F)
-      
-      sliderInput('mu1.can', 'Treatment mean rate \u03BC 1', value=.9,   
-                    min = 0.5, max = 2, step=.05, ticks=F)
-      
-      sliderInput('pl.k.can', 'Placebo dispersion (enter \u03B1 = 1/k)', value= 1.3,
-                    min = 0, max = 5, step= .1, ticks=F)
-       
-      sliderInput('trt.k.can', 'Treatment dispersion (enter \u03B1 = 1/k)', value= 1.3,
-                    min = 0, max = 5, step= .1, ticks=F)
-
-      sliderInput('p.prop.can', 'Placebo proportion N0/N', value=.50,
-                min = .1, max = 1, step= .1, ticks=F)
-  
-       sliderInput('type1.can', 'Type I error', value= .05,
-             min = .01, max = .2, step= .01, ticks=F)
-   
-       sliderInput('simy', 'Power simulations', value= 200,
-                    min = 200, max = 10000, step= 200, ticks=F)
-  
- 
-```
-
-Row {data-height=600}
------------------------------------------------------------------------
-
-### We use canned formulae for sample size and allow comparison. The formulae don't account for follow up nor treatment discontinuation, so simulation is preferable. They are useful for a sanity check on simulation and also that you are not mixing up k and alpha.
-
-```{r power canned result, eval=TRUE}
-
-
-reactive({
-  
- #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  power.<- input$P.can
-  mu0. <-  input$mu0.can
-  mu1.  <- input$mu1.can
-  k0. <-   input$pl.k.can
-  k1.<-    input$trt.k.can
-  Q0. <-   input$p.prop.can
-  type1 <- input$type1.can
-  simy <-  input$simy
-  
-  k0. <-  1/k0. 
-  k1. <-  1/k1. 
-  
-  if ( k0.==0) { k0.=0.0001} 
-  if ( k1.==0) { k1.=0.0001} 
-  
-  # this returns total sample size
-  B <- ceiling(BMC_negbin_power(pow=power., mu0=mu0., mu1=mu1., k0=k0., k1=k1.,  Q0=Q0., type1=type1))
-  B <- 2 * round(B/2) # need even number in each group for my sim functions
-  
-   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   cat("FUNCTION 1\n") #1st approach
-
-   cat(paste0("Total sample size based on user inputs and a function using equation 8 from 'Sample size calculations for skewed distributions' which gives ",B," total patients (rounded up to an even number).\n"))
-   
-  cat("\nFUNCTION 2\n") #2nd approach
-   
-   B1 <- n_negbinom(mean0 = mu0.,effect = 1-mu1./mu0., dispersion0 = k0., dispersion1 = k1., q=Q0.,
-                     alpha = type1, power = power.)
-  
-   cat(paste0("Using R function skewsampl::n_negbinom whose R help quotes the above paper we obtain...\n\n")) 
-   print(B1)
-   cat("\n")
-
-   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  cat("\nFUNCTION 3\n") #  
-   
-   Ax <- qnorm(1-type1/2)
-   Bx <- qnorm(power.)
-   k0=1/k0.   # need to be careful of k0!!!
-   
-   cat(paste0("Here is another formula from 'Keene, O. N., Jones, M. R. K., Lane, P. W., & Anderson, J. (2007) Analysis of exacerbation rates in asthma and chronic obstructive pulmonary disease: \nexample from the TRISTAN study. Pharmaceutical Statistics, 6(2), 89–97. doi:10.1002/pst.250 page 95,' this gives an idea of the ball park subjects per treatment group,\nonly one dispersion parameter is allowed and equal groups assumed, so the 'Treatment dispersion' input will not work, nor the placebo proportion.\nIn order to compare this to the other functions one needs to keep dispersion parameters equal. Also note dispersion is reciprocated here! Estimate...", ceiling(((mu0.+mu1.)/(mu0.*mu1.) +2*k0) * ((Ax+Bx)/(log(mu0./mu1.)))^2) ," \n"))
-  
-   
-    cat("\nSIMULATION\n") #2nd approach
-  
-    res <- replicate( simy, nb.power.simp(n=B/2, k=k0, mu0=mu0., eff=mu1./mu0., fup=1))
-    #z <-  mean(res<0.05)
-    z <- mean(unlist(res[1,]< type1))
-                  
-     cat(paste0("This returns power from a simple simulation ",z," after feeding in the total sample size from the first canned function...we should recover the slider power!\n"))
-       
-
- cat("\nNOTE\n") #
- 
- cat(paste0("In order to align, the first two functions use k, the third and simulation use 1/k.\n\n")) 
- 
- cat(paste0("An example analysis from the simulation\n\n")) 
- 
- print(res[2,][[1]])
- 
-})
-
- 
 ```
 
 Wiki
