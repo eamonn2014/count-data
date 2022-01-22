@@ -1260,7 +1260,7 @@ reactive({
                   
      cat(paste0("This returns power from a simple simulation ",z," after feeding in the total sample size from the first canned function...we should recover the slider power!\n"))
  
- cat(paste0("\nAn example analysis from the simulation is presented...remember Theta is synonymous with k or 1/$\alpha$\n")) 
+ cat(paste0("\nAn example analysis from the simulation is presented...remember Theta is synonymous with k or 1/alpha\n")) 
  
  print(res[2,][[1]])
  
