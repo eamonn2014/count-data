@@ -638,236 +638,13 @@ renderPlot({
 
 ```
  
-
-Gamma Poisson power
-====
-
-Column {.sidebar}
------------------------------------------------------------------------
-
-Use the inputs below to simulate an RCT with a count outcome measure. We estimate the treatment effect using a gamma Poisson model. Be careful entering dispersion aka heterogeneity (ancillary) parameter. For example we may quote a negative binomial dispersion parameter of 0.8, referring to k, but we need to enter alpha or 1/k, so 1/0.8 = ~1.3 which is alpha.
-
-```{r, main power tab2}
- 
- 
-# 220
-# 1
-# .75
-# 1.3
-# .1
-# .1
-# 1
-
-    sliderInput('N', 'Patients per arm', value=174,
-                  min = 10, max = 1000, step=5, ticks=F)
-
-    sliderInput('mu0', 'Placebo event rate \u03BC per patient yr of follow up', value=1.5,
-                  min = 0.1, max = 25, step=.05, ticks=F)
-
-    sliderInput('eff', 'Hypothesised treatment effect ', value=.6, 
-                  min = 0.1, max =5, step=.01, ticks=F)
-
-    sliderInput('k', 'This needs to be \u03B1 the heterogeneity (ancillary) parameter. \u03B1 = 1/k', value = 1.3 , #c(10/13),
-                  min = 0, max = 5 ,step=0.1, ticks=F)
-
-    sliderInput('d1', 'Placebo discontinuation prob', value = c(0),
-                  min = 0, max = .5 ,step=0.05, ticks=F)
-
-    sliderInput('d2', 'Treatment discontinuation prob', value = c(0),
-                  min = 0, max = .5 ,step=0.05, ticks=F)
-
-    sliderInput('fup', 'Follow up (yrs)', value = c(1),
-            min = 1, max = 10, step=1,ticks=F)
-
-    sliderInput('sims2', 'Power simulations', value= 500,
-                  min = 500, max = 10000, step= 500, ticks=F)
-    
-    checkboxInput('perc1','show stats on barplot', value = TRUE)
-
-
-```
-
-Row {data- height=650}
------------------------------------------------------------------------
-### Power will appear here imminently...be patient...
-  
-```{r text power, eval=TRUE}
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# large simulations of rnbionom approach
-
-r1<- reactive({
-  
-  res <- replicate( input$sims2, 
-        nb.power(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)) 
-  mean(unlist(res[1,]<.05))
-
-})
- 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# large simulations of gamma Poisson approach
-
-r2 <- reactive({
-  
-  res1 <- replicate( input$sims2, 
-        nb.power2(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)) 
-  mean(unlist(res1[1,]<.05))
-
-})
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-reactive({
-  
-cat(paste0("A RCT with 1:1 randomisation is being planned to investigate an intervention on the rate of asthma exacerbations with ",input$N," patients per arm.\n"))
-
-cat(paste0("The gamma Poisson model will be used as we expect patient heterogeneity of exacerbations beyond that captured by patient level covariates.\nWe will use the natural log of duration of follow up time as an offset variable, the duration of follow up ",input$fup, " will be the planned duration of follow up for all patients."))
-
-cat(paste0("\nAlpha is the dispersion parameter, its value is " ,input$k,", so k = 1/alpha, k is the parameterisation that is reported in R's model output and in truth is ",1/input$k,". The rate for placebo is ",input$mu0," events per patient year of follow up.\nThe treatment effect hypothesised is ",input$eff, " so an event rate for treatment is hypothesised as ",input$mu0*input$eff, " events per patient year follow up. \nDrop out probabilities for treatment discontinuation and placebo over the follow up period (in years) are " ,input$d1, " and " ,input$d2," respectively. \nWe assume a constant exponential hazard rate over time for treatment discontinuation with ",input$d1," and ",input$d2,", the percentages of patients\noff treatment by follow up time in years in active and placebo. No further treatment effect versus placebo is assumed during off treatment, that is ",input$mu0," events per patient year is \nassumed for patients after treatment discontinuation in treated and placebo.\n"))
-
-cat(paste0("\nThe power estimate is based on simulation using rnbinom...",r1()," and ",r2()," based on Poisson gamma simulation"))
-})
-  
-
-```
- 
-Row {data-height=700}
--------------------------------------
-   
-### A typical dataset that can be expected
-
-```{r power typical barplot}
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# single simulation of rnbinom approach
-
-r3 <- reactive({
-  
-  example1 <-  nb.power(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)
-  mu1 <- input$eff*input$mu0
- return(list( y=example1[2][[1]], dose=example1[3][[1]] , model=example1[4][[1]]   , mu1=mu1)  )
-  
-})
- 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
- renderPlot({
-  
-    mu1 <-  r3()$mu1
-    dose <- r3()$dose
-    y <-    r3()$y
-    
-    k=     (input$k)
-    mu0=   (input$mu0)
-    
-    statz <- (input$perc1)
-   
-    trt <- y[dose %in% "trt"]
-    pla <- y[!dose %in% "trt"]
-    
- #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  par(mfrow=c(2,2))
-  # proportion plot
-  u1 <- max(prop.table(table(trt)) , prop.table(table(pla)))*100
-  upp <- roundUpNice( u1)
-
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  x <- factor(trt, levels=0:max(y))
-  nn <- data_perc <- t(prop.table(table(x))) * 100    # Convert data to probability table
- 
-  b <- barplot(data_perc, ylab = "Percent", 
-          main =paste0("Treated true \u03BC=",mu1," & \u03B1=",k," \nso k=",
-                       round(1/k,2),""), ylim=c(0,upp+5 ), col='blue')  #
-  
-  x <-as.numeric(colnames(nn))  # % onto top of bars
-  y1 <- as.vector(nn)+4
-  z <- as.character(as.vector(nn))
-  z <-  round(as.numeric(z),0)
-  z <- paste0(z,"%")
-  
-  if(isolate(statz)) { 
-    text(x=b[x+1],y=(y1),labels=z, cex = 1, col='black') }  
-          
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-  
-  x <- factor(pla, levels=0:max(y))
-  nn <- data_perc <- t(prop.table(table(x))) * 100    # Convert data to probability table
-  b <-barplot(data_perc, ylab = "Percent",
-          main =paste0("Placebo true \u03BC=",mu0," & \u03B1=",k," \nso k=",
-                       round(1/k,2),""), ylim=c(0,upp+5 ), col='green') 
-  
-  if(isolate(statz)) { 
-      
-      x <-as.numeric(colnames(nn))   #  % onto top of bars
-      y1 <- as.vector(nn)+4
-      z <- as.character(as.vector(nn))
-      z <-  round(as.numeric(z),0)
-      z <- paste0(z,"%")
-      text(x=b[x+1],y=(y1),labels=z, cex = 1)
-  
-    } 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- # count plot
-   u <- ceiling(max(table(y))/2)
-   u <- roundUpNice(u)
- 
-  #get the midpoints in bars with b object
-  b<- barplot(table(factor(trt, levels=0:max(y)))  , main ="Treated counts" , col='blue',   ylim=c(0,u+25)) #u+ to allow text
-  
-    if(isolate(statz)) { 
-       
-      nn <- table(factor(trt))  # counts onto top of bars
-      x <-as.numeric(names(nn))
-      y1 <- as.vector(nn)+10
-      z <- as.character(as.vector(nn))
-      text(x=b[x+1],y=(y1),labels=z, cex = 1)  # x+1 th of b vector because bars start at zero 
-    }
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-
-  b <-barplot(table(factor(pla, levels=0:max(y)))  , main ="Placebo counts" , col='green',  ylim=c(0,u+25 ))
-  
-     if(isolate(statz)) { 
-        
-      nn <- table(factor(pla))  # counts onto top of bars
-      x <-as.numeric(names(nn))
-      y1 <- as.vector(nn)+10
-      z <- as.character(as.vector(nn))
-      text(x=b[x+1],y=(y1),labels=z, cex = 1)
-    }
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  par(mfrow=c(1,1))
-    
-})
-
-```   
- 
-   
-### A typical result that can be expected, here theta is synonymous with k or 1/$\alpha$
-
-```{r power typ output}
-
- renderPrint({
-  
-   f <- r3()$model
-   print(f)
-
-  cat(paste0("\nEstimated placebo rate ",
-             round(exp(f$coef[1]),4)," and multiplicative treatement effect estimate of ",round(exp(f$coef[2]),4),""))
-    
-})
-  
-``` 
-
 Gamma Poisson
 ====
 
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-Show the equivalence of gamma Poisson and negative binomial (rnbinom) parmeterisations !  
+Show the equivalence of gamma Poisson and negative binomial (rnbinom) parmeterisations! Be careful entering dispersion aka heterogeneity (ancillary) parameter. For example, we may be quoted a negative binomial dispersion parameter of 0.8, referring to k, but we need to enter alpha or 1/k, so 1/0.8 = ~1.3 which is alpha.
 
 ```{r gammapoisson}
 
@@ -1126,15 +903,236 @@ par(mfrow=c(1,1))
 
 })
 
+``` 
+ 
+
+Gamma Poisson power
+====
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+Use the inputs below to simulate an RCT with a count outcome measure. We estimate the treatment effect using a gamma Poisson model.
+
+```{r, main power tab2}
+ 
+ 
+# 220
+# 1
+# .75
+# 1.3
+# .1
+# .1
+# 1
+
+    sliderInput('N', 'Patients per arm', value=174,
+                  min = 10, max = 1000, step=5, ticks=F)
+
+    sliderInput('mu0', 'Placebo event rate \u03BC per patient yr of follow up', value=1.5,
+                  min = 0.1, max = 25, step=.05, ticks=F)
+
+    sliderInput('eff', 'Hypothesised treatment effect ', value=.6, 
+                  min = 0.1, max =5, step=.01, ticks=F)
+
+    sliderInput('k', 'This needs to be \u03B1 the heterogeneity (ancillary) parameter. \u03B1 = 1/k', value = 1.3 , #c(10/13),
+                  min = 0, max = 5 ,step=0.1, ticks=F)
+
+    sliderInput('d1', 'Placebo discontinuation prob', value = c(0),
+                  min = 0, max = .5 ,step=0.05, ticks=F)
+
+    sliderInput('d2', 'Treatment discontinuation prob', value = c(0),
+                  min = 0, max = .5 ,step=0.05, ticks=F)
+
+    sliderInput('fup', 'Follow up (yrs)', value = c(1),
+            min = 1, max = 10, step=1,ticks=F)
+
+    sliderInput('sims2', 'Power simulations', value= 500,
+                  min = 500, max = 10000, step= 500, ticks=F)
+    
+    checkboxInput('perc1','show stats on barplot', value = TRUE)
+
+
 ```
+
+Row {data- height=650}
+-----------------------------------------------------------------------
+### Power will appear here imminently...be patient...
+  
+```{r text power, eval=TRUE}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# large simulations of rnbionom approach
+
+r1<- reactive({
+  
+  res <- replicate( input$sims2, 
+        nb.power(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)) 
+  mean(unlist(res[1,]<.05))
+
+})
+ 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# large simulations of gamma Poisson approach
+
+r2 <- reactive({
+  
+  res1 <- replicate( input$sims2, 
+        nb.power2(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)) 
+  mean(unlist(res1[1,]<.05))
+
+})
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+reactive({
+  
+cat(paste0("A RCT with 1:1 randomisation is being planned to investigate an intervention on the rate of asthma exacerbations with ",input$N," patients per arm.\n"))
+
+cat(paste0("The gamma Poisson model will be used as we expect patient heterogeneity of exacerbations beyond that captured by patient level covariates.\nWe will use the natural log of duration of follow up time as an offset variable, the duration of follow up ",input$fup, " will be the planned duration of follow up for all patients."))
+
+cat(paste0("\nAlpha is the dispersion parameter, its value is " ,input$k,", so k = 1/alpha, k is the parameterisation that is reported in R's model output and in truth is ",1/input$k,". The rate for placebo is ",input$mu0," events per patient year of follow up.\nThe treatment effect hypothesised is ",input$eff, " so an event rate for treatment is hypothesised as ",input$mu0*input$eff, " events per patient year follow up. \nDrop out probabilities for treatment discontinuation and placebo over the follow up period (in years) are " ,input$d1, " and " ,input$d2," respectively. \nWe assume a constant exponential hazard rate over time for treatment discontinuation with ",input$d1," and ",input$d2,", the percentages of patients\noff treatment by follow up time in years in active and placebo. No further treatment effect versus placebo is assumed during off treatment, that is ",input$mu0," events per patient year is \nassumed for patients after treatment discontinuation in treated and placebo.\n"))
+
+cat(paste0("\nThe power estimate is based on simulation using rnbinom...",r1()," and ",r2()," based on Poisson gamma simulation"))
+})
+  
+
+```
+ 
+Row {data-height=700}
+-------------------------------------
+   
+### A typical dataset that can be expected
+
+```{r power typical barplot}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# single simulation of rnbinom approach
+
+r3 <- reactive({
+  
+  example1 <-  nb.power(n=input$N, k=input$k, mu0=input$mu0, eff=input$eff, drop1=input$d1, drop2=input$d2, fup=input$fup)
+  mu1 <- input$eff*input$mu0
+ return(list( y=example1[2][[1]], dose=example1[3][[1]] , model=example1[4][[1]]   , mu1=mu1)  )
+  
+})
+ 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ renderPlot({
+  
+    mu1 <-  r3()$mu1
+    dose <- r3()$dose
+    y <-    r3()$y
+    
+    k=     (input$k)
+    mu0=   (input$mu0)
+    
+    statz <- (input$perc1)
+   
+    trt <- y[dose %in% "trt"]
+    pla <- y[!dose %in% "trt"]
+    
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  par(mfrow=c(2,2))
+  # proportion plot
+  u1 <- max(prop.table(table(trt)) , prop.table(table(pla)))*100
+  upp <- roundUpNice( u1)
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  x <- factor(trt, levels=0:max(y))
+  nn <- data_perc <- t(prop.table(table(x))) * 100    # Convert data to probability table
+ 
+  b <- barplot(data_perc, ylab = "Percent", 
+          main =paste0("Treated true \u03BC=",mu1," & \u03B1=",k," \nso k=",
+                       round(1/k,2),""), ylim=c(0,upp+5 ), col='blue')  #
+  
+  x <-as.numeric(colnames(nn))  # % onto top of bars
+  y1 <- as.vector(nn)+4
+  z <- as.character(as.vector(nn))
+  z <-  round(as.numeric(z),0)
+  z <- paste0(z,"%")
+  
+  if(isolate(statz)) { 
+    text(x=b[x+1],y=(y1),labels=z, cex = 1, col='black') }  
+          
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  
+  x <- factor(pla, levels=0:max(y))
+  nn <- data_perc <- t(prop.table(table(x))) * 100    # Convert data to probability table
+  b <-barplot(data_perc, ylab = "Percent",
+          main =paste0("Placebo true \u03BC=",mu0," & \u03B1=",k," \nso k=",
+                       round(1/k,2),""), ylim=c(0,upp+5 ), col='green') 
+  
+  if(isolate(statz)) { 
+      
+      x <-as.numeric(colnames(nn))   #  % onto top of bars
+      y1 <- as.vector(nn)+4
+      z <- as.character(as.vector(nn))
+      z <-  round(as.numeric(z),0)
+      z <- paste0(z,"%")
+      text(x=b[x+1],y=(y1),labels=z, cex = 1)
+  
+    } 
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ # count plot
+   u <- ceiling(max(table(y))/2)
+   u <- roundUpNice(u)
+ 
+  #get the midpoints in bars with b object
+  b<- barplot(table(factor(trt, levels=0:max(y)))  , main ="Treated counts" , col='blue',   ylim=c(0,u+25)) #u+ to allow text
+  
+    if(isolate(statz)) { 
+       
+      nn <- table(factor(trt))  # counts onto top of bars
+      x <-as.numeric(names(nn))
+      y1 <- as.vector(nn)+10
+      z <- as.character(as.vector(nn))
+      text(x=b[x+1],y=(y1),labels=z, cex = 1)  # x+1 th of b vector because bars start at zero 
+    }
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+  b <-barplot(table(factor(pla, levels=0:max(y)))  , main ="Placebo counts" , col='green',  ylim=c(0,u+25 ))
+  
+     if(isolate(statz)) { 
+        
+      nn <- table(factor(pla))  # counts onto top of bars
+      x <-as.numeric(names(nn))
+      y1 <- as.vector(nn)+10
+      z <- as.character(as.vector(nn))
+      text(x=b[x+1],y=(y1),labels=z, cex = 1)
+    }
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  par(mfrow=c(1,1))
+    
+})
+
+```   
+ 
+   
+### A typical result that can be expected, here theta is synonymous with k or 1/$\alpha$
+
+```{r power typ output}
+
+ renderPrint({
+  
+   f <- r3()$model
+   print(f)
+
+  cat(paste0("\nEstimated placebo rate ",
+             round(exp(f$coef[1]),4)," and multiplicative treatement effect estimate of ",round(exp(f$coef[2]),4),""))
+    
+})
+  
+``` 
 
 Canned power, sample size functions
 ====
 
 Column {.sidebar}
 -----------------------------------------------------------------------
- 
-think about changing from 1:1 randomisation in my functions and 2 dispersion parameters?
 
 
 ```{r power canned}
@@ -1511,9 +1509,7 @@ withMathJax(
  
 br()
 br()
-HTML(" <strong>In short, either the parameter k or its reciprocal alpha is referred to as the 'dispersion parameter', 'shape parameter' or 'clustering coefficient', or the 'heterogeneity' or 'aggregation' parameter.  </strong>")
-
-# HTML(" <strong>The term 'aggregation' is particularly used in ecology when describing counts of individual organisms. Decrease of the aggregation parameter k towards zero corresponds to increasing aggregation of the organisms; increase of r towards infinity corresponds to absence of aggregation, as can be described by Poisson regression.</strong>")
+HTML(" <strong>In short, either the parameter k or its reciprocal alpha is referred to as the 'dispersion parameter' or 'shape parameter' or 'clustering coefficient', or 'heterogeneity' or 'heterogeneity (ancillary) parameter' or 'aggregation' parameter.  </strong>")
 br()
 br()
 HTML(" <strong> These two formulations can introduce confusion, so it is important to clarify if a dispersion value is k or alpha.</strong>")
