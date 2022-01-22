@@ -664,7 +664,7 @@ withMathJax(
  
 br()
 br()
-HTML(" <strong>In short, either the parameter k or its reciprocal alpha is referred to as the 'dispersion parameter' or 'shape parameter' or 'clustering coefficient', or 'heterogeneity' or 'heterogeneity (ancillary) parameter' or 'aggregation' parameter.  </strong>")
+HTML(" <strong>In short, either the parameter k or its reciprocal alpha is referred to as the 'dispersion parameter' or 'shape parameter' or 'clustering coefficient' or 'heterogeneity' or 'heterogeneity (ancillary) parameter' or 'aggregation' parameter.  </strong>")
 br()
 br()
 HTML(" <strong> These two formulations can introduce confusion, so it is important to clarify if a dispersion value is k or alpha.</strong>")
