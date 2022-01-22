@@ -637,6 +637,40 @@ renderPlot({
 })
 
 ```
+
+k or $\alpha$
+====
+
+```{r, k or A}
+ 
+HTML(" <strong> With regard to negative binomial regression the variance can then be written as </strong>")
+                                     
+withMathJax(
+                                         helpText('
+                           $${{ }{{{m} + \\frac{m^2}{k}}}}\\!$$'))      
+
+HTML(" <strong>Sometimes this relationship is used</strong>")
+                                     
+withMathJax(
+                                         helpText('
+                           $${{ }{{{\\alpha} = \\frac{1}{k}}}}\\!$$'))      
+
+
+HTML(" <strong>And then the variance is expressed as</strong>")
+                                     
+withMathJax(
+                                         helpText('
+                           $${{ }{{{m}  + {(\\alpha)}{ (m^2)}}}}\\!$$'))  
+ 
+br()
+br()
+HTML(" <strong>In short, either the parameter k or its reciprocal alpha is referred to as the 'dispersion parameter' or 'shape parameter' or 'clustering coefficient', or 'heterogeneity' or 'heterogeneity (ancillary) parameter' or 'aggregation' parameter.  </strong>")
+br()
+br()
+HTML(" <strong> These two formulations can introduce confusion, so it is important to clarify if a dispersion value is k or alpha.</strong>")
+
+
+```
  
 Gamma Poisson
 ====
@@ -761,11 +795,11 @@ Column {.tabset .tabset-fade}
  renderPlot({
    
  f1 <- r4()$model  # gamma Poisson approach simulation
- f  <- r5()$model  # rnbiom approach simulation
+ f  <- r5()$model  # rnbinom approach simulation
    
  par(mfrow=c(1,2))
- countreg::rootogram(f1, style = "hanging",     main = "Hanging plot based on gamma poisson simulation")
- countreg::rootogram(f,  style = "hanging",     main = "Hanging plot based on rnbinom simulation ")
+ countreg::rootogram(f1, style = "hanging",     main = "Hanging plot based on gamma poisson simulation" ,col='red', fill="blue")
+ countreg::rootogram(f,  style = "hanging",     main = "Hanging plot based on rnbinom simulation", col='red', fill="blue")
  par(mfrow=c(1,1))
  
  })
@@ -1168,10 +1202,9 @@ Column {.sidebar}
 Row {data-height=600}
 -----------------------------------------------------------------------
 
-### We use canned formulae for sample size and allow comparison. The formulae don't account for follow up nor treatment discontinuation, so simulation is preferable. They are useful for a sanity check on simulation and also that you are not mixing up k and alpha.
+### **We use canned formulae for sample size and allow comparison. The formulae don't account for follow up nor treatment discontinuation, so simulation is preferable. They are useful however as a simulation sanity check and to ensure you are not confusing k and alpha.**
 
 ```{r power canned result, eval=TRUE}
-
 
 reactive({
   
@@ -1415,10 +1448,8 @@ Row {.tabset .tabset-fade}
 
 ```
 
-
 ### Typical expected dataset - Bland Altman plot, square root transformation
- 
- 
+
 ```{r BAplot}
 
  renderPlot({
@@ -1485,40 +1516,6 @@ An example of a paired study design in which the outcome measure is counts of ev
 
 A warning!
 
-k or $\alpha$
-====
-
-```{r, k or A}
- 
-HTML(" <strong> With regard to negative binomial regression the variance can then be written as </strong>")
-                                     
-withMathJax(
-                                         helpText('
-                           $${{ }{{{m} + \\frac{m^2}{k}}}}\\!$$'))      
-
-HTML(" <strong>Sometimes this relationship is used</strong>")
-                                     
-withMathJax(
-                                         helpText('
-                           $${{ }{{{\\alpha} = \\frac{1}{k}}}}\\!$$'))      
-
-
-HTML(" <strong>And then the variance is expressed as</strong>")
-                                     
-withMathJax(
-                                         helpText('
-                           $${{ }{{{m}  + {(\\alpha)}{ (m^2)}}}}\\!$$'))  
- 
-br()
-br()
-HTML(" <strong>In short, either the parameter k or its reciprocal alpha is referred to as the 'dispersion parameter' or 'shape parameter' or 'clustering coefficient', or 'heterogeneity' or 'heterogeneity (ancillary) parameter' or 'aggregation' parameter.  </strong>")
-br()
-br()
-HTML(" <strong> These two formulations can introduce confusion, so it is important to clarify if a dispersion value is k or alpha.</strong>")
-
-
-```
-
 
 References
 ====
@@ -1559,9 +1556,7 @@ References
       tags$a(href = "https://stats.stackexchange.com/questions/10419/what-is-theta-in-a-negative-binomial-regression-fitted-with-r", target="_blank",
            tags$span(style="color:blue", "[15] J Hilbe explains what is reported by R's negative binomial model output "),) 
       
-      
-      
-    
+  
     div(p(" "))
     tags$hr()                        
 
