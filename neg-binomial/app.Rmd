@@ -494,10 +494,10 @@ renderPlot({
   lines(x[l],yd[l], col=6,lwd=lwd.,type="l")
    
   apois = paste("Poisson \u03BC=", mu,sep="")
-  nb_a = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep="")
-  nb_b = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,sep="")
-  nb_c = paste("Normal \u03BC=",   mu," \u03C3=sqrt(",mu,")",sep="")
-  nb_d = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_d,sep="")
+  nb_a =  paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,sep="")
+  nb_b =  paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,sep="")
+  nb_c =  paste("Normal \u03BC=",   mu," \u03C3=sqrt(",mu,")",sep="")
+  nb_d =  paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_d,sep="")
   
   legend("topright",col=c(1,2,4,6,5),legend=c(apois, nb_a, nb_b, nb_d, nb_c), lwd=lwd.,bty="n")
  }
@@ -545,11 +545,11 @@ renderPlot({
     lines(d$mids,d$density,type="s",lwd=lwd.,col=5)
     lines(e$mids,e$density,type="s",lwd=lwd.,col=6)
     
-    apois =       paste("Poisson \u03BC="  ,mu,  sep="")
-    nb_a = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,     sep="")
-    nb_b = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,     sep="")
-    nb_c = paste("Normal \u03BC=",   mu," \u03C3=sqrt(",mu,")", sep="")
-    nb_d = paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_d,     sep="")
+    apois = paste("Poisson \u03BC="  ,mu,  sep="")
+    nb_a =  paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_a,     sep="")
+    nb_b =  paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_b,     sep="")
+    nb_c =  paste("Normal \u03BC=",   mu," \u03C3=sqrt(",mu,")", sep="")
+    nb_d =  paste("Neg Binom \u03BC=",mu," \u03B1=",alpha_d,     sep="")
     
     legend("topright",col=c(1,2,4,6,5),legend=c(apois, nb_a, nb_b, nb_d, nb_c),
            lwd=lwd.,bty="n")
@@ -615,7 +615,7 @@ renderPlot({
   xx <- c(seq(0,xmax,1))
 
   if(alpha_a==0) {
-  yb =          dpois(xx,mu)
+  yb =    dpois(xx,mu)
   }else{
   yb=     e_dnbinom(xx,mu,alpha_a)
   }
@@ -624,7 +624,7 @@ renderPlot({
       
   b <- barplot(yb, xlim=c(0,xmax+2), ylab = "Percent", xlab="x", col='red',
           ylim=c(0,ymax),
-          main =  paste("Negative Binomial \u03BC=",mu," \u03B1=",alpha_a,", based on common mean and red curve \u03B1 variance =",    mu+mu^2* alpha_a,""),
+          main =  paste("Negative Binomial \u03BC=",mu," \u03B1=",alpha_a,", based on common mean and red curve \u03B1,  variance =", mu+mu^2* alpha_a,""),
           names.arg= as.character(xx))
   
   if(input$perc) {
