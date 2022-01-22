@@ -256,13 +256,7 @@ nb.power.simp <- function(n=505, k=1/.33, mu0=71.4, eff=0.7,   fup=1) {
   
   return(list(p, x))
   
-}
- 
-# res <- replicate( 10, 
-#       nb.power.simp(n=220, k=1.3, mu0=1, eff=.65,  fup=1))
-#    mean(unlist(res[1,]<.05))
-
-
+}  
 
 nb.power2.simp <- function(n=220, k=1.3, mu0=1, eff=0.65,   fup=1) {
   
@@ -433,11 +427,6 @@ renderPlot({
 # Normal with variance equal to mean also
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  
-  # mu = sample(1:25,1)
-  # alpha_a = 0.1
-  # alpha_b = .01
-  # alpha_d = 1
-
   mu =      input$mu
   alpha_a = input$alpha_a
   alpha_b = input$alpha_b
@@ -640,32 +629,99 @@ k or $\alpha$
 
 ```{r, k or A}
  
-HTML(" <strong> With regard to negative binomial regression the variance can be written as </strong>")
-                                     
-withMathJax(
-                                         helpText('
-                           $${{ }{{{m} + \\frac{m^2}{k}}}}\\!$$'))      
+  HTML(" <strong> With regard to negative binomial regression the variance can be written as </strong>")
+                                       
+  withMathJax(
+                                           helpText('
+                             $${{ }{{{m} + \\frac{m^2}{k}}}}\\!$$'))      
+  
+  HTML(" <strong>Sometimes this relationship is used</strong>")
+                                       
+  withMathJax(
+                                           helpText('
+                             $${{ }{{{\\alpha} = \\frac{1}{k}}}}\\!$$'))      
+  
+  
+  HTML(" <strong>And then the variance is expressed as</strong>")
+                                       
+  withMathJax(
+                                           helpText('
+                             $${{ }{{{m}  + {(\\alpha)}{ (m^2)}}}}\\!$$'))  
+   
+  br()
+  br()
+  HTML(" <strong>In short, either the parameter k or its reciprocal alpha is referred to as the 'dispersion parameter' or 'shape parameter' or 'clustering coefficient' or 'heterogeneity' or 'heterogeneity (ancillary) parameter' or 'aggregation' parameter.  </strong>")
+  br()
+  br()
+  HTML(" <strong> These two formulations can introduce confusion, so it is important to clarify if a dispersion value is k or alpha. R code below showing syntax.</strong>")
 
-HTML(" <strong>Sometimes this relationship is used</strong>")
-                                     
-withMathJax(
-                                         helpText('
-                           $${{ }{{{\\alpha} = \\frac{1}{k}}}}\\!$$'))      
+  
+```
 
+```{r, eval=TRUE, echo=TRUE}
 
-HTML(" <strong>And then the variance is expressed as</strong>")
-                                     
-withMathJax(
-                                         helpText('
-                           $${{ }{{{m}  + {(\\alpha)}{ (m^2)}}}}\\!$$'))  
- 
-br()
-br()
-HTML(" <strong>In short, either the parameter k or its reciprocal alpha is referred to as the 'dispersion parameter' or 'shape parameter' or 'clustering coefficient' or 'heterogeneity' or 'heterogeneity (ancillary) parameter' or 'aggregation' parameter.  </strong>")
-br()
-br()
-HTML(" <strong> These two formulations can introduce confusion, so it is important to clarify if a dispersion value is k or alpha.</strong>")
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# show how to use random generation for poisson to create neg binomial/gamma poisson data
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+  length <- 1
+  n      <- 100000
+  mu     <- exp(1) # so expect coef on log scale of 1
+  alpha  <- 0.01   # small alpha to approach Poisson
+  k      <- 1/alpha  # 100
+
+  # Simulate the gamma-shaped subject effect
+  s <- rgamma(n, shape = 1/alpha, scale = alpha)
+  
+  # Simulate the counts
+  lambda_baseline <- mu * s
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# poisson gamma random generation and analysis
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  y_0 <- rpois(n = n, lambda = lambda_baseline*length) 
+  summary(MASS::glm.nb(y_0~1))
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Use rnbinom for random generation and then analyse
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  gp  <-  rnbinom(n,  prob=  1/(1 + mu*length* alpha),  size=1/alpha)
+  summary(MASS::glm.nb(gp~1))
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Recover the expected mean and variance?
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  summary(y_0); summary(gp)
+  var(y_0) ;var(gp)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Random generation syntax
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  A  <-   MASS::rnegbin(n, mu=mu,  theta=1/alpha)
+  A1 <-   rnbinom(n=n,     mu=mu,  size= 1/alpha)
+  B  <-   rpois(n , lambda=  mu * rgamma(n=n, shape = 1/alpha, scale = alpha))  
+  B1 <-   rpois(n,  lambda= (mu * rgamma(n=n, shape = 1/alpha))*(alpha))  
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# examine
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  summary(A) ; summary(A1) ; summary(B) ; summary(B1)
+  var(A);var(A1);var(B);var(B1)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# True variance
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  mu+alpha*mu^2 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# End
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```
  
@@ -699,17 +755,7 @@ Show the equivalence of gamma Poisson and negative binomial (rnbinom) parmeteris
   
     sliderInput('fup.pg', 'Follow up (yrs)', value = c(1),
             min = 1, max = 10, step=1,ticks=F)
-     
-    # n  <- 1000
-    # k  <- 1.3   # this is k, alpha=1/k
-    # 1/k         # alpha reported as theta in neg binomial
-    # mu0 <- 1
-    # mu1 <- mu0*0.75
-    # 
-    # fup   <- 1
-    # drop1 <- 0.1
-    # drop2 <- 0.1
-        
+
 ```
 
 The plots on this page are mostly from one model (data simulated gamma Poisson)  
@@ -947,15 +993,6 @@ Use the inputs below to simulate an RCT with a count outcome measure. We estimat
 
 ```{r, main power tab2}
  
- 
-# 220
-# 1
-# .75
-# 1.3
-# .1
-# .1
-# 1
-
     sliderInput('N', 'Patients per arm', value=174,
                   min = 10, max = 1000, step=5, ticks=F)
 
@@ -1247,8 +1284,7 @@ reactive({
    k0=1/k0.   # need to be careful of k0!!!
    
    cat(paste0("Here is another formula from 'Keene, O. N., Jones, M. R. K., Lane, P. W., & Anderson, J. (2007) Analysis of exacerbation rates in asthma and chronic obstructive pulmonary disease: \nexample from the TRISTAN study. Pharmaceutical Statistics, 6(2), 89–97. doi:10.1002/pst.250 page 95,' this gives an idea of the ball park subjects per treatment group,\nonly one dispersion parameter is allowed and equal groups assumed, so the 'Treatment dispersion' input will not work, nor the placebo proportion.\nIn order to compare this to the other functions one needs to keep dispersion parameters equal. Also note dispersion is reciprocated here! Estimate...", ceiling(((mu0.+mu1.)/(mu0.*mu1.) +2*k0) * ((Ax+Bx)/(log(mu0./mu1.)))^2) ," \n"))
-  
-   
+
     cat("\nSIMULATION\n") #2nd approach
   
     res <- replicate( simy, nb.power.simp(n=B/2, k=k0, mu0=mu0., eff=mu1./mu0., fup=1))
@@ -1308,7 +1344,7 @@ cat(paste0("This is an example of paired study design in which the outcome measu
 
 cat(paste0("We will simulate the data based on a expected rate before the intervention of ",input$mu0.p, " and an hypothesised effect of intervention ",input$eff.p,", so a hypothesised mean rate of ",input$mu0.p*input$eff.p," for the intervention.\nWe also take into account the correlation between obervations for the same individual, the starting value is " ,input$r,".\n")) 
 
-cat(paste0("\nWe report the average p-value from a mixed Poisson model and the power, Wilcoxon signed rank test power, T test power, T test on ranks power, intercept, treatment effect and SD of differences. \nWe also quote the theoretical SD of differences."))
+cat(paste0("\nWe report the average p-value from a mixed Poisson model and the power, Wilcoxon signed rank test power, T test power, T test on ranks power, intercept,\ntreatment effect and SD of differences. We also quote the theoretical SD of differences."))
 
 cat(paste0("\nTo generate correlated Poisson variables we..."))
 cat(paste0("\n1) Sample two correlated N(0, 1) distributions from a multivariate normal distribution."))
@@ -1409,6 +1445,7 @@ Row {.tabset .tabset-fade}
                   id = factor(rep(1:n,2)))
 
   d$xj <- jitter(d$x, amount=.03)
+  
   AA <- ggplot(data=d, aes(y=y) ) +
     geom_boxplot(aes(x=x, group=x), width=0.2, outlier.shape = NA, col='blue', fill='lightblue') +
     geom_line(aes(x=xj, group=id),  colour='pink', alpha=.5) +
@@ -1420,8 +1457,7 @@ Row {.tabset .tabset-fade}
     
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ scatter plot
 
-     d <- data.frame(y = B ,
-                     x = A)
+      d <- data.frame(y = B , x = A)
    
       BB <- ggplot(d, aes(x, y)) +
       geom_jitter(width = 0.1, height = 0.1, size=2) +
@@ -1510,15 +1546,20 @@ References
 ====
 ```{r, refs}
  
-    tags$a(href = "https://stats.stackexchange.com/questions/71194/fitting-a-poisson-distribution-with-lme4-and-nlme", target="_blank",tags$span(style="color:blue", "[1] Poisson with lme4 and nlme"),) 
+    tags$a(href = "https://stats.stackexchange.com/questions/71194/fitting-a-poisson-distribution-with-lme4-and-nlme", target="_blank",
+           tags$span(style="color:blue", "[1] Poisson with lme4 and nlme"),) 
     div(p(" "))
-    tags$a(href = "https://stats.stackexchange.com/questions/27869/fitting-a-poisson-glm-mixed-model-with-a-random-slope-and-intercept",target="_blank",  tags$span(style="color:blue", "[2] Mixed model Poisson"),)
+    tags$a(href = "https://stats.stackexchange.com/questions/27869/fitting-a-poisson-glm-mixed-model-with-a-random-slope-and-intercept",target="_blank",
+           tags$span(style="color:blue", "[2] Mixed model Poisson"),)
     div(p(" "))
-    tags$a(href = "https://stackoverflow.com/questions/6044800/adding-greek-character-to-axis-title", target="_blank",tags$span(style="color:blue", "[3] Adding Greek characters - shiny"),)
+    tags$a(href = "https://stackoverflow.com/questions/6044800/adding-greek-character-to-axis-title", target="_blank",
+           tags$span(style="color:blue", "[3] Adding Greek characters - shiny"),)
     div(p(" "))
-    tags$a(href = "https://stackoverflow.com/questions/52225348/shiny-flexdashboard-reference-object-in-new-tabset#52225733", target="_blank",tags$span(style="color:blue", "[4] Reference object in new tab - shiny"),)  
+    tags$a(href = "https://stackoverflow.com/questions/52225348/shiny-flexdashboard-reference-object-in-new-tabset#52225733", target="_blank",
+           tags$span(style="color:blue", "[4] Reference object in new tab - shiny"),)  
     div(p(" "))
-    tags$a(href = "https://journals.sagepub.com/doi/pdf/10.1177/1536867X1201200202", target="_blank",tags$span(style="color:blue", "[5] What hypotheses do “nonparametric” two-group tests actually test?"),) 
+    tags$a(href = "https://journals.sagepub.com/doi/pdf/10.1177/1536867X1201200202", target="_blank",
+           tags$span(style="color:blue", "[5] What hypotheses do “nonparametric” two-group tests actually test?"),) 
     div(p(" "))
     tags$a(href = "https://www.google.co.uk/books/edition/Discrete_Data_Analysis_with_R/danODwAAQBAJ?hl=en",target="_blank",
            tags$span(style="color:blue", "[6] Discrete Data Analysis with R Visualization and Modeling Techniques for Categorical and Count Data"),) 
@@ -1526,26 +1567,29 @@ References
     tags$a(href = "https://www.galitshmueli.com/system/files/ASMB_901_rev.pdf",target="_blank",
            tags$span(style="color:blue", "[7] On generating multivariate Poisson data in management science applications"),) 
     div(p(" "))
-    tags$a(href = "https://thomasward.com/simulating-correlated-data/",target="_blank",tags$span(style="color:blue", "[8] Simulating correlated data"),) 
+    tags$a(href = "https://thomasward.com/simulating-correlated-data/",target="_blank",
+           tags$span(style="color:blue", "[8] Simulating correlated data"),) 
     div(p(" "))
-    tags$a(href = "https://www.rdocumentation.org/packages/simstudy/versions/0.3.0", target="_blank", tags$span(style="color:blue", "[9] package simstudy for simulating correlated data, not used but interesting"),) 
+    tags$a(href = "https://www.rdocumentation.org/packages/simstudy/versions/0.3.0", target="_blank", 
+           tags$span(style="color:blue", "[9] package simstudy for simulating correlated data, not used but interesting"),) 
     div(p(" "))
-    tags$a(href = "https://www.rdocumentation.org/packages/SimCorrMix/versions/0.1.1/topics/SimCorrMix",target="_blank", tags$span(style="color:blue", "[10] package SimCorrMix for simulating correlated data, not used but interesting"),) 
+    tags$a(href = "https://www.rdocumentation.org/packages/SimCorrMix/versions/0.1.1/topics/SimCorrMix",target="_blank", 
+           tags$span(style="color:blue", "[10] package SimCorrMix for simulating correlated data, not used but interesting"),) 
     div(p(" "))
-    tags$a(href = "https://www.amazon.com/Negative-Binomial-Regression-Joseph-Hilbe/dp/0521198151",target="_blank", tags$span(style="color:blue", "[11] Negative Binomial Regression 2nd Edition by Joseph M. Hilbe"),) 
+    tags$a(href = "https://www.amazon.com/Negative-Binomial-Regression-Joseph-Hilbe/dp/0521198151",target="_blank", 
+           tags$span(style="color:blue", "[11] Negative Binomial Regression 2nd Edition by Joseph M. Hilbe"),) 
     div(p(" "))
-    tags$a(href = "https://www.amazon.co.uk/Discrete-Data-Analysis-Visualization-Categorical/dp/149872583X",target="_blank", tags$span(style="color:blue", "[12] Discrete Data Analysis with R: Visualization and Modeling Techniques for Categorical and Count Data, Michael Friendly, David Meyer"),) 
-      div(p(" "))
-    tags$a(href = "https://bmcmedresmethodol.biomedcentral.com/track/pdf/10.1186/s12874-015-0023-0.pdf",target="_blank", tags$span(style="color:blue", "[13] Sample size calculations for skewed distributions - see canned power tab"),) 
-        div(p(" "))
+    tags$a(href = "https://www.amazon.co.uk/Discrete-Data-Analysis-Visualization-Categorical/dp/149872583X",target="_blank", 
+           tags$span(style="color:blue", "[12] Discrete Data Analysis with R: Visualization and Modeling Techniques for Categorical and Count Data, Michael Friendly, David Meyer"),) 
+    div(p(" "))
+    tags$a(href = "https://bmcmedresmethodol.biomedcentral.com/track/pdf/10.1186/s12874-015-0023-0.pdf",target="_blank",
+           tags$span(style="color:blue", "[13] Sample size calculations for skewed distributions - see canned power tab"),) 
+    div(p(" "))
       tags$a(href = "https://pubmed.ncbi.nlm.nih.gov/17230434/", target="_blank",
            tags$span(style="color:blue", "[14] Analysis of exacerbation rates in asthma and chronic obstructive pulmonary disease: example from the TRISTAN study - see canned power tab "),) 
-      
-        div(p(" "))
-      tags$a(href = "https://stats.stackexchange.com/questions/10419/what-is-theta-in-a-negative-binomial-regression-fitted-with-r", target="_blank",
+    div(p(" "))
+    tags$a(href = "https://stats.stackexchange.com/questions/10419/what-is-theta-in-a-negative-binomial-regression-fitted-with-r", target="_blank",
            tags$span(style="color:blue", "[15] J Hilbe explains what is reported by R's negative binomial model output "),) 
-      
-  
     div(p(" "))
     tags$hr()                        
 
