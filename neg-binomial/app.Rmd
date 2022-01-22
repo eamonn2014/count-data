@@ -1478,9 +1478,7 @@ geometric distribution, which is the discrete correlate of the continuous negati
  
 An exploration of the Poisson and the gamma Poisson distribution (aka negative binomial). A common mean can be adjusted and alpha the heterogeneity dispersion parameter can be adjusted for each individual curve. When alpha is 0 we get the Poisson distribution (actually we use a vanishingly small value for alpha and not zero). Also see the normal distribution plotted for comparison. We use the density functions (top left) and the random number generators (top right). Below are bar graphs based on the density functions. 
 
-**k or $\alpha$**
-
-A warning!
+**k or $\alpha$** A warning!
 
 **Gamma Poisson**
 
