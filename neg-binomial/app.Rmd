@@ -1452,10 +1452,6 @@ geometric distribution, which is the discrete correlate of the continuous negati
  
 An exploration of the Poisson and the gamma Poisson distribution (aka negative binomial). A common mean can be adjusted and alpha the heterogeneity dispersion parameter can be adjusted for each individual curve. When alpha is 0 we get the Poisson distribution (actually we use a vanishingly small value for alpha and not zero). Also see the normal distribution plotted for comparison. We use the density functions (top left) and the random number generators (top right). Below are bar graphs based on the density functions. 
 
-**Gamma Poisson power**
-
-An investigation of an analysis of count data and look at power for a two arm 1:1 randomised RCT, the outcome measure being a count. The simulations are analysed using the the gamma Poisson model. The user can input the number of patients per arm, the expected mean rate on placebo and the hypothesised treatment effect.  For this model a heterogeneity parameter input as 1/alpha is required (based on historical data perhaps). We also allow patients to discontinue treatment, when they do they are assumed to continue to the end of study but their mean rate (if randomised to the new treatment) reverts to the placebo rate. We also have inputs for the follow up time and the number of simulations. An estimate of power is returned, as well as the results of a typical trial that can be expected. Power is given for both poisson gamma and rnbinom simulation approaches.  
- 
 **Gamma Poisson**
 
 A demonstration showing negative binomial and gamma Poisson are one and the same. Using the same adjustable population parameters one data set is simulated using the R rnbinom function and another data set simulated using the gamma and Poisson distribution. The gamma Poisson is a mixture of different Poisson distributions in which the response counts are assumed to follow a mixed Poisson distribution with a shared gamma distributed random subject effect. The tabs at the bottom present some diagnostic plots. 
@@ -1473,15 +1469,21 @@ For a GLM sets of random observations yj , j = 1, 2, ... S are generated from th
 
 Step by step first, calculate the sorted absolute values of the residuals |r|(i) and their expected normal values |z|(i) . The basic plot will be a figure of expected v observed. Then, use simulate() to generate S = 100 simulated response vectors around the fitted values in the model. Here we uses the negative-binomial random number generator (rnbinom()) with the same dispersion value estimated in the model. The result is a data frame of n rows and S = 100 columns, named sim_1, sim_2, .... Next, we have to fit the NB model S times and use the same model formula as the original, but with the simulated y. We first define a function to do this for a given y, and then use apply() to calculate them all. The coefficients from the original model are used as starting values. We then use apply() to compute the summary measures defining the center and limits for the simulated confidence interval. Finally, we plot the observed against expected absolute residuals as points, and add the lines for the confidence interval.
 
+**Gamma Poisson power**
+
+An investigation of an analysis of count data and look at power for a two arm 1:1 randomised RCT, the outcome measure being a count. The simulations are analysed using the the gamma Poisson model. The user can input the number of patients per arm, the expected mean rate on placebo and the hypothesised treatment effect.  For this model a heterogeneity parameter input as 1/alpha is required (based on historical data perhaps). We also allow patients to discontinue treatment, when they do they are assumed to continue to the end of study but their mean rate (if randomised to the new treatment) reverts to the placebo rate. We also have inputs for the follow up time and the number of simulations. An estimate of power is returned, as well as the results of a typical trial that can be expected. Power is given for both poisson gamma and rnbinom simulation approaches.
+
+**Canned power, sample size functions**
+
+This tab examines the published formula for sample size/power and a simulation is also used.  
+
 **Poisson paired counts**
 
 An example of a paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. Nevertheless, we can adjust the total number of subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods. We will simulate the data based on a expected rate before the intervention and an hypothesised effect of the intervention. We also take into account the correlation between observations for the same individual. 
 
-**Canned power, sample size functions**
+**k or $\alpha$**
 
-This tab examines the published formula for sample size/power and a simulation is also used. It is important to ensure the correct version of dispersion is used (k or 1/k)
-
-
+A warning!
 
 k or $\alpha$
 ====
