@@ -582,7 +582,7 @@ renderPlot({
   par(mar=c(2.1,4.1,4.1,4.1))
       
   b <- barplot(yb, xlim=c(0,xmax+2), ylab = "Percent", xlab="x", col='black', ylim=c(0,ymax),
-          main = paste("Poisson \u03BC=", mu, ", based on common \u03BC",sep=""),
+          main = paste0("Poisson \u03BC = ", mu, ", based on common \u03BC",sep=""),
           names.arg= as.character(xx))
    
   if(input$perc) {
@@ -624,7 +624,7 @@ renderPlot({
       
   b <- barplot(yb, xlim=c(0,xmax+2), ylab = "Percent", xlab="x", col='red',
           ylim=c(0,ymax),
-          main =  paste("Negative Binomial \u03BC=",mu," \u03B1=",alpha_a,", based on common mean and red curve \u03B1,  variance =", mu+mu^2* alpha_a,""),
+          main =  paste0("Negative Binomial \u03BC = ",mu," \u03B1 = ",alpha_a,", based on common mean and red curve \u03B1, variance = ", mu+alpha_a*mu^2* alpha_a,""),
           names.arg= as.character(xx))
   
   if(input$perc) {
@@ -1202,7 +1202,7 @@ Column {.sidebar}
 Row {data-height=600}
 -----------------------------------------------------------------------
 
-### **We use canned formulae for sample size and allow comparison. The formulae don't account for follow up nor treatment discontinuation, so simulation is preferable. They are useful however as a simulation sanity check and to ensure you are not confusing k and alpha.**
+### **We use canned formulae for sample size and allow comparison. The formulae don't account for follow up nor treatment discontinuation, so simulation is preferable. They are useful as a simulation sanity check and to ensure no confusion between k and $\\alpha$.**
 
 ```{r power canned result, eval=TRUE}
 
@@ -1418,7 +1418,7 @@ Row {.tabset .tabset-fade}
 
   d$xj <- jitter(d$x, amount=.03)
   AA <- ggplot(data=d, aes(y=y) ) +
-    geom_boxplot(aes(x=x, group=x), width=0.2, outlier.shape = NA) +
+    geom_boxplot(aes(x=x, group=x), width=0.2, outlier.shape = NA, col='blue', fill='lightblue') +
     geom_line(aes(x=xj, group=id),  colour='pink', alpha=.5) +
     geom_point(aes(x=xj), size=2) +
     xlab("Phase") + ylab("Count") +  
@@ -1483,6 +1483,10 @@ geometric distribution, which is the discrete correlate of the continuous negati
  
 An exploration of the Poisson and the gamma Poisson distribution (aka negative binomial). A common mean can be adjusted and alpha the heterogeneity dispersion parameter can be adjusted for each individual curve. When alpha is 0 we get the Poisson distribution (actually we use a vanishingly small value for alpha and not zero). Also see the normal distribution plotted for comparison. We use the density functions (top left) and the random number generators (top right). Below are bar graphs based on the density functions. 
 
+**k or $\alpha$**
+
+A warning!
+
 **Gamma Poisson**
 
 A demonstration showing negative binomial and gamma Poisson are one and the same. Using the same adjustable population parameters one data set is simulated using the R rnbinom function and another data set simulated using the gamma and Poisson distribution. The gamma Poisson is a mixture of different Poisson distributions in which the response counts are assumed to follow a mixed Poisson distribution with a shared gamma distributed random subject effect. The tabs at the bottom present some diagnostic plots. 
@@ -1511,11 +1515,6 @@ This tab examines the published formula for sample size/power and a simulation i
 **Poisson paired counts**
 
 An example of a paired study design in which the outcome measure is counts of events and which does not use a concurrent control, so is not a great study design. Nevertheless, we can adjust the total number of subjects assessed before and after an intervention. The Poisson model will be used, the observation time is the same for the the pre and post periods. We will simulate the data based on a expected rate before the intervention and an hypothesised effect of the intervention. We also take into account the correlation between observations for the same individual. 
-
-**k or $\alpha$**
-
-A warning!
-
 
 References
 ====
