@@ -1,0 +1,13 @@
+name: counts
+title: counts
+username:
+account: eamonn4
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5491382
+bundleId: 5498541
+url: https://eamonn4.shinyapps.io/counts/
+when: 1642939135.74313
+lastSyncTime: 1642939135.74313
+asMultiple: FALSE
+asStatic: FALSE
