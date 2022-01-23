@@ -1625,6 +1625,17 @@ References
     tags$a(href = "https://stats.stackexchange.com/questions/10419/what-is-theta-in-a-negative-binomial-regression-fitted-with-r", target="_blank",
            tags$span(style="color:blue", "[15] J Hilbe explains what is reported by R's negative binomial model output "),) 
     div(p(" "))
+     tags$a(href = "https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.5947", target="_blank",
+           tags$span(style="color:blue", "[16] H. Zhu and H. Lakkis (2014). Sample size calculation for comparing two negative binomial rates, Statistics in Medicine, 33:376-387"),) 
+    div(p(" "))
+    
+    
+    
+    
+    
+    
+    
+    
     tags$hr()                        
 
 ```
