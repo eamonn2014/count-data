@@ -691,7 +691,7 @@ k or $\alpha$
   
 ```
 
-```{r, eval=TRUE, echo=TRUE}
+```{r syntax, eval=TRUE, echo=TRUE}
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # show how to use random generation for poisson to create neg binomial/gamma poisson data
@@ -722,7 +722,7 @@ k or $\alpha$
 # Use rnbinom for random generation and then analyse
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  gp  <-  rnbinom(n,  prob=  1/(1 + mu*length* alpha),  size=1/alpha)
+  gp  <-  rnbinom(n = n,  prob=  1/(1 + mu*length* alpha),  size=1/alpha)
   
   summary(MASS::glm.nb(gp~1))
 
@@ -737,18 +737,18 @@ k or $\alpha$
 # Random generation syntax
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  A  <-   MASS::rnegbin(n, mu=mu,  theta=1/alpha)
-  A1 <-   rnbinom(n=n,     mu=mu,  size= 1/alpha)
-  B  <-   rpois(n , lambda=  mu * rgamma(n=n, shape = 1/alpha, scale = alpha))  
-  B1 <-   rpois(n,  lambda= (mu * rgamma(n=n, shape = 1/alpha))*(alpha))  
+  A  <-   MASS::rnegbin(n=n,   mu=mu,  theta=1/alpha)
+  A1 <-   rnbinom(n=n,         mu=mu,  size= 1/alpha)
+  B  <-   rpois(n=n , lambda=  mu * rgamma(n=n, shape = 1/alpha, scale = alpha))  
+  B1 <-   rpois(n=n,  lambda= (mu * rgamma(n=n, shape = 1/alpha))*(alpha))  
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# examine
+# examine means and variances
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  summary(A) ; summary(A1) ; summary(B) ; summary(B1)
-  var(A);var(A1);var(B);var(B1)
-
+ 
+  z <- list(A,B,A1,B1)
+  sapply(z, function(x) c(mean(x, na.rm = T), var(x, na.rm = T))) 
+   
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # True variance
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
