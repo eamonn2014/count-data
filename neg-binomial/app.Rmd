@@ -1333,6 +1333,12 @@ reactive({
  
  print(res[2,][[1]])
  
+ cat("\nFUNCTION 4 this one seems to not agree, perhaps it is the duration input? [16]\n") # 
+ print(PASSED::power_NegativeBinomial( mu1 = mu0., mu2 = mu1., power=power.,
+                                sig.level = 0.05, duration = 1, theta = k0,  #enter alpha
+                                equal.sample = TRUE, alternative = c("two.sided" ),
+                                approach = 1))
+ 
 })
 
  
