@@ -700,8 +700,8 @@ k or $\alpha$
   length <- 1        # not used here
   n      <- 100000   # very large n
   mu     <- exp(1)   # so expect coefficient on log scale of 1
-  alpha  <- 0.01     # small alpha to approach Poisson
-  k      <- 1/alpha  # 100
+  alpha  <- 0.001    # small alpha to approach Poisson
+  k      <- 1/alpha  # 1000
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # poisson gamma random generation and analysis
@@ -743,7 +743,7 @@ k or $\alpha$
   B1 <-   rpois(n=n,  lambda= (mu * rgamma(n=n, shape = 1/alpha))*(alpha))  
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# examine means and variances
+# examine means and variances, should be similar
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  
   z <- list(A,B,A1,B1)
