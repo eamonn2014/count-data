@@ -1100,7 +1100,7 @@ cat(paste0("The gamma Poisson model will be used as we expect patient heterogene
 
 cat(paste0("\nAlpha is the dispersion parameter, its value is " ,input$k,", so k = 1/alpha, k is the parameterisation that is reported in R's model output and in truth is ",1/input$k,". \nThe rate for placebo is ",input$mu0," events per patient year of follow up.\nThe treatment effect hypothesised is ",input$eff, " so an event rate for treatment is hypothesised as ",input$mu0*input$eff, " events per patient year follow up. \nDrop out probabilities for treatment discontinuation and placebo over the follow up period (in years) are " ,input$d1, " and " ,input$d2," respectively. \nWe assume a constant exponential hazard rate over time for treatment discontinuation with ",input$d1," and ",input$d2,", the percentages of patients\noff treatment by follow up time in years in active and placebo. No further treatment effect versus placebo is assumed during off treatment, that is ",input$mu0," events per patient year is \nassumed for patients after treatment discontinuation in treated and placebo.\n"))
 
-cat(paste0("\nThe power estimate is based on simulation using rnbinom",r1()," and ",r2()," based on gamma Poisson simulation"))
+cat(paste0("\nThe power estimate is based on simulation using rnbinom ",r1()," and ",r2()," based on gamma Poisson simulation"))
 })
   
 
