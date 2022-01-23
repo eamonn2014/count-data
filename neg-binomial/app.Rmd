@@ -711,7 +711,6 @@ k or $\alpha$
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   # Simulate the gamma-shaped subject effect
-  # The larger the gamma shape parameter, the more dispersed is the count distribution.
   s <- rgamma(n, shape = 1/alpha, scale = alpha)
   
   # Simulate the counts
