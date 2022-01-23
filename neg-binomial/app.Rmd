@@ -29,6 +29,38 @@ Probability mass functions
   library(skewsamp)  # power for neg binom
   lwd.=3             # used when plotting
   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # function to format decimals
+  # https://stackoverflow.com/questions/3245862/format-numbers-to-significant-figures-nicely-in-r
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  formatz <- function(x){
+    
+    if (!is.na(x)  ) {
+      
+      formatC(signif(x,digits=5), digits=5,format="fg", flag="#",big.mark=",")
+      
+    }
+    
+  }
+  
+  formatz0 <- function(x){
+    sprintf(x, fmt = '%s')  
+  }
+  formatz1 <- function(x){
+    sprintf(x, fmt = '%#.1f')  
+  }
+  formatz2 <- function(x){
+    sprintf(x, fmt = '%#.2f')  
+  }
+  formatz00 <- function(x){
+    round(x,0) 
+  }
+  formatz3 <- function(x){
+    sprintf(x, fmt = '%#.3f')  
+  }
+  formatz4 <- function(x){
+    sprintf(x, fmt = '%#.4f')  
+  }
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # page 5 Cundill and Alexander BMC Medical Research Methodology (2015) 15:28, return total sample size
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -404,13 +436,13 @@ Column {.sidebar}
 
 ```
 
-$\alpha$ takes on positive rational values, rarely above 4 (Hilbe page 190). Values of $\alpha$ greater than 2 usually indicate that there is substantial over-dispersion.
+$\alpha$ takes on positive rational values, rarely above 4 (ref 11 page 190). Values of $\alpha$ greater than 2 usually indicate that there is substantial over-dispersion.
 
 When $\alpha$ approaches 0, k approaches infinity and Poisson emerges (move red $\alpha$ slider to 0).
 
 When $\alpha$ > 1, k < 1 leads to over dispersed data.
 
-$\alpha$ = 1/k ; k = 1/ $\alpha$
+$\alpha$ = 1/k ; k = 1/ $\alpha$ see next tab.
  
 
 Column {data-width=400, height=300}
@@ -664,23 +696,25 @@ k or $\alpha$
 # show how to use random generation for poisson to create neg binomial/gamma poisson data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  length <- 1
-  n      <- 100000
-  mu     <- exp(1) # so expect coef on log scale of 1
-  alpha  <- 0.01   # small alpha to approach Poisson
+  length <- 1        # not used here
+  n      <- 100000   # very large n
+  mu     <- exp(1)   # so expect coefficient on log scale of 1
+  alpha  <- 0.01     # small alpha to approach Poisson
   k      <- 1/alpha  # 100
-
-  # Simulate the gamma-shaped subject effect
-  s <- rgamma(n, shape = 1/alpha, scale = alpha)
-  
-  # Simulate the counts
-  lambda_baseline <- mu * s
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # poisson gamma random generation and analysis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  # Simulate the gamma-shaped subject effect
+  # The larger the gamma shape parameter, the more dispersed is the distribution.
+  s <- rgamma(n, shape = 1/alpha, scale = alpha)
+  
+  # Simulate the counts
+  lambda_1 <- mu * s
 
-  y_0 <- rpois(n = n, lambda = lambda_baseline*length) 
+  y_0 <- rpois(n = n, lambda = lambda_1*length) 
+  
   summary(MASS::glm.nb(y_0~1))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -688,6 +722,7 @@ k or $\alpha$
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   gp  <-  rnbinom(n,  prob=  1/(1 + mu*length* alpha),  size=1/alpha)
+  
   summary(MASS::glm.nb(gp~1))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1378,29 +1413,28 @@ reactive({
   Y <- input$mu0.p*input$eff.p   # var of poisson (= mean)
 
   cat(paste0("Evaluations based on ",input$sims.p," simulations take into consideration correlation, the default starting value is "
-       ,input$r,". The observed mean correlation is ",mean( unlist(x[,"V10"])), "\nThe median p-value from a mixed effects Poisson model is "
-       ,median( unlist(x[,"V2"]))   , 
+       ,input$r,". The observed mean correlation is ", formatz3(mean( unlist(x[,"V10"]))), "\nThe median p-value from a mixed effects Poisson model is "
+       ,formatz3(median( unlist(x[,"V2"])))   , 
        ". \nPower based on the mixed model Wald test is ",
              
-      (table( unlist(x[,"V2"])< alpha)/input$sims.p)[2][[1]],
+      formatz3((table( unlist(x[,"V2"])< alpha)/input$sims.p)[2][[1]]),
       
       "\nPower based on the Wilcoxon signed rank test power is ",
-      (table( unlist(x[,"V3"])< alpha)/input$sims.p)[2][[1]],
-      "\nMean Hodeges Lehman estimator is ",
-        mean( unlist(x[,"V9"]))," with 95%CI ",quantile(unlist(x[,"V9"]), .025)," to ",quantile(unlist(x[,"V9"]), .975),
-      "\nPower based on the t-test is ",
-      (table( unlist(x[,"V4"])< alpha)/input$sims.p)[2][[1]],
+      formatz3((table( unlist(x[,"V3"])< alpha)/input$sims.p)[2][[1]]),
+      "\nMean Hodges-Lehmann estimator is ",
+      formatz3(mean( unlist(x[,"V9"])))," with 95%CI ",formatz3(quantile(unlist(x[,"V9"]), .025))," to ",formatz3(quantile(unlist(x[,"V9"]), .975)),      "\nPower based on the t-test is ",
+      formatz3((table( unlist(x[,"V4"])< alpha)/input$sims.p)[2][[1]]),
       "\nPower based on the t-test of ranks is ",
-      (table( unlist(x[,"V5"])< alpha)/input$sims.p)[2][[1]],
-      " \nThe mean intercept is ",
-      mean( unlist(x[,"V6"])),
+      formatz3((table( unlist(x[,"V5"])< alpha)/input$sims.p)[2][[1]]),
+      "\nThe mean intercept is ",
+      formatz3(mean( unlist(x[,"V6"]))),
       "\nThe mean treatement effect is ",
-      mean( unlist(x[,"V7"]))," with 95%CI ",quantile(unlist(x[,"V7"]), .025)," to ",quantile(unlist(x[,"V7"]), .975),
+        formatz3(mean( unlist(x[,"V7"])))," with 95%CI ",formatz3(quantile(unlist(x[,"V7"]), .025))," to ",formatz3(quantile(unlist(x[,"V7"]), .975)),
       "\nMean SD of differences is ", 
-      mean( unlist(x[,"V8"])),  
+      formatz3(mean( unlist(x[,"V8"]))),  
     
       "\nThe theoretical SD of differences based on Poisson variances and stated correlation is ",
-      sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R)),
+      formatz3(sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R))),
       "\n"))
    
 })
@@ -1504,8 +1538,8 @@ Row {.tabset .tabset-fade}
 
 Wiki
 ====
-**Notes: In general the app is quite slow as almost each page has some Monte Carlo simulation. But be patient eventually some information will appear.** The binomial distribution describes the number of r successes in n trials. The geometric distribution describes the number of failures before the first success, r. The gamma Poisson/negative binomial distribution describes the number of failures before the rth success. With respect to the gamma Poisson, the term ‘dispersion parameter’ confusingly can refer to either k or $\alpha$ ; other terms  include ‘shape parameter’ 'heterogeneity (ancillary) parameter' and ‘clustering coefficient’. The only restriction placed on $\alpha$ is that it take positive rational values, rarely above 4 (according to Hilbe's Negative Binomial regression book, page 190). Underdispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. The larger the gamma shape parameter, the more dispersed is the distribution. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. When $\alpha$ = 1, the negative binomial distribution takes the form of a
-geometric distribution, which is the discrete correlate of the continuous negative exponential distribution. The negative binomial distribution with $\alpha$ = 0 is Poisson. As the mean increases, the probability of a zero decreases, and the more the shape approximates a Gaussian distribution. As the Poisson mean gets larger it approaches normality, this is not the case for the negative binomial distribution. 
+**Notes: In general the app is quite slow as almost each page has some Monte Carlo simulation. But be patient eventually some information will appear.** The binomial distribution describes the number of r successes in n trials. The geometric distribution describes the number of failures before the first success, r. The gamma Poisson/negative binomial distribution describes the number of failures before the rth success. With respect to the gamma Poisson, the term ‘dispersion parameter’ confusingly can refer to either k or $\alpha$ ; other terms  include ‘shape parameter’ 'heterogeneity (ancillary) parameter' and ‘clustering coefficient’. The only restriction placed on $\alpha$ is that it take positive rational values, rarely above 4 (Hilbe's Negative Binomial regression book, page 190 [11]). Under dispersed data are assigned the minimum value of $\alpha$, corresponding to k going to infinity. The dispersion parameter k is commonly used as an inverse measure of aggregation in biological count data. The larger the gamma shape parameter, the more dispersed is the distribution. When $\alpha$ = 1, the negative binomial distribution takes the form of a
+geometric distribution, which is the discrete correlate of the continuous negative exponential distribution [11]. The negative binomial distribution with $\alpha$ = 0 is Poisson. As the mean increases, the probability of a zero decreases, and the more the shape approximates a Gaussian distribution. As the Poisson mean gets larger it approaches normality, this is not the case for the negative binomial distribution. 
 
 **Probability mass functions**
  
@@ -1515,7 +1549,7 @@ An exploration of the Poisson and the gamma Poisson distribution (aka negative b
 
 **Gamma Poisson**
 
-A demonstration showing negative binomial and gamma Poisson are one and the same. Using the same adjustable population parameters one data set is simulated using the R rnbinom function and another data set simulated using the gamma and Poisson distribution. The gamma Poisson is a mixture of different Poisson distributions in which the response counts are assumed to follow a mixed Poisson distribution with a shared gamma distributed random subject effect. The tabs at the bottom present some diagnostic plots. 
+A demonstration showing negative binomial and gamma Poisson are one and the same. Using the same adjustable population parameters one data set is simulated using the R rnbinom function and another data set simulated using the gamma and Poisson distributions. The gamma Poisson is a mixture of different Poisson distributions in which the response counts are assumed to follow a mixed Poisson distribution with a shared gamma distributed random subject effect. The tabs at the bottom present some diagnostic plots. A lot of this is taken from reference [12].
 
 The first plot tab shows hanging **Rootograms**. The counts are square rooted to approximately adjust for scale differences across the count levels. Otherwise, deviations would only be visible for levels with large observed/expected frequencies.
 
