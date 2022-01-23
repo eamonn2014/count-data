@@ -61,6 +61,9 @@ Probability mass functions
   formatz4 <- function(x){
     sprintf(x, fmt = '%#.4f')  
   }
+  
+ 
+  
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # page 5 Cundill and Alexander BMC Medical Research Methodology (2015) 15:28, return total sample size
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -205,7 +208,7 @@ BMC_negbin_power <- function(pow=.9, mu0=71.7, mu1=50, k0=.33, k1=.33, Q0=.5, ty
   
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # function to simulate negative binomial RCT
-# Poisson gamma simulation accounting for trt discontinuation, outputs p value and other objects
+# gamma Poisson simulation accounting for trt discontinuation, outputs p value and other objects
 # enter one arm n, k, placebo rate, trt effect, drop off trt rates and follow up time
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
@@ -694,7 +697,7 @@ k or $\alpha$
 ```{r syntax, eval=TRUE, echo=TRUE}
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# show how to use random generation for poisson to create neg binomial/gamma poisson data
+# show how to use random generation for poisson to create neg binomial/gamma Poisson data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   length <- 1        # not used here
@@ -704,7 +707,7 @@ k or $\alpha$
   k      <- 1/alpha  # 1000
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# poisson gamma random generation and analysis
+# Gamma Poisson random generation and analysis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   # Simulate the gamma-shaped subject effect
@@ -866,7 +869,7 @@ Column {data-width=400, height=300}
 Column {.tabset .tabset-fade}
 -----------------------------------------------------------------------
 
-### Rootograms
+### Rootograms (rforge package so cannot be used in published Rshiny! )
   
 
 ```{r diagnostics1, eval=TRUE}
@@ -877,8 +880,9 @@ Column {.tabset .tabset-fade}
  f  <- r5()$model  # rnbinom approach simulation
    
  par(mfrow=c(1,2))
- countreg::rootogram(f1, style = "hanging",     main = "Hanging plot based on gamma poisson simulation" ,col='red', fill="blue")
- countreg::rootogram(f,  style = "hanging",     main = "Hanging plot based on rnbinom simulation", col='red', fill="blue")
+ # countreg::rootogram(f1, style = "hanging",     main = "Hanging plot based on gamma poisson simulation" ,col='red', fill="blue")
+ # countreg::rootogram(f,  style = "hanging",     main = "Hanging plot based on rnbinom simulation", col='red', fill="blue")
+ 
  par(mfrow=c(1,1))
  
  })
@@ -1096,7 +1100,7 @@ cat(paste0("The gamma Poisson model will be used as we expect patient heterogene
 
 cat(paste0("\nAlpha is the dispersion parameter, its value is " ,input$k,", so k = 1/alpha, k is the parameterisation that is reported in R's model output and in truth is ",1/input$k,". \nThe rate for placebo is ",input$mu0," events per patient year of follow up.\nThe treatment effect hypothesised is ",input$eff, " so an event rate for treatment is hypothesised as ",input$mu0*input$eff, " events per patient year follow up. \nDrop out probabilities for treatment discontinuation and placebo over the follow up period (in years) are " ,input$d1, " and " ,input$d2," respectively. \nWe assume a constant exponential hazard rate over time for treatment discontinuation with ",input$d1," and ",input$d2,", the percentages of patients\noff treatment by follow up time in years in active and placebo. No further treatment effect versus placebo is assumed during off treatment, that is ",input$mu0," events per patient year is \nassumed for patients after treatment discontinuation in treated and placebo.\n"))
 
-cat(paste0("\nThe power estimate is based on simulation using rnbinom...",r1()," and ",r2()," based on Poisson gamma simulation"))
+cat(paste0("\nThe power estimate is based on simulation using rnbinom",r1()," and ",r2()," based on gamma Poisson simulation"))
 })
   
 
@@ -1575,7 +1579,7 @@ Step by step first, calculate the sorted absolute values of the residuals |r|(i)
 
 **Gamma Poisson power**
 
-An investigation of an analysis of count data and look at power for a two arm 1:1 randomised RCT, the outcome measure being a count. The simulations are analysed using the the gamma Poisson model. The user can input the number of patients per arm, the expected mean rate on placebo and the hypothesised treatment effect.  For this model a heterogeneity parameter input as 1/alpha is required (based on historical data perhaps). We also allow patients to discontinue treatment, when they do they are assumed to continue to the end of study but their mean rate (if randomised to the new treatment) reverts to the placebo rate. We also have inputs for the follow up time and the number of simulations. An estimate of power is returned, as well as the results of a typical trial that can be expected. Power is given for both poisson gamma and rnbinom simulation approaches.
+An investigation of an analysis of count data and look at power for a two arm 1:1 randomised RCT, the outcome measure being a count. The simulations are analysed using the the gamma Poisson model. The user can input the number of patients per arm, the expected mean rate on placebo and the hypothesised treatment effect.  For this model a heterogeneity parameter input as 1/alpha is required (based on historical data perhaps). We also allow patients to discontinue treatment, when they do they are assumed to continue to the end of study but their mean rate (if randomised to the new treatment) reverts to the placebo rate. We also have inputs for the follow up time and the number of simulations. An estimate of power is returned, as well as the results of a typical trial that can be expected. Power is given for both gamma Poisson and rnbinom simulation approaches.
 
 **Canned power, sample size functions**
 
