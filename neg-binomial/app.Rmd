@@ -1579,7 +1579,7 @@ Step by step first, calculate the sorted absolute values of the residuals |r|(i)
 
 **Gamma Poisson power**
 
-An investigation of an analysis of count data and look at power for a two arm 1:1 randomised RCT, the outcome measure being a count. The simulations are analysed using the the gamma Poisson model. The user can input the number of patients per arm, the expected mean rate on placebo and the hypothesised treatment effect.  For this model a heterogeneity parameter input as 1/alpha is required (based on historical data perhaps). We also allow patients to discontinue treatment, when they do they are assumed to continue to the end of study but their mean rate (if randomised to the new treatment) reverts to the placebo rate. We also have inputs for the follow up time and the number of simulations. An estimate of power is returned, as well as the results of a typical trial that can be expected. Power is given for both gamma Poisson and rnbinom simulation approaches.
+An investigation of an analysis of count data and look at power for a two arm 1:1 randomised RCT, the outcome measure being a count. The simulations are analysed using the the gamma Poisson model. The user can input the number of patients per arm, the expected mean rate on placebo and the hypothesised treatment effect.  For this model a heterogeneity parameter input $\alpha$ is required (based on historical data perhaps). We also allow patients to discontinue treatment, when they do they are assumed to continue to the end of study but their mean rate (if randomised to the new treatment) reverts to the placebo rate. We also have inputs for the follow up time and the number of simulations. An estimate of power is returned, as well as the results of a typical trial that can be expected. Power is given for both gamma Poisson and rnbinom simulation approaches.
 
 **Canned power, sample size functions**
 
@@ -1640,15 +1640,10 @@ References
     div(p(" "))
      tags$a(href = "https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.5947", target="_blank",
            tags$span(style="color:blue", "[16] H. Zhu and H. Lakkis (2014). Sample size calculation for comparing two negative binomial rates, Statistics in Medicine, 33:376-387"),) 
+     div(p(" "))
+     tags$a(href = "https://www.ejobrien.com/", target="_blank",
+           tags$span(style="color:blue", "[17] Sixty percent of the time it works every time <- more apps here!"),) 
     div(p(" "))
-    
-    
-    
-    
-    
-    
-    
-    
-    tags$hr()                        
+  tags$hr()                        
 
 ```
