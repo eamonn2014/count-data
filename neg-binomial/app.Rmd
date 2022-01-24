@@ -1358,10 +1358,10 @@ Use the inputs below to generate correlated count data !
 
 ```{r paired}
 
-  sliderInput('N.p', 'Patients per arm', value=22,
+  sliderInput('N.p', 'Patients per arm', value=28,
                 min = 10, max = 200, step=5, ticks=F)
   
-  sliderInput('mu0.p', 'Placebo mean rate \u03BC', value=10,
+  sliderInput('mu0.p', 'Placebo mean rate \u03BC', value=8,
                 min = 0.1, max = 25, step=.05, ticks=F)
   
   sliderInput('eff.p', 'Hypothesised treatment effect ', value=.75,   
@@ -1424,7 +1424,7 @@ reactive({
 
   cat(paste0("Evaluations based on ",input$sims.p," simulations take into consideration correlation, the default starting value is "
        ,input$r,". The observed mean correlation is ", formatz3(mean( unlist(x[,"V10"]))), "\nThe median p-value from a mixed effects Poisson model is "
-       ,formatz3(median( unlist(x[,"V2"])))   , 
+       ,(median( unlist(x[,"V2"])))   , 
        ". \nPower based on the mixed model Wald test is ",
              
       formatz3((table( unlist(x[,"V2"])< alpha)/input$sims.p)[2][[1]]),
@@ -1436,13 +1436,12 @@ reactive({
       formatz3((table( unlist(x[,"V4"])< alpha)/input$sims.p)[2][[1]]),
       "\nPower based on the t-test of ranks is ",
       formatz3((table( unlist(x[,"V5"])< alpha)/input$sims.p)[2][[1]]),
-      "\nThe mean intercept is ",
+      "\nThe mean intercept from the mixed effects Poisson model is ",
       formatz3(mean( unlist(x[,"V6"]))),
-      "\nThe mean treatement effect is ",
+      "\nThe mean treatement effect from the mixed effects Poisson model is ",
         formatz3(mean( unlist(x[,"V7"])))," with 95%CI ",formatz3(quantile(unlist(x[,"V7"]), .025))," to ",formatz3(quantile(unlist(x[,"V7"]), .975)),
       "\nMean SD of differences is ", 
       formatz3(mean( unlist(x[,"V8"]))),  
-    
       "\nThe theoretical SD of differences based on Poisson variances and stated correlation is ",
       formatz3(sqrt(X+Y-(2*sqrt(X)*sqrt(Y)*R))),
       "\n"))
