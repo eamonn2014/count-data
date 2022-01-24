@@ -1431,7 +1431,7 @@ reactive({
       
       "\nPower based on the Wilcoxon signed rank test power is ",
       formatz3((table( unlist(x[,"V3"])< alpha)/input$sims.p)[2][[1]]),
-      "\nMean Hodges-Lehmann estimator ((1) Calc. post-pre 2) Calc. Walsh averages i.e (n+1)/2 pairwise averages 3) report median) ",
+      "\nMean Hodges-Lehmann estimator (pseudo-median) ((1) Calc. post-pre 2) Calc. Walsh averages i.e n*(n+1)/2 pairwise averages 3) report median) ",
       formatz3(mean( unlist(x[,"V9"])))," with 95%CI ",formatz3(quantile(unlist(x[,"V9"]), .025))," to ",formatz3(quantile(unlist(x[,"V9"]), .975)),      "\nPower based on the t-test is ",
       formatz3((table( unlist(x[,"V4"])< alpha)/input$sims.p)[2][[1]]),
       "\nPower based on the t-test of ranks is ",
