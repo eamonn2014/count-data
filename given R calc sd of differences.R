@@ -6,7 +6,9 @@
 # given R, calc sd of differences
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#var(x - y) = var(x) + var(y) - 2 x R x sd(x) x sd(y)  [1]
+# R is the correlation of X Y
+
+#var(x - y) = var(x) + var(y) - 2 x [R x sd(x) x sd(y)]  [1] # in [] equals covariance
 
 # Q. get correlation in 1 ?
 
