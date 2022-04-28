@@ -646,7 +646,7 @@ renderPlot({
       
   b <- barplot(yb, xlim=c(0,xmax+2), ylab = "Percent", xlab="x", col='red',
           ylim=c(0,ymax),
-          main =  paste0("Negative Binomial \u03BC = ",mu," \u03B1 = ",alpha_a,", based on common mean and red curve \u03B1, variance = ", mu+alpha_a*mu^2* alpha_a,""),
+          main =  paste0("Negative Binomial \u03BC = ",mu," \u03B1 = ",alpha_a,", based on common mean and red curve \u03B1, variance = ", mu+alpha_a*mu^2,""),
           names.arg= as.character(xx))
   
   if(input$perc) {
